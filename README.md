@@ -1,44 +1,69 @@
-## Setup
+# Bazel Documentation Processor
 
-1. Create a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+A tool to download and process Bazel and rules_nodejs documentation into a more readable format.
 
-2. Install dependencies:
+## Features
+
+- Downloads Bazel documentation using git sparse checkout
+- Downloads rules_nodejs documentation using git sparse checkout
+- Processes documentation into organized markdown files
+- Handles both Bazel and rules_nodejs documentation in a single command
+
+## Installation
+
 ```bash
+git clone https://github.com/yourusername/bazel-docs.git
+cd bazel-docs
 pip install -r requirements.txt
 ```
 
 ## Usage
 
-### Download Bazel Documentation
+The tool provides two main commands:
 
-Download the documentation to the default location (`input/bazel-site`):
+### Download Documentation
+
+Downloads both Bazel and rules_nodejs documentation:
+
 ```bash
-python main.py download
+python3 -m main download
 ```
 
-Download to a custom location:
-```bash
-python main.py download --output-dir custom/path
-```
+Optional arguments:
+- `--bazel-output-dir`: Output directory for Bazel documentation (default: `input/bazel-site`)
+- `--rules-nodejs-output-dir`: Output directory for rules_nodejs documentation (default: `input/rules-nodejs`)
 
 ### Process Documentation
 
-Process the downloaded documentation to generate a consolidated version:
+Processes the downloaded documentation into markdown files:
+
 ```bash
-python main.py process
+python3 -m main process
 ```
 
-Process with custom input and output directories:
+Optional arguments:
+- `--bazel-input-dir`: Input directory containing Bazel documentation (default: `input/bazel-site/site/en`)
+- `--bazel-output-dir`: Output directory for processed Bazel documentation (default: `docs/bazel`)
+- `--rules-nodejs-input-dir`: Input directory containing rules_nodejs documentation (default: `input/rules-nodejs`)
+- `--rules-nodejs-output-file`: Output file for processed rules_nodejs documentation (default: `docs/rules_nodejs.md`)
+
+## Examples
+
+Download documentation to custom directories:
 ```bash
-python main.py process --input-dir custom/input --output-dir custom/output
+python3 -m main download --bazel-output-dir custom/bazel --rules-nodejs-output-dir custom/rules-nodejs
 ```
 
-The script will:
-- Create the output directory if it doesn't exist
-- Use git sparse checkout to only download the `/site/en` directory
-- Skip git history for faster downloads
-- Support updates for existing repositories
+Process documentation from custom directories:
+```bash
+python3 -m main process --bazel-input-dir custom/bazel/site/en --rules-nodejs-input-dir custom/rules-nodejs
+```
+
+## Output Structure
+
+- Bazel documentation is processed into multiple markdown files in the `docs/bazel` directory
+- rules_nodejs documentation is processed into a single markdown file at `docs/rules_nodejs.md`
+
+## License
+
+MIT

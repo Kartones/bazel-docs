@@ -59,6 +59,9 @@ def main() -> None:
     # Process each subfolder
     for subfolder in input_dir.iterdir():
         if subfolder.is_dir():
+            if subfolder.name in SKIP_FOLDERS:
+                print(f"Skipping {subfolder.name}...")
+                continue
             print(f"Processing {subfolder.name}...")
             process_subfolder(subfolder, output_dir)
 
