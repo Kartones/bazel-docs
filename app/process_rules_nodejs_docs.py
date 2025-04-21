@@ -1,6 +1,3 @@
-"""Script to process rules_nodejs documentation into a single markdown file."""
-
-import argparse
 from pathlib import Path
 from typing import List
 
@@ -35,7 +32,7 @@ def write_output_file(output_file: Path, content: str) -> None:
         f.write(content)
 
 
-def process_docs(input_dir: Path, output_file: Path) -> None:
+def process_rules_nodejs_docs(input_dir: Path, output_file: Path) -> None:
     """Process all markdown files in the docs directory."""
     print(f"Processing documentation from {input_dir}...")
 
@@ -65,23 +62,7 @@ def process_docs(input_dir: Path, output_file: Path) -> None:
 
 def main() -> None:
     """Main entry point for the script."""
-    parser = argparse.ArgumentParser(description="Process rules_nodejs documentation")
-    parser.add_argument(
-        "--input-dir",
-        type=Path,
-        default=Path("input/rules-nodejs"),
-        help="Input directory containing the documentation",
-    )
-    parser.add_argument(
-        "--output-file",
-        type=Path,
-        default=Path("docs/rules_nodejs.md"),
-        help="Output file path for the processed documentation",
-    )
-    args = parser.parse_args()
+    input_dir = Path("input/rules-nodejs")
+    output_file = Path("docs/rules_nodejs.md")
 
-    process_docs(args.input_dir, args.output_file)
-
-
-if __name__ == "__main__":
-    main()
+    process_rules_nodejs_docs(input_dir, output_file)

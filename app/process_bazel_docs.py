@@ -1,6 +1,3 @@
-"""Module to process Bazel documentation files."""
-
-import argparse
 from pathlib import Path
 from typing import List
 
@@ -45,7 +42,6 @@ def process_subfolder(subfolder: Path, output_dir: Path) -> None:
 
 def main() -> None:
     """Main entry point for the script."""
-    # This function is called from app.py, so we don't need to parse arguments here
     input_dir = Path("input/bazel-site/site/en")
     output_dir = Path("docs/bazel")
 
@@ -66,22 +62,3 @@ def main() -> None:
             process_subfolder(subfolder, output_dir)
 
     print("Documentation processing complete.")
-
-
-if __name__ == "__main__":
-    # Only parse arguments if running directly
-    parser = argparse.ArgumentParser(description="Process Bazel documentation")
-    parser.add_argument(
-        "--input-dir",
-        type=Path,
-        default=Path("input/bazel-site/site/en"),
-        help="Input directory containing Bazel documentation",
-    )
-    parser.add_argument(
-        "--output-dir",
-        type=Path,
-        default=Path("docs/bazel"),
-        help="Output directory for processed documentation",
-    )
-    args = parser.parse_args()
-    main()

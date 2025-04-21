@@ -1,1 +1,1 @@
-"""CLI application package."""
+"""application package"""

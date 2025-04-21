@@ -13510,3 +13510,13515 @@ performance over `aapt` and also creates smaller APKs. To use `aapt2`, use the
 
 The `--experimental_multi_threaded_digest` flag is useful for optimizing digest
 computation on SSDs.
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# JavaScript and Bazel
+
+{% include "_buttons.html" %}
+
+This page contains resources that help you use Bazel with JavaScript projects.
+It links to build rules and other information specific to building JavaScript
+with Bazel.
+
+The following resources will help you work with Bazel on JavaScript projects:
+
+*  [NodeJS toolchain](https://github.com/bazelbuild/rules_nodejs){: .external}
+*  [rules_js](https://github.com/aspect-build/rules_js){: .external} - Bazel rules for building JavaScript programs
+*  [rules_esbuild](https://github.com/aspect-build/rules_esbuild){: .external} - Bazel rules for [esbuild](https://esbuild.github.io) JS bundler
+*  [rules_terser](https://github.com/aspect-build/rules_terser){: .external} - Bazel rules for [Terser](https://terser.org) - a JavaScript minifier
+*  [rules_swc](https://github.com/aspect-build/rules_swc){: .external} - Bazel rules for [swc](https://swc.rs)
+*  [rules_ts](https://github.com/aspect-build/rules_ts){: .external} - Bazel rules for [TypeScript](http://typescriptlang.org)
+*  [rules_webpack](https://github.com/aspect-build/rules_webpack){: .external} - Bazel rules for [Webpack](https://webpack.js.org)
+*  [rules_rollup](https://github.com/aspect-build/rules_rollup){: .external} - Bazel rules for [Rollup](https://rollupjs.org) - a JavaScript bundler
+*  [rules_jest](https://github.com/aspect-build/rules_jest){: .external} - Bazel rules to run tests using [Jest](https://jestjs.io)
+*  [rules_jasmine](https://github.com/aspect-build/rules_jasmine){: .external} - Bazel rules to run tests using [Jasmine](https://jasmine.github.io/)
+*  [rules_cypress](https://github.com/aspect-build/rules_cypress){: .external} - Bazel rules to run tests using [Cypress](https://cypress.io)
+*  [rules_deno](https://github.com/aspect-build/rules_deno){: .external} - Bazel rules for [Deno](http://deno.land)
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# Commands and Options
+
+{% include "_buttons.html" %}
+
+This page covers the options that are available with various Bazel commands,
+such as `bazel build`, `bazel run`, and `bazel test`. This page is a companion
+to the list of Bazel's commands in [Build with Bazel](/run/build).
+
+## Target syntax {:#target-syntax}
+
+Some commands, like `build` or `test`, can operate on a list of targets. They
+use a syntax more flexible than labels, which is documented in
+[Specifying targets to build](/run/build#specifying-build-targets).
+
+## Options {:#build-options}
+
+The following sections describe the options available during a
+build. When `--long` is used on a help command, the on-line
+help messages provide summary information about the meaning, type and
+default value for each option.
+
+Most options can only be specified once. When specified multiple times, the
+last instance wins. Options that can be specified multiple times are
+identified in the on-line help with the text 'may be used multiple times'.
+
+### Package location {:#package-location}
+
+#### `--package_path` {:#package-path}
+
+**WARNING:** The `--package_path` option is deprecated. Bazel prefers packages
+in the main repository to be under the workspace root.
+
+This option specifies the set of directories that are searched to
+find the BUILD file for a given package.
+
+Bazel finds its packages by searching the package path. This is a colon
+separated ordered list of bazel directories, each being the root of a
+partial source tree.
+
+_To specify a custom package path_ using the `--package_path` option:
+
+<pre>
+  % bazel build --package_path %workspace%:/some/other/root
+</pre>
+
+Package path elements may be specified in three formats:
+
+1.  If the first character is `/`, the path is absolute.
+2.  If the path starts with `%workspace%`, the path is taken relative
+    to the nearest enclosing bazel directory.
+    For instance, if your working directory
+    is `/home/bob/clients/bob_client/bazel/foo`, then the
+    string `%workspace%` in the package-path is expanded
+    to `/home/bob/clients/bob_client/bazel`.
+3.  Anything else is taken relative to the working directory.
+    This is usually not what you mean to do,
+    and may behave unexpectedly if you use Bazel from directories below the bazel workspace.
+    For instance, if you use the package-path element `.`,
+    and then cd into the directory
+    `/home/bob/clients/bob_client/bazel/foo`, packages
+    will be resolved from the
+    `/home/bob/clients/bob_client/bazel/foo` directory.
+
+If you use a non-default package path, specify it in your
+[Bazel configuration file](/run/bazelrc) for convenience.
+
+_Bazel doesn't require any packages to be in the
+current directory_, so you can do a build from an empty bazel
+workspace if all the necessary packages can be found somewhere else
+on the package path.
+
+Example: Building from an empty client
+
+<pre>
+  % mkdir -p foo/bazel
+  % cd foo/bazel
+  % touch MODULE.bazel
+  % bazel build --package_path /some/other/path //foo
+</pre>
+
+#### `--deleted_packages` {:flag--deleted_packages}
+
+This option specifies a comma-separated list of packages which Bazel
+should consider deleted, and not attempt to load from any directory
+on the package path. This can be used to simulate the deletion of packages without
+actually deleting them. This option can be passed multiple times, in which case
+the individual lists are concatenated.
+
+### Error checking {:#error-checking}
+
+These options control Bazel's error-checking and/or warnings.
+
+#### `--[no]check_visibility` {:#check-visibility}
+
+If this option is set to false, visibility checks are demoted to warnings.
+The default value of this option is true, so that by default, visibility
+checking is done.
+
+#### `--output_filter={{ "<var>" }}regex{{ "</var>" }}` {:#output-filter}
+
+The `--output_filter` option will only show build and compilation
+warnings for targets that match the regular expression. If a target does not
+match the given regular expression and its execution succeeds, its standard
+output and standard error are thrown away.
+
+Here are some typical values for this option:
+
+<table>
+  <tr>
+    <td>`--output_filter='^//(first/project|second/project):'`</td>
+    <td>Show the output for the specified packages.</td>
+  </tr>
+  <tr>
+    <td>`--output_filter='^//((?!(first/bad_project|second/bad_project):).)*$'`</td>
+    <td>Don't show output for the specified packages.</td>
+  </tr>
+  <tr>
+    <td>`--output_filter=`</td>
+    <td>Show everything.
+    </td>
+  </tr>
+  <tr>
+    <td>`--output_filter=DONT_MATCH_ANYTHING`</td>
+    <td>Show nothing.
+    </td>
+  </tr>
+</table>
+
+### Tool flags {:#tool-flags}
+
+These options control which options Bazel will pass to other tools.
+
+#### `--copt={{ "<var>" }}cc-option{{ "</var>" }}` {:#copt}
+
+This option takes an argument which is to be passed to the compiler.
+The argument will be passed to the compiler whenever it is invoked
+for preprocessing, compiling, and/or assembling C, C++, or
+assembler code. It will not be passed when linking.
+
+This option can be used multiple times. For example:
+
+<pre>
+  % bazel build --copt="-g0" --copt="-fpic" //foo
+</pre>
+
+will compile the `foo` library without debug tables, generating
+position-independent code.
+
+Note: Changing `--copt` settings will force a recompilation
+of all affected object files. Also note that copts values listed in specific
+cc_library or cc_binary build rules will be placed on the compiler command line
+_after_ these options.
+
+Warning: C++-specific options (such as `-fno-implicit-templates`)
+should be specified in `--cxxopt`, not in
+`--copt`. Likewise, C-specific options (such as -Wstrict-prototypes)
+should be specified in `--conlyopt`, not in `copt`.
+Similarly, compiler options that only have an
+effect at link time (such as `-l`) should be specified in
+`--linkopt`, not in `--copt`.
+
+#### `--host_copt={{ "<var>" }}cc-option{{ "</var>" }}` {:#host-copt}
+
+This option takes an argument which is to be passed to the compiler for source files
+that are compiled in the exec configuration. This is analogous to
+the [`--copt`](#copt) option, but applies only to the
+exec configuration.
+
+#### `--host_conlyopt={{ "<var>" }}cc-option{{ "</var>" }}` {:#host-conlyopt}
+
+This option takes an argument which is to be passed to the compiler for C source files
+that are compiled in the exec configuration. This is analogous to
+the [`--conlyopt`](#cconlyopt) option, but applies only
+to the exec configuration.
+
+#### `--host_cxxopt={{ "<var>" }}cc-option{{ "</var>" }}` {:#host-cxxopt}
+
+This option takes an argument which is to be passed to the compiler for C++ source files
+that are compiled in the exec configuration. This is analogous to
+the [`--cxxopt`](#cxxopt) option, but applies only to the
+exec configuration.
+
+#### `--host_linkopt={{ "<var>" }}linker-option{{ "</var>" }}` {:#host-linkopt}
+
+This option takes an argument which is to be passed to the linker for source files
+that are compiled in the exec configuration. This is analogous to
+the [`--linkopt`](#linkopt) option, but applies only to
+the exec configuration.
+
+#### `--conlyopt={{ "<var>" }}cc-option{{ "</var>" }}` {:#cconlyopt}
+
+This option takes an argument which is to be passed to the compiler when compiling C source files.
+
+This is similar to `--copt`, but only applies to C compilation,
+not to C++ compilation or linking. So you can pass C-specific options
+(such as `-Wno-pointer-sign`) using `--conlyopt`.
+
+Note: copts parameters listed in specific cc_library or cc_binary build rules
+are placed on the compiler command line _after_ these options.
+
+#### `--cxxopt={{ "<var>" }}cc-option{{ "</var>" }}` {:#cxxopt}
+
+This option takes an argument which is to be passed to the compiler when
+compiling C++ source files.
+
+This is similar to `--copt`, but only applies to C++ compilation,
+not to C compilation or linking. So you can pass C++-specific options
+(such as `-fpermissive` or `-fno-implicit-templates`) using `--cxxopt`.
+
+For example:
+
+<pre>
+  % bazel build --cxxopt="-fpermissive" --cxxopt="-Wno-error" //foo/cruddy_code
+</pre>
+
+Note: copts parameters listed in specific cc_library or cc_binary build rules
+are placed on the compiler command line _after_ these options.
+
+#### `--linkopt={{ "<var>" }}linker-option{{ "</var>" }}` {:#linkopt}
+
+This option takes an argument which is to be passed to the compiler when linking.
+
+This is similar to `--copt`, but only applies to linking,
+not to compilation. So you can pass compiler options that only make sense
+at link time (such as `-lssp` or `-Wl,--wrap,abort`)
+using `--linkopt`. For example:
+
+<pre>
+  % bazel build --copt="-fmudflap" --linkopt="-lmudflap" //foo/buggy_code
+</pre>
+
+Build rules can also specify link options in their attributes. This option's
+settings always take precedence. Also see
+[cc_library.linkopts](/reference/be/c-cpp#cc_library.linkopts).
+
+#### `--strip (always|never|sometimes)` {:#strip}
+
+This option determines whether Bazel will strip debugging information from
+all binaries and shared libraries, by invoking the linker with the `-Wl,--strip-debug` option.
+`--strip=always` means always strip debugging information.
+`--strip=never` means never strip debugging information.
+The default value of `--strip=sometimes` means strip if the `--compilation_mode`
+is `fastbuild`.
+
+<pre>
+  % bazel build --strip=always //foo:bar
+</pre>
+
+will compile the target while stripping debugging information from all generated
+binaries.
+
+Note: If you want debugging information, it's not enough to disable stripping;
+you also need to make sure that the debugging information was generated by the
+compiler, which you can do by using either `-c dbg` or `--copt -g`.
+
+Bazel's `--strip` option corresponds with ld's `--strip-debug` option:
+it only strips debugging information. If for some reason you want to strip _all_ symbols,
+not just _debug_ symbols, you would need to use ld's `--strip-all` option,
+which you can do by passing `--linkopt=-Wl,--strip-all` to Bazel. Also be
+aware that setting Bazel's `--strip` flag will override
+`--linkopt=-Wl,--strip-all`, so you should only set one or the other.
+
+If you are only building a single binary and want all symbols stripped, you could also
+pass `--stripopt=--strip-all` and explicitly build the
+`//foo:bar.stripped` version of the target. As described in the section on
+`--stripopt`, this applies a strip action after the final binary is
+linked rather than including stripping in all of the build's link actions.
+
+#### `--stripopt={{ "<var>" }}strip-option{{ "</var>" }}` {:#stripopt}
+
+This is an additional option to pass to the `strip` command when generating
+a [`*.stripped` binary](/reference/be/c-cpp#cc_binary_implicit_outputs). The default
+is `-S -p`. This option can be used multiple times.
+
+Note: `--stripopt` does not apply to the stripping of the main
+binary with `[--strip](#flag--strip)=(always|sometimes)`.
+
+#### `--fdo_instrument={{ "<var>" }}profile-output-dir{{ "</var>" }}` {:#fdo-instrument}
+
+The `--fdo_instrument` option enables the generation of
+FDO (feedback directed optimization) profile output when the
+built C/C++ binary is executed. For GCC, the argument provided is used as a
+directory prefix for a per-object file directory tree of .gcda files
+containing profile information for each .o file.
+
+Once the profile data tree has been generated, the profile tree
+should be zipped up, and provided to the
+`--fdo_optimize={{ "<var>" }}profile-zip{{ "</var>" }}`
+Bazel option to enable the FDO-optimized compilation.
+
+For the LLVM compiler the argument is also the directory under which the raw LLVM profile
+data file(s) is dumped. For example:
+`--fdo_instrument={{ "<var>" }}/path/to/rawprof/dir/{{ "</var>" }}`.
+
+The options `--fdo_instrument` and `--fdo_optimize` cannot be used at the same time.
+
+#### `--fdo_optimize={{ "<var>" }}profile-zip{{ "</var>" }}` {:#fdo-optimize}
+
+The `--fdo_optimize` option enables the use of the
+per-object file profile information to perform FDO (feedback
+directed optimization) optimizations when compiling. For GCC, the argument
+provided is the zip file containing the previously-generated file tree
+of .gcda files containing profile information for each .o file.
+
+Alternatively, the argument provided can point to an auto profile
+identified by the extension .afdo.
+
+Note: This option also accepts labels that resolve to source files. You
+may need to add an `exports_files` directive to the corresponding package to
+make the file visible to Bazel.
+
+For the LLVM compiler the argument provided should point to the indexed LLVM
+profile output file prepared by the llvm-profdata tool, and should have a .profdata
+extension.
+
+The options `--fdo_instrument` and `--fdo_optimize` cannot be used at the same time.
+
+#### `--java_language_version={{ "<var>" }}version{{ "</var>" }}` {:#java-language-version}
+
+This option specifies the version of Java sources. For example:
+
+<pre>
+  % bazel build --java_language_version=8 java/com/example/common/foo:all
+</pre>
+
+compiles and allows only constructs compatible with Java 8 specification.
+Default value is 11. -->
+Possible values are: 8, 9, 10, 11, 17, and 21 and may be extended by
+registering custom Java toolchains using `default_java_toolchain`.
+
+#### `--tool_java_language_version={{ "<var>" }}version{{ "</var>" }}` {:#tool-java-language-version}
+
+The Java language version used to build tools that are executed during a build.
+Default value is 11.
+
+#### `--java_runtime_version={{ "<var>" }}version{{ "</var>" }}` {:#java-runtime-version}
+
+This option specifies the version of JVM to use to execute the code and run the tests. For
+example:
+
+<pre>
+  % bazel run --java_runtime_version=remotejdk_11 java/com/example/common/foo:java_application
+</pre>
+
+downloads JDK 11 from a remote repository and run the Java application using it.
+
+Default value is `local_jdk`.
+Possible values are: `local_jdk`, `local_jdk_{{ "<var>" }}version{{ "</var>" }}`,
+`remotejdk_11`, `remotejdk_17`, and `remotejdk_21`.
+You can extend the values by registering custom JVM using either
+`local_java_repository` or `remote_java_repository` repository rules.
+
+#### `--tool_java_runtime_version={{ "<var>" }}version{{ "</var>" }}` {:#tool-java-runtime-version}
+
+The version of JVM used to execute tools that are needed during a build.
+Default value is `remotejdk_11`.
+
+#### `--jvmopt={{ "<var>" }}jvm-option{{ "</var>" }}` {:#jvmopt}
+
+This option allows option arguments to be passed to the Java VM. It can be used
+with one big argument, or multiple times with individual arguments. For example:
+
+<pre>
+  % bazel build --jvmopt="-server -Xms256m" java/com/example/common/foo:all
+</pre>
+
+will use the server VM for launching all Java binaries and set the
+startup heap size for the VM to 256 MB.
+
+#### `--javacopt={{ "<var>" }}javac-option{{ "</var>" }}` {:#javacopt}
+
+This option allows option arguments to be passed to javac. It can be used
+with one big argument, or multiple times with individual arguments. For example:
+
+<pre>
+  % bazel build --javacopt="-g:source,lines" //myprojects:prog
+</pre>
+
+will rebuild a java_binary with the javac default debug info
+(instead of the bazel default).
+
+The option is passed to javac after the Bazel built-in default options for
+javac and before the per-rule options. The last specification of
+any option to javac wins. The default options for javac are:
+
+<pre>
+  -source 8 -target 8 -encoding UTF-8
+</pre>
+
+Note: Changing `--javacopt` settings will force a recompilation
+of all affected classes. Also note that javacopts parameters listed in
+specific java_library or java_binary build rules will be placed on the javac
+command line _after_ these options.
+
+#### `--strict_java_deps (default|strict|off|warn|error)` {:#strict-java-deps}
+
+This option controls whether javac checks for missing direct dependencies.
+Java targets must explicitly declare all directly used targets as
+dependencies. This flag instructs javac to determine the jars actually used
+for type checking each java file, and warn/error if they are not the output
+of a direct dependency of the current target.
+
+* `off` means checking is disabled.
+* `warn` means javac will generate standard java warnings of
+  type `[strict]` for each missing direct dependency.
+* `default`, `strict` and `error` all
+  mean javac will generate errors instead of warnings, causing the current
+  target to fail to build if any missing direct dependencies are found.
+  This is also the default behavior when the flag is unspecified.
+
+### Build semantics {:#build-semantics}
+
+These options affect the build commands and/or the output file contents.
+
+#### `--compilation_mode (fastbuild|opt|dbg)` (-c) {:#compilation-mode}
+
+The `--compilation_mode` option (often shortened to `-c`,
+especially `-c opt`) takes an argument of `fastbuild`, `dbg`
+or `opt`, and affects various C/C++ code-generation
+options, such as the level of optimization and the completeness of
+debug tables. Bazel uses a different output directory for each
+different compilation mode, so you can switch between modes without
+needing to do a full rebuild _every_ time.
+
+* `fastbuild` means build as fast as possible:
+  generate minimal debugging information (`-gmlt
+  -Wl,-S`), and don't optimize. This is the
+  default. Note: `-DNDEBUG` will **not** be set.
+* `dbg` means build with debugging enabled (`-g`),
+  so that you can use gdb (or another debugger).
+* `opt` means build with optimization enabled and
+  with `assert()` calls disabled (`-O2 -DNDEBUG`).
+  Debugging information will not be generated in `opt` mode
+  unless you also pass `--copt -g`.
+
+#### `--cpu={{ "<var>" }}cpu{{ "</var>" }}` {:#cpu}
+
+This option specifies the target CPU architecture to be used for
+the compilation of binaries during the build.
+
+Note: A particular combination of crosstool version, compiler version,
+and target CPU is allowed only if it has been specified in the currently
+used CROSSTOOL file.
+
+#### `--action_env={{ "<var>" }}VAR=VALUE{{ "</var>" }}` {:#action-env}
+
+Specifies the set of environment variables available during the execution of all actions.
+Variables can be either specified by name, in which case the value will be taken from the
+invocation environment, or by the `name=value` pair which sets the value independent of the
+invocation environment.
+
+This `--action_env` flag can be specified multiple times. If a value is assigned to the same
+variable across multiple `--action_env` flags, the latest assignment wins.
+
+#### `--experimental_action_listener={{ "<var>" }}label{{ "</var>" }}` {:#experimental-action-listener}
+
+Warning: Extra actions are deprecated. Use
+[aspects](/extending/aspects)
+instead.
+
+The `experimental_action_listener` option instructs Bazel to use
+details from the [`action_listener`](/reference/be/extra-actions#action_listener) rule specified by {{ "<var>" }}label{{ "</var>" }} to
+insert [`extra_actions`](/reference/be/extra-actions#extra_action) into the build graph.
+
+#### `--[no]experimental_extra_action_top_level_only` {:experimental-extra-action-top-level-only}
+
+Warning: Extra actions are deprecated. Use
+[aspects](/extending/aspects) instead.
+
+If this option is set to true, extra actions specified by the
+[ `--experimental_action_listener`](#experimental-action-listener) command
+line option will only be scheduled for top level targets.
+
+#### `--experimental_extra_action_filter={{ "<var>" }}regex{{ "</var>" }}` {:#experimental-extra-action-filter}
+
+Warning: Extra actions are deprecated. Use
+[aspects](/extending/aspects) instead.
+
+The `experimental_extra_action_filter` option instructs Bazel to
+filter the set of targets to schedule `extra_actions` for.
+
+This flag is only applicable in combination with the
+[`--experimental_action_listener`](#experimental-action-listener) flag.
+
+By default all `extra_actions` in the transitive closure of the
+requested targets-to-build get scheduled for execution.
+`--experimental_extra_action_filter` will restrict scheduling to
+`extra_actions` of which the owner's label matches the specified
+regular expression.
+
+The following example will limit scheduling of `extra_actions`
+to only apply to actions of which the owner's label contains '/bar/':
+
+<pre>% bazel build --experimental_action_listener=//test:al //foo/... \
+  --experimental_extra_action_filter=.*/bar/.*
+</pre>
+
+#### `--host_cpu={{ "<var>" }}cpu{{ "</var>" }}` {:#host-cpu}
+
+This option specifies the name of the CPU architecture that should be
+used to build host tools.
+
+#### `--android_platforms={{ "<var>" }}platform[,platform]*{{ "</var>" }}` {:#android-platforms}
+
+The platforms to build the transitive `deps` of
+`android_binary` rules (specifically for native dependencies like C++). For
+example, if a `cc_library` appears in the transitive `deps` of an
+`android_binary` rule it is be built once for each platform specified with
+`--android_platforms` for the `android_binary` rule, and included in the final
+output.
+
+There is no default value for this flag: a custom Android platform must be
+defined and used.
+
+One `.so` file is created and packaged in the APK for each platform specified
+with `--android_platforms`. The `.so` file's name prefixes the name of the
+`android_binary` rule with "lib". For example, if the name of the
+`android_binary` is "foo", then the file is `libfoo.so`.
+
+#### `--per_file_copt={{ "<var>" }}[+-]regex[,[+-]regex]...@option[,option]...{{ "</var>" }}` {:#per-file-copt}
+
+When present, any C++ file with a label or an execution path matching one of the inclusion regex
+expressions and not matching any of the exclusion expressions will be built
+with the given options. The label matching uses the canonical form of the label
+(i.e //`package`:`label_name`).
+
+The execution path is the relative path to your workspace directory including the base name
+(including extension) of the C++ file. It also includes any platform dependent prefixes.
+
+Note: If only one of the label or the execution path matches the options will be used.
+
+To match the generated files (such as genrule outputs)
+Bazel can only use the execution path. In this case the regexp shouldn't start with '//'
+since that doesn't match any execution paths. Package names can be used like this:
+`--per_file_copt=base/.*\.pb\.cc@-g0`. This will match every
+`.pb.cc` file under a directory called `base`.
+
+This option can be used multiple times.
+
+The option is applied regardless of the compilation mode used. For example, it is possible
+to compile with `--compilation_mode=opt` and selectively compile some
+files with stronger optimization turned on, or with optimization disabled.
+
+**Caveat**: If some files are selectively compiled with debug symbols the symbols
+might be stripped during linking. This can be prevented by setting
+`--strip=never`.
+
+**Syntax**: `[+-]regex[,[+-]regex]...@option[,option]...` Where
+`regex` stands for a regular expression that can be prefixed with
+a `+` to identify include patterns and with `-` to identify
+exclude patterns. `option` stands for an arbitrary option that is passed
+to the C++ compiler. If an option contains a `,` it has to be quoted like so
+`\,`. Options can also contain `@`, since only the first
+`@` is used to separate regular expressions from options.
+
+**Example**:
+`--per_file_copt=//foo:.*\.cc,-//foo:file\.cc@-O0,-fprofile-arcs`
+adds the `-O0` and the `-fprofile-arcs` options to the command
+line of the C++ compiler for all `.cc` files in `//foo/` except `file.cc`.
+
+#### `--dynamic_mode={{ "<var>" }}mode{{ "</var>" }}` {:#dynamic-mode}
+
+Determines whether C++ binaries will be linked dynamically, interacting with
+the [linkstatic attribute](/reference/be/c-cpp#cc_binary.linkstatic) on build rules.
+
+Modes:
+
+* `default`: Allows bazel to choose whether to link dynamically.
+  See [linkstatic](/reference/be/c-cpp#cc_binary.linkstatic) for more
+  information.
+* `fully`: Links all targets dynamically. This will speed up
+  linking time, and reduce the size of the resulting binaries.
+* `off`: Links all targets in
+  [mostly static](/reference/be/c-cpp#cc_binary.linkstatic) mode.
+  If `-static` is set in linkopts, targets will change to fully static.
+
+#### `--fission (yes|no|[dbg][,opt][,fastbuild])` {:#fission}
+
+Enables [Fission](https://gcc.gnu.org/wiki/DebugFission){: .external},
+which writes C++ debug information to dedicated .dwo files instead of .o files, where it would
+otherwise go. This substantially reduces the input size to links and can reduce link times.
+
+When set to `[dbg][,opt][,fastbuild]` (example:
+`--fission=dbg,fastbuild`), Fission is enabled
+only for the specified set of compilation modes. This is useful for bazelrc
+settings. When set to `yes`, Fission is enabled
+universally. When set to `no`, Fission is disabled
+universally. Default is <code class='flag'>no</code>.
+
+#### `--force_ignore_dash_static` {:#force-ignore-dash-static}
+
+If this flag is set, any `-static` options in linkopts of
+`cc_*` rules BUILD files are ignored. This is only intended as a
+workaround for C++ hardening builds.
+
+#### `--[no]force_pic` {:#force-pic}
+
+If enabled, all C++ compilations produce position-independent code ("-fPIC"),
+links prefer PIC pre-built libraries over non-PIC libraries, and links produce
+position-independent executables ("-pie"). Default is disabled.
+
+Note: Dynamically linked binaries (for example `--dynamic_mode fully`)
+generate PIC code regardless of this flag's setting. So this flag is for cases
+where users want PIC code explicitly generated for static links.
+
+#### `--android_resource_shrinking` {:#flag--android_resource_shrinking}
+
+Selects whether to perform resource shrinking for android_binary rules. Sets the default for the
+[shrink_resources attribute](/reference/be/android#android_binary.shrink_resources) on
+android_binary rules; see the documentation for that rule for further details. Defaults to off.
+
+#### `--custom_malloc={{ "<var>" }}malloc-library-target{{ "</var>" }}` {:#custom-malloc}
+
+When specified, always use the given malloc implementation, overriding all
+`malloc="target"` attributes, including in those targets that use the
+default (by not specifying any `malloc`).
+
+#### `--crosstool_top={{ "<var>" }}label{{ "</var>" }}` {:#crosstool-top}
+
+This option specifies the location of the crosstool compiler suite
+to be used for all C++ compilation during a build. Bazel will look in that
+location for a CROSSTOOL file and uses that to automatically determine
+settings for `--compiler`.
+
+#### `--host_crosstool_top={{ "<var>" }}label{{ "</var>" }}` {:#host-crosstool-top}
+
+If not specified, Bazel uses the value of `--crosstool_top` to compile
+code in the exec configuration, such as tools run during the build. The main purpose of this flag
+is to enable cross-compilation.
+
+#### `--apple_crosstool_top={{ "<var>" }}label{{ "</var>" }}` {:#apple-crosstool-top}
+
+The crosstool to use for compiling C/C++ rules in the transitive `deps` of
+objc_*, ios__*, and apple_* rules. For those targets, this flag overwrites
+`--crosstool_top`.
+
+#### `--compiler={{ "<var>" }}version{{ "</var>" }}` {:#compiler}
+
+This option specifies the C/C++ compiler version (such as `gcc-4.1.0`)
+to be used for the compilation of binaries during the build. If you want to
+build with a custom crosstool, you should use a CROSSTOOL file instead of
+specifying this flag.
+
+Note: Only certain combinations of crosstool version, compiler version,
+and target CPU are allowed.
+
+#### `--android_sdk={{ "<var>" }}label{{ "</var>" }}` {:#android-sdk}
+
+Deprecated. This shouldn't be directly specified.
+
+This option specifies the Android SDK/platform toolchain
+and Android runtime library that will be used to build any Android-related
+rule.
+
+The Android SDK will be automatically selected if an `android_sdk_repository`
+rule is defined in the WORKSPACE file.
+
+#### `--java_toolchain={{ "<var>" }}label{{ "</var>" }}` {:#java-toolchain}
+
+No-op. Kept only for backwards compatibility.
+
+#### `--host_java_toolchain={{ "<var>" }}label{{ "</var>" }}` {:#host-java-toolchain}
+
+No-op. Kept only for backwards compatibility.
+
+#### `--javabase=({{ "<var>" }}label{{ "</var>" }})` {:#javabase}
+
+No-op. Kept only for backwards compatibility.
+
+#### `--host_javabase={{ "<var>" }}label{{ "</var>" }}` {:#host-javabase}
+
+No-op. Kept only for backwards compatibility.
+
+### Execution strategy {:#execution-strategy}
+
+These options affect how Bazel will execute the build.
+They should not have any significant effect on the output files
+generated by the build. Typically their main effect is on the
+speed of the build.
+
+#### `--spawn_strategy={{ "<var>" }}strategy{{ "</var>" }}` {:#spawn-strategy}
+
+This option controls where and how commands are executed.
+
+* `standalone` causes commands to be executed as local subprocesses. This value is
+  deprecated. Please use `local` instead.
+* `sandboxed` causes commands to be executed inside a sandbox on the local machine.
+  This requires that all input files, data dependencies and tools are listed as direct
+  dependencies in the `srcs`, `data` and `tools` attributes.
+  Bazel enables local sandboxing by default, on systems that support sandboxed execution.
+* `local` causes commands to be executed as local subprocesses.
+* `worker` causes commands to be executed using a persistent worker, if available.
+* `docker` causes commands to be executed inside a docker sandbox on the local machine.
+  This requires that docker is installed.
+* `remote` causes commands to be executed remotely; this is only available if a
+  remote executor has been configured separately.
+
+#### `--strategy {{ "<var>" }}mnemonic{{ "</var>" }}={{ "<var>" }}strategy{{ "</var>" }}` {:#strategy}
+
+This option controls where and how commands are executed, overriding the
+[--spawn_strategy](#spawn-strategy) (and
+[--genrule_strategy](#genrule-strategy) with mnemonic
+Genrule) on a per-mnemonic basis. See
+[--spawn_strategy](#spawn-strategy) for the supported
+strategies and their effects.
+
+#### `--strategy_regexp={{ "<var>" }}<filter,filter,...>=<strategy>{{ "</var>" }}` {:#strategy-regexp}
+
+This option specifies which strategy should be used to execute commands that have descriptions
+matching a certain `regex_filter`. See
+[--per_file_copt](#per-file-copt) for details on
+regex_filter matching. See
+[--spawn_strategy](#spawn-strategy) for the supported
+strategies and their effects.
+
+The last `regex_filter` that matches the description is used. This option overrides
+other flags for specifying strategy.
+
+* Example: `--strategy_regexp=//foo.*\\.cc,-//foo/bar=local` means to run actions using
+  `local` strategy if their descriptions match //foo.*.cc but not //foo/bar.
+* Example:
+  `--strategy_regexp='Compiling.*/bar=local' --strategy_regexp=Compiling=sandboxed`
+  runs 'Compiling //foo/bar/baz' with the `sandboxed` strategy, but reversing
+  the order runs it with `local`.
+* Example: `--strategy_regexp='Compiling.*/bar=local,sandboxed'` runs
+  'Compiling //foo/bar/baz' with the `local` strategy and falls back to
+  `sandboxed` if it fails.
+
+#### `--genrule_strategy={{ "<var>" }}strategy{{ "</var>" }}` {:#genrule-strategy}
+
+This is a deprecated short-hand for `--strategy=Genrule={{ "<var>" }}strategy{{ "</var>" }}`.
+
+#### `--jobs={{ "<var>" }}n{{ "</var>" }}` (-j) {:#jobs}
+
+This option, which takes an integer argument, specifies a limit on
+the number of jobs that should be executed concurrently during the
+execution phase of the build.
+
+Note : The number of concurrent jobs that Bazel will run
+is determined not only by the `--jobs` setting, but also
+by Bazel's scheduler, which tries to avoid running concurrent jobs
+that will use up more resources (RAM or CPU) than are available,
+based on some (very crude) estimates of the resource consumption
+of each job. The behavior of the scheduler can be controlled by
+the `--local_ram_resources` option.
+
+#### `--progress_report_interval={{ "<var>" }}n{{ "</var>" }}` {:progress-report-interval}
+
+Bazel periodically prints a progress report on jobs that are not
+finished yet (such as long running tests). This option sets the
+reporting frequency, progress will be printed every `n`
+seconds.
+
+The default is 0, that means an incremental algorithm: the first
+report will be printed after 10 seconds, then 30 seconds and after
+that progress is reported once every minute.
+
+When bazel is using cursor control, as specified by
+[`--curses`](#curses), progress is reported every second.
+
+#### `--local_{ram,cpu}_resources {{ "<var>" }}resources or resource expression{{ "</var>" }}` {:#local-resources}
+
+These options specify the amount of local resources (RAM in MB and number of CPU logical cores)
+that Bazel can take into consideration when scheduling build and test activities to run locally. They take
+an integer, or a keyword (HOST_RAM or HOST_CPUS) optionally followed by `[-|*`float`]`
+(for example, `--local_cpu_resources=2`, `--local_ram_resources=HOST_RAM*.5`,
+`--local_cpu_resources=HOST_CPUS-1`).
+The flags are independent; one or both may be set. By default, Bazel estimates
+the amount of RAM and number of CPU cores directly from the local system's configuration.
+
+#### `--[no]build_runfile_links` {:#build-runfile-links}
+
+This option, which is enabled by default, specifies whether the runfiles
+symlinks for tests and binaries should be built in the output directory.
+Using `--nobuild_runfile_links` can be useful
+to validate if all targets compile without incurring the overhead
+for building the runfiles trees.
+
+When tests (or applications) are executed, their run-time data
+dependencies are gathered together in one place. Within Bazel's
+output tree, this "runfiles" tree is typically rooted as a sibling of
+the corresponding binary or test.
+During test execution, runfiles may be accessed using paths of the form
+`$TEST_SRCDIR/{{ "<var>" }}canonical_repo_name{{ "</var>" }}/{{ "<var>" }}packagename{{ "</var>" }}/{{ "<var>" }}filename{{ "</var>" }}`.
+The runfiles tree ensures that tests have access to all the files
+upon which they have a declared dependence, and nothing more. By
+default, the runfiles tree is implemented by constructing a set of
+symbolic links to the required files. As the set of links grows, so
+does the cost of this operation, and for some large builds it can
+contribute significantly to overall build time, particularly because
+each individual test (or application) requires its own runfiles tree.
+
+#### `--[no]build_runfile_manifests` {:#build-runfile-manifests}
+
+This option, which is enabled by default, specifies whether runfiles manifests
+should be written to the output tree.
+Disabling it implies `--nobuild_runfile_links`.
+
+It can be disabled when executing tests remotely, as runfiles trees will
+be created remotely from in-memory manifests.
+
+#### `--[no]discard_analysis_cache` {:#discard-analysis-cache}
+
+When this option is enabled, Bazel will discard the analysis cache
+right before execution starts, thus freeing up additional memory
+(around 10%) for the [execution phase](/run/build#execution).
+The drawback is that further incremental builds will be slower. See also
+[memory-saving mode](/configure/memory).
+
+#### `--[no]keep_going`  (-k) {:#keep-going}
+
+As in GNU Make, the execution phase of a build stops when the first
+error is encountered. Sometimes it is useful to try to build as
+much as possible even in the face of errors. This option enables
+that behavior, and when it is specified, the build will attempt to
+build every target whose prerequisites were successfully built, but
+will ignore errors.
+
+While this option is usually associated with the execution phase of
+a build, it also affects the analysis phase: if several targets are
+specified in a build command, but only some of them can be
+successfully analyzed, the build will stop with an error
+unless `--keep_going` is specified, in which case the
+build will proceed to the execution phase, but only for the targets
+that were successfully analyzed.
+
+#### `--[no]use_ijars` {:#use-ijars}
+
+This option changes the way `java_library` targets are
+compiled by Bazel. Instead of using the output of a
+`java_library` for compiling dependent
+`java_library` targets, Bazel will create interface jars
+that contain only the signatures of non-private members (public,
+protected, and default (package) access methods and fields) and use
+the interface jars to compile the dependent targets. This makes it
+possible to avoid recompilation when changes are only made to
+method bodies or private members of a class.
+
+Note: Using `--use_ijars` might give you a different
+error message when you are accidentally referring to a non visible
+member of another class: Instead of getting an error that the member
+is not visible you will get an error that the member does not exist.
+Changing the `--use_ijars` setting will force a recompilation of all affected
+classes.
+
+#### `--[no]interface_shared_objects` {:#interface-shared-objects}
+
+This option enables _interface shared objects_, which makes binaries and
+other shared libraries depend on the _interface_ of a shared object,
+rather than its implementation. When only the implementation changes, Bazel
+can avoid rebuilding targets that depend on the changed shared library
+unnecessarily.
+
+### Output selection {:#output-selection}
+
+These options determine what to build or test.
+
+#### `--[no]build` {:#build}
+
+This option causes the execution phase of the build to occur; it is
+on by default. When it is switched off, the execution phase is
+skipped, and only the first two phases, loading and analysis, occur.
+
+This option can be useful for validating BUILD files and detecting
+errors in the inputs, without actually building anything.
+
+#### `--[no]build_tests_only` {:#build-tests-only}
+
+If specified, Bazel will build only what is necessary to run the `*_test`
+and `test_suite` rules that were not filtered due to their
+[size](#test-size-filters),
+[timeout](#test-timeout-filters),
+[tag](#test-tag-filters), or
+[language](#test-lang-filters).
+If specified, Bazel will ignore other targets specified on the command line.
+By default, this option is disabled and Bazel will build everything
+requested, including `*_test` and `test_suite` rules that are filtered out from
+testing. This is useful because running
+`bazel test --build_tests_only foo/...` may not detect all build
+breakages in the `foo` tree.
+
+#### `--[no]check_up_to_date` {:#check-up-to-date}
+
+This option causes Bazel not to perform a build, but merely check
+whether all specified targets are up-to-date. If so, the build
+completes successfully, as usual. However, if any files are out of
+date, instead of being built, an error is reported and the build
+fails. This option may be useful to determine whether a build has
+been performed more recently than a source edit (for example, for pre-submit
+checks) without incurring the cost of a build.
+
+See also [`--check_tests_up_to_date`](#check-tests-up-to-date).
+
+#### `--[no]compile_one_dependency` {:#compile-one-dependency}
+
+Compile a single dependency of the argument files. This is useful for
+syntax checking source files in IDEs, for example, by rebuilding a single
+target that depends on the source file to detect errors as early as
+possible in the edit/build/test cycle. This argument affects the way all
+non-flag arguments are interpreted: each argument must be a
+file target label or a plain filename relative to the current working
+directory, and one rule that depends on each source filename is built. For
+C++ and Java
+sources, rules in the same language space are preferentially chosen. For
+multiple rules with the same preference, the one that appears first in the
+BUILD file is chosen. An explicitly named target pattern which does not
+reference a source file results in an error.
+
+#### `--save_temps` {:#save-temps}
+
+The `--save_temps` option causes temporary outputs from the compiler to be
+saved. These include .s files (assembler code), .i (preprocessed C) and .ii
+(preprocessed C++) files. These outputs are often useful for debugging. Temps will only be
+generated for the set of targets specified on the command line.
+
+Note: The implementation of `--save_temps` does not use the compiler's
+`-save-temps` flag. Instead, there are two passes, one with `-S`
+and one with `-E`. A consequence of this is that if your build fails,
+Bazel may not yet have produced the ".i" or ".ii" and ".s" files.
+If you're trying to use `--save_temps` to debug a failed compilation,
+you may need to also use `--keep_going` so that Bazel will still try to
+produce the preprocessed files after the compilation fails.
+
+The `--save_temps` flag currently works only for cc_* rules.
+
+To ensure that Bazel prints the location of the additional output files, check that
+your [`--show_result {{ "<var>" }}n{{ "</var>" }}`](#show-result)
+setting is high enough.
+
+#### `--build_tag_filters={{ "<var>" }}tag[,tag]*{{ "</var>" }}` {:#build-tag-filters}
+
+If specified, Bazel will build only targets that have at least one required tag
+(if any of them are specified) and does not have any excluded tags. Build tag
+filter is specified as comma delimited list of tag keywords, optionally
+preceded with '-' sign used to denote excluded tags. Required tags may also
+have a preceding '+' sign.
+
+When running tests, Bazel ignores `--build_tag_filters` for test targets,
+which are built and run even if they do not match this filter. To avoid building them, filter
+test targets using `--test_tag_filters` or by explicitly excluding them.
+
+#### `--test_size_filters={{ "<var>" }}size[,size]*{{ "</var>" }}` {:#test-size-filters}
+
+If specified, Bazel will test (or build if `--build_tests_only`
+is also specified) only test targets with the given size. Test size filter
+is specified as comma delimited list of allowed test size values (small,
+medium, large or enormous), optionally preceded with '-' sign used to denote
+excluded test sizes. For example,
+
+<pre>
+  % bazel test --test_size_filters=small,medium //foo:all
+</pre>
+
+and
+
+<pre>
+  % bazel test --test_size_filters=-large,-enormous //foo:all
+</pre>
+
+will test only small and medium tests inside //foo.
+
+By default, test size filtering is not applied.
+
+#### `--test_timeout_filters={{ "<var>" }}timeout[,timeout]*{{ "</var>" }}` {:#test-timeout-filters}
+
+If specified, Bazel will test (or build if `--build_tests_only`
+is also specified) only test targets with the given timeout. Test timeout filter
+is specified as comma delimited list of allowed test timeout values (short,
+moderate, long or eternal), optionally preceded with '-' sign used to denote
+excluded test timeouts. See [--test_size_filters](#test-size-filters)
+for example syntax.
+
+By default, test timeout filtering is not applied.
+
+#### `--test_tag_filters={{ "<var>" }}tag[,tag]*{{ "</var>" }}` {:#test-tag-filters}
+
+If specified, Bazel will test (or build if `--build_tests_only`
+is also specified) only test targets that have at least one required tag
+(if any of them are specified) and does not have any excluded tags. Test tag
+filter is specified as comma delimited list of tag keywords, optionally
+preceded with '-' sign used to denote excluded tags. Required tags may also
+have a preceding '+' sign.
+
+For example,
+
+<pre>
+  % bazel test --test_tag_filters=performance,stress,-flaky //myproject:all
+</pre>
+
+will test targets that are tagged with either `performance` or
+`stress` tag but are **not** tagged with the `flaky` tag.
+
+By default, test tag filtering is not applied. Note that you can also filter
+on test's `size` and `local` tags in
+this manner.
+
+#### `--test_lang_filters={{ "<var>" }}string[,string]*{{ "</var>" }}` {:#test-lang-filters}
+
+Specifies a comma-separated list of strings referring to names of test rule
+classes. To refer to the rule class `foo_test`, use the string "foo". Bazel will
+test (or build if `--build_tests_only` is also specified) only
+targets of the referenced rule classes. To instead exclude those targets, use
+the string "-foo". For example,
+
+</p>
+<pre>
+  % bazel test --test_lang_filters=foo,bar //baz/...
+</pre>
+<p>
+  will test only targets that are instances of `foo_test` or `bar_test` in
+  `//baz/...`, while
+</p>
+<pre>
+  % bazel test --test_lang_filters=-foo,-bar //baz/...
+</pre>
+<p>
+  will test all the targets in `//baz/...` except for the `foo_test` and
+  `bar_test` instances.
+</p>
+
+Tip: You can use `bazel query --output=label_kind "//p:t"` to
+learn the rule class name of the target `//p:t`. And you can
+look at the pair of instantiation stacks in the output of
+`bazel query --output=build "//p:t"` to learn why that target
+is an instance of that rule class.
+
+Warning: The option name "--test_lang_filter" is vestigal and is therefore
+unfortunately misleading; don't make assumptions about the semantics based on
+the name.
+
+#### `--test_filter={{ "<var>" }}filter-expression{{ "</var>" }}` {:#test-filter}
+
+Specifies a filter that the test runner may use to pick a subset of tests for
+running. All targets specified in the invocation are built, but depending on
+the expression only some of them may be executed; in some cases, only certain
+test methods are run.
+
+The particular interpretation of {{ "<var>" }}filter-expression{{ "</var>" }} is up to
+the test framework responsible for running the test. It may be a glob,
+substring, or regexp. `--test_filter` is a convenience
+over passing different `--test_arg` filter arguments,
+but not all frameworks support it.
+
+### Verbosity {:#verbosity}
+
+These options control the verbosity of Bazel's output,
+either to the terminal, or to additional log files.
+
+#### `--explain={{ "<var>" }}logfile{{ "</var>" }}` {:#explain}
+
+This option, which requires a filename argument, causes the
+dependency checker in `bazel build`'s execution phase to
+explain, for each build step, either why it is being executed, or
+that it is up-to-date. The explanation is written
+to _logfile_.
+
+If you are encountering unexpected rebuilds, this option can help to
+understand the reason. Add it to your `.bazelrc` so that
+logging occurs for all subsequent builds, and then inspect the log
+when you see an execution step executed unexpectedly. This option
+may carry a small performance penalty, so you might want to remove
+it when it is no longer needed.
+
+#### `--verbose_explanations` {:#verbose-explanations}
+
+This option increases the verbosity of the explanations generated
+when the [--explain](#explain) option is enabled.
+
+In particular, if verbose explanations are enabled,
+and an output file is rebuilt because the command used to
+build it has changed, then the output in the explanation file will
+include the full details of the new command (at least for most
+commands).
+
+Using this option may significantly increase the length of the
+generated explanation file and the performance penalty of using
+`--explain`.
+
+If `--explain` is not enabled, then
+`--verbose_explanations` has no effect.
+
+#### `--profile={{ "<var>" }}file{{ "</var>" }}` {:#profile}
+
+This option, which takes a filename argument, causes Bazel to write
+profiling data into a file. The data then can be analyzed or parsed using the
+`bazel analyze-profile` command. The Build profile can be useful in
+understanding where Bazel's `build` command is spending its time.
+
+#### `--[no]show_loading_progress` {:#show-loading-progress}
+
+This option causes Bazel to output package-loading progress
+messages. If it is disabled, the messages won't be shown.
+
+#### `--[no]show_progress` {:#show-progress}
+
+This option causes progress messages to be displayed; it is on by
+default. When disabled, progress messages are suppressed.
+
+#### `--show_progress_rate_limit={{ "<var>" }}n{{ "</var>" }}` {:#show-progress-rate}
+
+This option causes bazel to display at most one progress message per `n` seconds,
+where {{ "<var>" }}n{{ "</var>" }} is a real number.
+The default value for this option is 0.02, meaning bazel will limit the progress
+messages to one per every 0.02 seconds.
+
+#### `--show_result={{ "<var>" }}n{{ "</var>" }}` {:#show-result}
+
+This option controls the printing of result information at the end
+of a `bazel build` command. By default, if a single
+build target was specified, Bazel prints a message stating whether
+or not the target was successfully brought up-to-date, and if so,
+the list of output files that the target created. If multiple
+targets were specified, result information is not displayed.
+
+While the result information may be useful for builds of a single
+target or a few targets, for large builds (such as an entire top-level
+project tree), this information can be overwhelming and distracting;
+this option allows it to be controlled. `--show_result`
+takes an integer argument, which is the maximum number of targets
+for which full result information should be printed. By default,
+the value is 1. Above this threshold, no result information is
+shown for individual targets. Thus zero causes the result
+information to be suppressed always, and a very large value causes
+the result to be printed always.
+
+Users may wish to choose a value in-between if they regularly
+alternate between building a small group of targets (for example,
+during the compile-edit-test cycle) and a large group of targets
+(for example, when establishing a new workspace or running
+regression tests). In the former case, the result information is
+very useful whereas in the latter case it is less so. As with all
+options, this can be specified implicitly via
+the [`.bazelrc`](/run/bazelrc) file.
+
+The files are printed so as to make it easy to copy and paste the
+filename to the shell, to run built executables. The "up-to-date"
+or "failed" messages for each target can be easily parsed by scripts
+which drive a build.
+
+#### `--sandbox_debug` {:#sandbox-debug}
+
+This option causes Bazel to print extra debugging information when using sandboxing for action
+execution. This option also preserves sandbox directories, so that the files visible to actions
+during execution can be examined.
+
+#### `--subcommands` (`-s`) {:#subcommands}
+
+This option causes Bazel's execution phase to print the full command line
+for each command prior to executing it.
+
+<pre>
+  &gt;&gt;&gt;&gt;&gt; # //examples/cpp:hello-world [action 'Linking examples/cpp/hello-world']
+  (cd /home/johndoe/.cache/bazel/_bazel_johndoe/4c084335afceb392cfbe7c31afee3a9f/bazel && \
+    exec env - \
+    /usr/bin/gcc -o bazel-out/local-fastbuild/bin/examples/cpp/hello-world -B/usr/bin/ -Wl,-z,relro,-z,now -no-canonical-prefixes -pass-exit-codes -Wl,-S -Wl,@bazel-out/local_linux-fastbuild/bin/examples/cpp/hello-world-2.params)
+</pre>
+
+Where possible, commands are printed in a Bourne shell compatible syntax,
+so that they can be easily copied and pasted to a shell command prompt.
+(The surrounding parentheses are provided to protect your shell from the
+`cd` and `exec` calls; be sure to copy them!)
+However some commands are implemented internally within Bazel, such as
+creating symlink trees. For these there's no command line to display.
+
+`--subcommands=pretty_print` may be passed to print
+the arguments of the command as a list rather than as a single line. This may
+help make long command lines more readable.
+
+See also [--verbose_failures](#verbose-failures), below.
+
+For logging subcommands to a file in a tool-friendly format, see
+[--execution_log_json_file](/reference/command-line-reference#flag--execution_log_json_file)
+and
+[--execution_log_binary_file](/reference/command-line-reference#flag--execution_log_binary_file).
+
+#### `--verbose_failures` {:#verbose-failures}
+
+This option causes Bazel's execution phase to print the full command line
+for commands that failed. This can be invaluable for debugging a
+failing build.
+
+Failing commands are printed in a Bourne shell compatible syntax, suitable
+for copying and pasting to a shell prompt.
+
+### Workspace status {:#workspace-status}
+
+Use these options to "stamp" Bazel-built binaries: to embed additional information into the
+binaries, such as the source control revision or other workspace-related information. You can use
+this mechanism with rules that support the `stamp` attribute, such as
+`genrule`, `cc_binary`, and more.
+
+#### `--workspace_status_command={{ "<var>" }}program{{ "</var>" }}` {:#workspace-status-command}
+
+This flag lets you specify a binary that Bazel runs before each build. The program can report
+information about the status of the workspace, such as the current source control revision.
+
+The flag's value must be a path to a native program. On Linux/macOS this may be any executable.
+On Windows this must be a native binary, typically an ".exe", ".bat", or a ".cmd" file.
+
+The program should print zero or more key/value pairs to standard output, one entry on each line,
+then exit with zero (otherwise the build fails). The key names can be anything but they may only
+use upper case letters and underscores. The first space after the key name separates it from the
+value. The value is the rest of the line (including additional whitespaces). Neither the key nor
+the value may span multiple lines. Keys must not be duplicated.
+
+Bazel partitions the keys into two buckets: "stable" and "volatile". (The names "stable" and
+"volatile" are a bit counter-intuitive, so don't think much about them.)
+
+Bazel then writes the key-value pairs into two files:
+
+*   `bazel-out/stable-status.txt`
+    contains all keys and values where the key's name starts with `STABLE_`
+*   `bazel-out/volatile-status.txt`
+    contains the rest of the keys and their values
+
+The contract is:
+
+*   "stable" keys' values should change rarely, if possible. If the contents of
+    `bazel-out/stable-status.txt`
+      change, Bazel invalidates the actions that depend on them. In
+      other words, if a stable key's value changes, Bazel will rerun stamped actions.
+      Therefore the stable status should not contain things like timestamps, because they change all
+      the time, and would make Bazel rerun stamped actions with each build.
+
+    Bazel always outputs the following stable keys:
+    *   `BUILD_EMBED_LABEL`: value of `--embed_label`
+    *   `BUILD_HOST`: the name of the host machine that Bazel is running on
+    *   `BUILD_USER`: the name of the user that Bazel is running as
+*   "volatile" keys' values may change often. Bazel expects them to change all the time, like
+      timestamps do, and duly updates the
+    `bazel-out/volatile-status.txt`
+      file. In order to avoid
+      rerunning stamped actions all the time though, **Bazel pretends that the volatile file never
+      changes**. In other words, if the volatile status file is the only file whose contents has
+      changed, Bazel will not invalidate actions that depend on it. If other inputs of the actions
+      have changed, then Bazel reruns that action, and the action will see the updated volatile
+      status, but just the volatile status changing alone will not invalidate the action.
+
+    Bazel always outputs the following volatile keys:
+      *   `BUILD_TIMESTAMP`: time of the build in seconds since the Unix Epoch (the value
+        of `System.currentTimeMillis()` divided by a thousand)
+      *   `FORMATTED_DATE`: time of the build Formatted as
+        `yyyy MMM d HH mm ss EEE`(for example 2023 Jun 2 01 44 29 Fri) in UTC.
+
+On Linux/macOS you can pass `--workspace_status_command=/bin/true` to
+disable retrieving workspace status, because `true` does nothing, successfully (exits
+with zero) and prints no output. On Windows you can pass the path of MSYS's `true.exe`
+for the same effect.
+
+If the workspace status command fails (exits non-zero) for any reason, the build will fail.
+
+Example program on Linux using Git:
+
+<pre>
+#!/bin/bash
+echo "CURRENT_TIME $(date +%s)"
+echo "RANDOM_HASH $(cat /proc/sys/kernel/random/uuid)"
+echo "STABLE_GIT_COMMIT $(git rev-parse HEAD)"
+echo "STABLE_USER_NAME $USER"
+</pre>
+
+Pass this program's path with `--workspace_status_command`, and the stable status file
+will include the STABLE lines and the volatile status file will include the rest of the lines.
+
+#### `--[no]stamp` {:#stamp}
+
+This option, in conjunction with the `stamp` rule attribute, controls whether to
+embed build information in binaries.
+
+Stamping can be enabled or disabled explicitly on a per-rule basis using the
+`stamp` attribute. Please refer to the Build Encyclopedia for details. When
+a rule sets `stamp = -1` (the default for `*_binary` rules), this option
+determines whether stamping is enabled.
+
+Bazel never stamps binaries that are built for the exec configuration,
+regardless of this option or the `stamp` attribute. For rules that set `stamp =
+0` (the default for `*_test` rules), stamping is disabled regardless of
+`--[no]stamp`. Specifying `--stamp` does not force targets to be rebuilt if
+their dependencies have not changed.
+
+Setting `--nostamp` is generally desireable for build performance, as it
+reduces input volatility and maximizes build caching.
+
+### Platform {:#platform}
+
+Use these options to control the host and target platforms that configure how builds work, and to
+control what execution platforms and toolchains are available to Bazel rules.
+
+Please see background information on [Platforms](/extending/platforms) and [Toolchains](/extending/toolchains).
+
+#### `--platforms={{ "<var>" }}labels{{ "</var>" }}` {:#platforms}
+
+The labels of the platform rules describing the target platforms for the
+current command.
+
+#### `--host_platform={{ "<var>" }}label{{ "</var>" }}` {:#host-platform}
+
+The label of a platform rule that describes the host system.
+
+#### `--extra_execution_platforms={{ "<var>" }}labels{{ "</var>" }}` {:#extra-execution-platforms}
+
+The platforms that are available as execution platforms to run actions.
+Platforms can be specified by exact target, or as a target pattern. These
+platforms will be considered before those declared in MODULE.bazel files by
+[register_execution_platforms()](/rules/lib/globals/module#register_execution_platforms).
+This option accepts a comma-separated list of platforms in order of priority.
+If the flag is passed multiple times, the most recent overrides.
+
+#### `--extra_toolchains={{ "<var>" }}labels{{ "</var>" }}` {:#extra-toolchains}
+
+The toolchain rules to be considered during toolchain resolution. Toolchains
+can be specified by exact target, or as a target pattern. These toolchains will
+be considered before those declared in MODULE.bazel files by
+[register_toolchains()](/rules/lib/globals/module#register_toolchains).
+
+#### `--toolchain_resolution_debug={{ "<var>" }}regex{{ "</var>" }}` {:#toolchain-resolution-debug}
+
+Print debug information while finding toolchains if the toolchain type matches
+the regex. Multiple regexes can be separated by commas. The regex can be
+negated by using a `-` at the beginning. This might help developers
+of Bazel or Starlark rules with debugging failures due to missing toolchains.
+
+### Miscellaneous {:#miscellaneous}
+
+#### `--flag_alias={{ "<var>" }}alias_name=target_path{{ "</var>" }}` {:#flag-alias}
+
+A convenience flag used to bind longer Starlark build settings to a shorter name. For more
+details, see the
+[Starlark Configurations](/extending/config#using-build-setting-aliases).
+
+#### `--symlink_prefix={{ "<var>" }}string{{ "</var>" }}` {:#symlink-prefix}
+
+Changes the prefix of the generated convenience symlinks. The
+default value for the symlink prefix is `bazel-` which
+will create the symlinks `bazel-bin`, `bazel-testlogs`, and
+`bazel-genfiles`.
+
+If the symbolic links cannot be created for any reason, a warning is
+issued but the build is still considered a success. In particular,
+this allows you to build in a read-only directory or one that you have no
+permission to write into. Any paths printed in informational
+messages at the conclusion of a build will only use the
+symlink-relative short form if the symlinks point to the expected
+location; in other words, you can rely on the correctness of those
+paths, even if you cannot rely on the symlinks being created.
+
+Some common values of this option:
+
+*   **Suppress symlink creation:**
+      `--symlink_prefix=/` will cause Bazel to not
+      create or update any symlinks, including the `bazel-out` and
+      `bazel-<workspace>`
+      symlinks. Use this option to suppress symlink creation entirely.
+
+*   **Reduce clutter:**
+      `--symlink_prefix=.bazel/` will cause Bazel to create
+      symlinks called `bin` (etc) inside a hidden directory `.bazel`.
+
+#### `--platform_suffix={{ "<var>" }}string{{ "</var>" }}` {:#platform-suffix}
+
+Adds a suffix to the configuration short name, which is used to determine the
+output directory. Setting this option to different values puts the files into
+different directories, for example to improve cache hit rates for builds that
+otherwise clobber each others output files, or to keep the output files around
+for comparisons.
+
+#### `--default_visibility={{ "<var>" }}(private|public){{ "</var>" }}` {:#default-visibility}
+
+Temporary flag for testing bazel default visibility changes. Not intended for general use
+but documented for completeness' sake.
+
+#### `--starlark_cpu_profile=_file_` {:#starlark-cpu-profile}
+
+This flag, whose value is the name of a file, causes Bazel to gather
+statistics about CPU usage by all Starlark threads,
+and write the profile, in [pprof](https://github.com/google/pprof){: .external} format,
+to the named file.
+
+Use this option to help identify Starlark functions that
+make loading and analysis slow due to excessive computation. For example:
+
+<pre>
+$ bazel build --nobuild --starlark_cpu_profile=/tmp/pprof.gz my/project/...
+$ pprof /tmp/pprof.gz
+(pprof) top
+Type: CPU
+Time: Feb 6, 2020 at 12:06pm (PST)
+Duration: 5.26s, Total samples = 3.34s (63.55%)
+Showing nodes accounting for 3.34s, 100% of 3.34s total
+      flat  flat%   sum%        cum   cum%
+     1.86s 55.69% 55.69%      1.86s 55.69%  sort_source_files
+     1.02s 30.54% 86.23%      1.02s 30.54%  expand_all_combinations
+     0.44s 13.17% 99.40%      0.44s 13.17%  range
+     0.02s   0.6%   100%      3.34s   100%  sorted
+         0     0%   100%      1.38s 41.32%  my/project/main/BUILD
+         0     0%   100%      1.96s 58.68%  my/project/library.bzl
+         0     0%   100%      3.34s   100%  main
+</pre>
+
+For different views of the same data, try the `pprof` commands `svg`,
+`web`, and `list`.
+
+## Using Bazel for releases {:#bazel-for-releases}
+
+Bazel is used both by software engineers during the development
+cycle, and by release engineers when preparing binaries for deployment
+to production. This section provides a list of tips for release
+engineers using Bazel.
+
+### Significant options {:#significant-options}
+
+When using Bazel for release builds, the same issues arise as for other scripts
+that perform a build. For more details, see
+[Call Bazel from scripts](/run/scripts). In particular, the following options
+are strongly recommended:
+
+*   [`--bazelrc=/dev/null`](/run/bazelrc)
+*   [`--nokeep_state_after_build`](/reference/command-line-reference#flag--keep_state_after_build)
+
+These options are also important:
+
+*   [`--package_path`](#package-path)
+*   [`--symlink_prefix`](#symlink-prefix):
+    for managing builds for multiple configurations,
+    it may be convenient to distinguish each build
+    with a distinct identifier, such as "64bit" vs. "32bit". This option
+    differentiates the `bazel-bin` (etc.) symlinks.
+
+## Running tests {:#running-tests}
+
+To build and run tests with bazel, type `bazel test` followed by
+the name of the test targets.
+
+By default, this command performs simultaneous build and test
+activity, building all specified targets (including any non-test
+targets specified on the command line) and testing
+`*_test` and `test_suite` targets as soon as
+their prerequisites are built, meaning that test execution is
+interleaved with building. Doing so usually results in significant
+speed gains.
+
+### Options for `bazel test` {:#bazel-test-options}
+
+#### `--cache_test_results=(yes|no|auto)` (`-t`) {:#cache-test-results}
+
+If this option is set to 'auto' (the default) then Bazel will only rerun a test if any of the
+following conditions applies:
+
+*   Bazel detects changes in the test or its dependencies
+*   the test is marked as `external`
+*   multiple test runs were requested with `--runs_per_test`
+*   the test failed.
+
+If 'no', all tests will be executed unconditionally.
+
+If 'yes', the caching behavior will be the same as auto
+except that it may cache test failures and test runs with
+`--runs_per_test`.
+
+Note: Test results are _always_ saved in Bazel's output tree,
+regardless of whether this option is enabled, so
+you needn't have used `--cache_test_results` on the
+prior run(s) of `bazel test` in order to get cache hits.
+The option only affects whether Bazel will _use_ previously
+saved results, not whether it will save results of the current run.
+
+Users who have enabled this option by default in
+their `.bazelrc` file may find the
+abbreviations `-t` (on) or `-t-` (off)
+convenient for overriding the default on a particular run.
+
+#### `--check_tests_up_to_date` {:#check-tests-up-to-date}
+
+This option tells Bazel not to run the tests, but to merely check and report
+the cached test results. If there are any tests which have not been
+previously built and run, or whose tests results are out-of-date (for example, because
+the source code or the build options have changed), then Bazel will report
+an error message ("test result is not up-to-date"), will record the test's
+status as "NO STATUS" (in red, if color output is enabled), and will return
+a non-zero exit code.
+
+This option also implies
+[`--check_up_to_date`](#check-up-to-date) behavior.
+
+This option may be useful for pre-submit checks.
+
+#### `--test_verbose_timeout_warnings` {:#test-verbose-timeout-warnings}
+
+This option tells Bazel to explicitly warn the user if a test's timeout is
+significantly longer than the test's actual execution time. While a test's
+timeout should be set such that it is not flaky, a test that has a highly
+over-generous timeout can hide real problems that crop up unexpectedly.
+
+For instance, a test that normally executes in a minute or two should not have
+a timeout of ETERNAL or LONG as these are much, much too generous.
+
+This option is useful to help users decide on a good timeout value or
+sanity check existing timeout values.
+
+Note: Each test shard is allotted the timeout of the entire
+`XX_test` target. Using this option does not affect a test's timeout
+value, merely warns if Bazel thinks the timeout could be restricted further.
+
+#### `--[no]test_keep_going` {:#test-keep-going}
+
+By default, all tests are run to completion. If this flag is disabled,
+however, the build is aborted on any non-passing test. Subsequent build steps
+and test invocations are not run, and in-flight invocations are canceled.
+Do not specify both `--notest_keep_going` and `--keep_going`.
+
+#### `--flaky_test_attempts={{ "<var>" }}attempts{{ "</var>" }}` {:#flaky-test-attempts}
+
+This option specifies the maximum number of times a test should be attempted
+if it fails for any reason. A test that initially fails but eventually
+succeeds is reported as `FLAKY` on the test summary. It is,
+however, considered to be passed when it comes to identifying Bazel exit code
+or total number of passed tests. Tests that fail all allowed attempts are
+considered to be failed.
+
+By default (when this option is not specified, or when it is set to
+default), only a single attempt is allowed for regular tests, and
+3 for test rules with the `flaky` attribute set. You can specify
+an integer value to override the maximum limit of test attempts. Bazel allows
+a maximum of 10 test attempts in order to prevent abuse of the system.
+
+#### `--runs_per_test={{ "<var>" }}[regex@]number{{ "</var>" }}` {:#runs-per-test}
+
+This option specifies the number of times each test should be executed. All
+test executions are treated as separate tests (fallback functionality
+will apply to each of them independently).
+
+The status of a target with failing runs depends on the value of the
+`--runs_per_test_detects_flakes` flag:
+
+*  If absent, any failing run causes the entire test to fail.
+*  If present and two runs from the same shard return PASS and FAIL, the test
+   will receive a status of flaky (unless other failing runs cause it to
+   fail).
+
+If a single number is specified, all tests will run that many times.
+Alternatively, a regular expression may be specified using the syntax
+regex@number. This constrains the effect of `--runs_per_test` to targets
+which match the regex (`--runs_per_test=^//pizza:.*@4` runs all tests
+under `//pizza/` 4 times).
+This form of `--runs_per_test` may be specified more than once.
+
+#### `--[no]runs_per_test_detects_flakes` {:#run-per-test-detects-flakes}
+
+If this option is specified (by default it is not), Bazel will detect flaky
+test shards through `--runs_per_test`. If one or more runs for a single shard
+fail and one or more runs for the same shard pass, the target will be
+considered flaky with the flag. If unspecified, the target will report a
+failing status.
+
+#### `--test_summary={{ "<var>" }}output_style{{ "</var>" }}` {:#test-summary}
+
+Specifies how the test result summary should be displayed.
+
+*   `short` prints the results of each test along with the name of
+    the file containing the test output if the test failed. This is the default
+    value.
+*   `terse` like `short`, but even shorter: only print
+    information about tests which did not pass.
+*   `detailed` prints each individual test case that failed, not
+    only each test. The names of test output files are omitted.
+*   `none` does not print test summary.
+
+#### `--test_output={{ "<var>" }}output_style{{ "</var>" }}` {:#test-output}
+
+Specifies how test output should be displayed:
+
+*   `summary` shows a summary of whether each test passed or
+    failed. Also shows the output log file name for failed tests. The summary
+    will be printed at the end of the build (during the build, one would see
+    just simple progress messages when tests start, pass or fail).
+    This is the default behavior.
+*   `errors` sends combined stdout/stderr output from failed tests
+    only into the stdout immediately after test is completed, ensuring that
+    test output from simultaneous tests is not interleaved with each other.
+    Prints a summary at the build as per summary output above.
+*   `all` is similar to `errors` but prints output for
+    all tests, including those which passed.
+*   `streamed` streams stdout/stderr output from each test in
+    real-time.
+
+#### `--java_debug` {:#java-debug}
+
+This option causes the Java virtual machine of a java test to wait for a connection from a
+JDWP-compliant debugger before starting the test. This option implies `--test_output=streamed`.
+
+#### `--[no]verbose_test_summary` {:#verbose-test-summary}
+
+By default this option is enabled, causing test times and other additional
+information (such as test attempts) to be printed to the test summary. If
+`--noverbose_test_summary` is specified, test summary will
+include only test name, test status and cached test indicator and will
+be formatted to stay within 80 characters when possible.
+
+#### `--test_tmpdir={{ "<var>" }}path{{ "</var>" }}` {:#test-tmpdir}
+
+Specifies temporary directory for tests executed locally. Each test will be
+executed in a separate subdirectory inside this directory. The directory will
+be cleaned at the beginning of the each `bazel test` command.
+By default, bazel will place this directory under Bazel output base directory.
+
+Note: This is a directory for running tests, not storing test results
+(those are always stored under the `bazel-out` directory).
+
+#### `--test_timeout={{ "<var>" }}seconds{{ "</var>" }}` OR `--test_timeout={{ "<var>" }}seconds{{ "</var>" }},{{ "<var>" }}seconds{{ "</var>" }},{{ "<var>" }}seconds{{ "</var>" }},{{ "<var>" }}seconds{{ "</var>" }}` {:#test-timeout}
+
+Overrides the timeout value for all tests by using specified number of
+seconds as a new timeout value. If only one value is provided, then it will
+be used for all test timeout categories.
+
+Alternatively, four comma-separated values may be provided, specifying
+individual timeouts for short, moderate, long and eternal tests (in that
+order).
+In either form, zero or a negative value for any of the test sizes will
+be substituted by the default timeout for the given timeout categories as
+defined by the page [Writing Tests](/reference/test-encyclopedia).
+By default, Bazel will use these timeouts for all tests by
+inferring the timeout limit from the test's size whether the size is
+implicitly or explicitly set.
+
+Tests which explicitly state their timeout category as distinct from their
+size will receive the same value as if that timeout had been implicitly set by
+the size tag. So a test of size 'small' which declares a 'long' timeout will
+have the same effective timeout that a 'large' tests has with no explicit
+timeout.
+
+#### `--test_arg={{ "<var>" }}arg{{ "</var>" }}` {:#test-arg}
+
+Passes command-line options/flags/arguments to each test process. This
+option can be used multiple times to pass several arguments. For example,
+`--test_arg=--logtostderr --test_arg=--v=3`.
+
+Note that, unlike the `bazel run` command, you can't pass test arguments
+directly as in `bazel test -- target --logtostderr --v=3`. That's because
+extraneous arguments passed to `bazel test` are interpreted as additional test
+targets. That is, `--logtostderr` and `--v=3` would each be interpreted as a
+test target. This ambiguity doesn't exist for a `bazel run` command, which only
+accepts one target.
+
+`--test_arg` can be passed to a `bazel run` command, but it's ignored unless the
+target being run is a test target. (As with any other flag, if it's passed in a
+`bazel run` command after a `--` token, it's not processed by Bazel but
+forwarded verbatim to the executed target.)
+
+#### `--test_env={{ "<var>" }}variable{{ "</var>" }}=_value_` OR `--test_env={{ "<var>" }}variable{{ "</var>" }}` {:#test-env}
+
+Specifies additional variables that must be injected into the test
+environment for each test. If {{ "<var>" }}value{{ "</var>" }} is not specified it will be
+inherited from the shell environment used to start the `bazel test`
+command.
+
+The environment can be accessed from within a test by using
+`System.getenv("var")` (Java), `getenv("var")` (C or C++),
+
+#### `--run_under={{ "<var>" }}command-prefix{{ "</var>" }}` {:#test-run-under}
+
+This specifies a prefix that the test runner will insert in front
+of the test command before running it. The
+{{ "<var>" }}command-prefix{{ "</var>" }} is split into words using Bourne shell
+tokenization rules, and then the list of words is prepended to the
+command that will be executed.
+
+If the first word is a fully-qualified label (starts with
+`//`) it is built. Then the label is substituted by the
+corresponding executable location that is prepended to the command
+that will be executed along with the other words.
+
+Some caveats apply:
+
+*   The PATH used for running tests may be different than the PATH in your environment,
+    so you may need to use an **absolute path** for the `--run_under`
+    command (the first word in {{ "<var>" }}command-prefix{{ "</var>" }}).
+*   **`stdin` is not connected**, so `--run_under`
+    can't be used for interactive commands.
+
+Examples:
+
+<pre>
+        --run_under=/usr/bin/strace
+        --run_under='/usr/bin/strace -c'
+        --run_under=/usr/bin/valgrind
+        --run_under='/usr/bin/valgrind --quiet --num-callers=20'
+</pre>
+
+#### Test selection {:#test-selection}
+
+As documented under [Output selection options](#output-selection),
+you can filter tests by [size](#test-size-filters),
+[timeout](#test-timeout-filters),
+[tag](#test-tag-filters), or
+[language](#test-lang-filters). A convenience
+[general name filter](#test-filter) can forward particular
+filter args to the test runner.
+
+#### Other options for `bazel test` {:#bazel-test-other-options}
+
+The syntax and the remaining options are exactly like
+[`bazel build`](/run/build).
+
+## Running executables {:#running-executables}
+
+The `bazel run` command is similar to `bazel build`, except
+it is used to build _and run_ a single target. Here is a typical session
+(`//java/myapp:myapp` says hello and prints out its args):
+
+<pre>
+  % bazel run java/myapp:myapp -- --arg1 --arg2
+  INFO: Analyzed target //java/myapp:myapp (13 packages loaded, 27 targets configured).
+  INFO: Found 1 target...
+  Target //java/myapp:myapp up-to-date:
+    bazel-bin/java/myapp/myapp
+  INFO: Elapsed time: 14.290s, Critical Path: 5.54s, ...
+  INFO: Build completed successfully, 4 total actions
+  INFO: Running command line: bazel-bin/java/myapp/myapp &lt;args omitted&gt;
+  Hello there
+  $EXEC_ROOT/java/myapp/myapp
+  --arg1
+  --arg2
+</pre>
+
+Note: `--` is needed so that Bazel
+does not interpret `--arg1` and `--arg2` as
+Bazel options, but rather as part of the command line for running the binary.
+Additionally, Bazel will avoid logging these arguments to the console in case
+they contain sensitive information.
+
+`bazel run` is similar, but not identical, to directly invoking
+the binary built by Bazel and its behavior is different depending on whether the
+binary to be invoked is a test or not.
+
+When the binary is not a test, the current working directory will be the
+runfiles tree of the binary.
+
+When the binary is a test, the current working directory will be the exec root
+and a good-faith attempt is made to replicate the environment tests are usually
+run in. The emulation is not perfect, though, and tests that have multiple
+shards cannot be run this way (the
+`--test_sharding_strategy=disabled` command line option can be used
+to work around this)
+
+The following extra environment variables are also available to the binary:
+
+*   `BUILD_WORKSPACE_DIRECTORY`: the root of the workspace where the
+    build was run.
+*   `BUILD_WORKING_DIRECTORY`: the current working directory where
+    Bazel was run from.
+*   `BUILD_ID`: the build ID of the `bazel run` invocation. This is usually
+    unique, except if Bazel was run with `--script_path` and the resulting
+    script is re-used.
+*   `BUILD_EXECROOT`: the execution root of the `bazel run` invocation.
+
+These can be used, for example, to interpret file names on the command line in
+a user-friendly way.
+
+### Options for `bazel run` {:#bazel-run-options}
+
+#### `--run_under={{ "<var>" }}command-prefix{{ "</var>" }}` {:#run-run-under}
+
+This has the same effect as the `--run_under` option for
+`bazel test` ([see above](#test-run-under)),
+except that it applies to the command being run by `bazel
+run` rather than to the tests being run by `bazel test`
+and cannot run under label.
+
+#### Filtering logging outputs from Bazel
+
+When invoking a binary with `bazel run`, Bazel prints logging output from Bazel
+itself and the binary under invocation. To make the logs less noisy, you can
+suppress the outputs from Bazel itself with the `--ui_event_filters` and
+`--noshow_progress` flags.
+
+For example:
+`bazel run --ui_event_filters=-info,-stdout,-stderr --noshow_progress //java/myapp:myapp`
+
+### Executing tests {:#executing-tests}
+
+`bazel run` can also execute test binaries, which has the effect of
+running the test in a close approximation of the environment described at
+[Writing Tests](/reference/test-encyclopedia). Note that none of the
+`--test_*` arguments have an effect when running a test in this manner except
+`--test_arg` .
+
+## Cleaning build outputs {:#cleaning-build-outputs}
+
+### The `clean` command {:#clean}
+
+Bazel has a `clean` command, analogous to that of Make.
+It deletes the output directories for all build configurations performed
+by this Bazel instance, or the entire working tree created by this
+Bazel instance, and resets internal caches. If executed without any
+command-line options, then the output directory for all configurations
+will be cleaned.
+
+Recall that each Bazel instance is associated with a single workspace, thus the
+`clean` command will delete all outputs from all builds you've done
+with that Bazel instance in that workspace.
+
+To completely remove the entire working tree created by a Bazel
+instance,  you can specify the `--expunge` option. When
+executed with `--expunge`, the clean command simply
+removes the entire output base tree which, in addition to the build
+output, contains all temp files created by Bazel. It also
+stops the Bazel server after the clean, equivalent to the [`shutdown`](#shutdown) command. For example, to
+clean up all disk and memory traces of a Bazel instance, you could
+specify:
+
+<pre>
+  % bazel clean --expunge
+</pre>
+
+Alternatively, you can expunge in the background by using
+`--expunge_async`. It is safe to invoke a Bazel command
+in the same client while the asynchronous expunge continues to run.
+
+Note: This may introduce IO contention.
+
+The `clean` command is provided primarily as a means of
+reclaiming disk space for workspaces that are no longer needed.
+Bazel's incremental rebuilds may not be
+perfect so `clean` can be used to recover a consistent
+state when problems arise.
+
+Bazel's design is such that these problems are fixable and
+these bugs are a high priority to be fixed. If you
+ever find an incorrect incremental build, file a bug report, and report bugs in the tools
+rather than using `clean`.
+
+## Querying the dependency graph {:#querying-dependency-graph}
+
+Bazel includes a query language for asking questions about the
+dependency graph used during the build. The query language is used
+by two commands: query and cquery. The major difference between the
+two commands is that query runs after the [loading phase](/run/build#loading)
+and cquery runs after the [analysis phase](/run/build#analysis). These tools are an
+invaluable aid to many software engineering tasks.
+
+The query language is based on the idea of
+algebraic operations over graphs; it is documented in detail in
+
+[Bazel Query Reference](/query/language).
+Please refer to that document for reference, for
+examples, and for query-specific command-line options.
+
+The query tool accepts several command-line
+option. `--output` selects the output format.
+`--[no]keep_going` (disabled by default) causes the query
+tool to continue to make progress upon errors; this behavior may be
+disabled if an incomplete result is not acceptable in case of errors.
+
+The `--[no]tool_deps` option,
+enabled by default, causes dependencies in non-target configurations to be included in the
+dependency graph over which the query operates.
+
+The `--[no]implicit_deps` option, enabled by default, causes
+implicit dependencies to be included in the dependency graph over which the query operates. An
+implicit dependency is one that is not explicitly specified in the BUILD file
+but added by bazel.
+
+Example: "Show the locations of the definitions (in BUILD files) of
+all genrules required to build all the tests in the PEBL tree."
+
+<pre>
+  bazel query --output location 'kind(genrule, deps(kind(".*_test rule", foo/bar/pebl/...)))'
+</pre>
+
+## Querying the action graph {:#aquery}
+
+Caution: The aquery command is still experimental and its API will change.
+
+The `aquery` command allows you to query for actions in your build graph.
+It operates on the post-analysis configured target graph and exposes
+information about actions, artifacts and their relationships.
+
+The tool accepts several command-line options.
+`--output` selects the output format. The default output format
+(`text`) is human-readable, use `proto` or `textproto` for
+machine-readable format.
+Notably, the aquery command runs on top of a regular Bazel build and inherits
+the set of options available during a build.
+
+It supports the same set of functions that is also available to traditional
+`query` but `siblings`, `buildfiles` and
+`tests`.
+
+For more details, see [Action Graph Query](/query/aquery).
+
+## Miscellaneous commands and options {:#misc-commands-options}
+
+### `help` {:#help}
+
+The `help` command provides on-line help. By default, it
+shows a summary of available commands and help topics, as shown in
+[Building with Bazel](/run/build#quickstart).
+Specifying an argument displays detailed help for a particular
+topic. Most topics are Bazel commands, such as `build`
+or `query`, but there are some additional help topics
+that do not correspond to commands.
+
+#### `--[no]long` (`-l`) {:#long}
+
+By default, `bazel help [{{ "<var>" }}topic{{ "</var>" }}]` prints only a
+summary of the relevant options for a topic. If
+the `--long` option is specified, the type, default value
+and full description of each option is also printed.
+
+### `shutdown` {:#shutdown}
+
+Bazel server processes may be stopped by using the `shutdown`
+command. This command causes the Bazel server to exit as soon as it
+becomes idle (for example, after the completion of any builds or other
+commands that are currently in progress). For more details, see
+[Client/server implementation](/run/client-server).
+
+Bazel servers stop themselves after an idle timeout, so this command
+is rarely necessary; however, it can be useful in scripts when it is
+known that no further builds will occur in a given workspace.
+
+`shutdown` accepts one
+option, `--iff_heap_size_greater_than _n_`, which
+requires an integer argument (in MB). If specified, this makes the shutdown
+conditional on the amount of memory already consumed. This is
+useful for scripts that initiate a lot of builds, as any memory
+leaks in the Bazel server could cause it to crash spuriously on
+occasion; performing a conditional restart preempts this condition.
+
+### `info` {:#info}
+
+The `info` command prints various values associated with
+the Bazel server instance, or with a specific build configuration.
+(These may be used by scripts that drive a build.)
+
+The `info` command also permits a single (optional)
+argument, which is the name of one of the keys in the list below.
+In this case, `bazel info {{ "<var>" }}key{{ "</var>" }}` will print only
+the value for that one key. (This is especially convenient when
+scripting Bazel, as it avoids the need to pipe the result
+through `sed -ne /key:/s/key://p`:
+
+#### Configuration-independent data {:#configuration-independent-data}
+
+*   `release`: the release label for this Bazel
+    instance, or "development version" if this is not a released
+    binary.
+*   `workspace` the absolute path to the base workspace
+    directory.
+*   `install_base`: the absolute path to the installation
+    directory used by this Bazel instance for the current user. Bazel
+    installs its internally required executables below this directory.
+
+*   `output_base`: the absolute path to the base output
+    directory used by this Bazel instance for the current user and
+    workspace combination. Bazel puts all of its scratch and build
+    output below this directory.
+*   `execution_root`: the absolute path to the execution
+    root directory under output_base. This directory is the root for all files
+    accessible to commands executed during the build, and is the working
+    directory for those commands. If the workspace directory is writable, a
+    symlink named `bazel-<workspace>`
+    is placed there pointing to this directory.
+*   `output_path`: the absolute path to the output
+    directory beneath the execution root used for all files actually
+    generated as a result of build commands. If the workspace directory is
+    writable, a symlink named `bazel-out` is placed there pointing
+    to this directory.
+*   `server_pid`: the process ID of the Bazel server
+     process.
+*   `server_log`: the absolute path to the Bazel server's debug log file.
+    This file contains debugging information for all commands over the lifetime of the
+    Bazel server, and is intended for human consumption by Bazel developers and power users.
+*   `command_log`: the absolute path to the command log file;
+    this contains the interleaved stdout and stderr streams of the most recent
+    Bazel command. Note that running `bazel info` will overwrite the
+    contents of this file, since it then becomes the most recent Bazel command.
+    However, the location of the command log file will not change unless you
+    change the setting of the `--output_base` or
+    `--output_user_root` options.
+*   `used-heap-size`,
+      `committed-heap-size`,
+      `max-heap-size`: reports various JVM heap size
+    parameters. Respectively: memory currently used, memory currently
+    guaranteed to be available to the JVM from the system, maximum
+    possible allocation.
+*   `gc-count`, `gc-time`: The cumulative count of
+    garbage collections since the start of this Bazel server and the time spent
+    to perform them. Note that these values are not reset at the start of every
+    build.
+*   `package_path`: A colon-separated list of paths which would be
+    searched for packages by bazel. Has the same format as the
+    `--package_path` build command line argument.
+
+Example: the process ID of the Bazel server.
+
+<pre>% bazel info server_pid
+1285
+</pre>
+
+#### Configuration-specific data {:#configuration-specific-data}
+
+These data may be affected by the configuration options passed
+to `bazel info`, for
+example `--cpu`, `--compilation_mode`,
+etc. The `info` command accepts all
+the options that control dependency
+analysis, since some of these determine the location of the
+output directory of a build, the choice of compiler, etc.
+
+*   `bazel-bin`, `bazel-testlogs`,
+    `bazel-genfiles`: reports the absolute path to
+    the `bazel-*` directories in which programs generated by the
+    build are located. This is usually, though not always, the same as
+    the `bazel-*` symlinks created in the base workspace directory after a
+    successful build. However, if the workspace directory is read-only,
+    no `bazel-*` symlinks can be created. Scripts that use
+    the value reported by `bazel info`, instead of assuming the
+    existence of the symlink, will be more robust.
+*   The complete
+    ["Make" environment](/reference/be/make-variables). If the `--show_make_env` flag is
+    specified, all variables in the current configuration's "Make" environment
+    are also displayed (such as `CC`, `GLIBC_VERSION`, etc).
+    These are the variables accessed using the `$(CC)`
+    or `varref("CC")` syntax inside BUILD files.
+
+Example: the C++ compiler for the current configuration.
+This is the `$(CC)` variable in the "Make" environment,
+so the `--show_make_env` flag is needed.
+
+<pre>
+  % bazel info --show_make_env -c opt COMPILATION_MODE
+  opt
+</pre>
+
+Example: the `bazel-bin` output directory for the current
+configuration. This is guaranteed to be correct even in cases where
+the `bazel-bin` symlink cannot be created for some reason
+(such as if you are building from a read-only directory).
+
+<pre>% bazel info --cpu=piii bazel-bin
+/var/tmp/_bazel_johndoe/fbd0e8a34f61ce5d491e3da69d959fe6/execroot/io_bazel/bazel-out/piii-opt/bin
+% bazel info --cpu=k8 bazel-bin
+/var/tmp/_bazel_johndoe/fbd0e8a34f61ce5d491e3da69d959fe6/execroot/io_bazel/bazel-out/k8-opt/bin
+</pre>
+
+### `version` and `--version` {:#version}
+
+The version command prints version details about the built Bazel
+binary, including the changelist at which it was built and the date.
+These are particularly useful in determining if you have the latest
+Bazel, or if you are reporting bugs. Some of the interesting values
+are:
+
+*   `changelist`: the changelist at which this version of
+    Bazel was released.
+*   `label`: the release label for this Bazel
+    instance, or "development version" if this is not a released
+    binary. Very useful when reporting bugs.
+
+`bazel --version`, with no other args, will emit the same output as
+`bazel version --gnu_format`, except without the side-effect of potentially starting
+a Bazel server or unpacking the server archive. `bazel --version` can be run from
+anywhere - it does not require a workspace directory.
+
+### `mobile-install` {:#mobile-install}
+
+The `mobile-install` command installs apps to mobile devices.
+Currently only Android devices running ART are supported.
+
+See [bazel mobile-install](/docs/mobile-install) for more information.
+
+Note: This command does not install the same thing that
+`bazel build` produces: Bazel tweaks the app so that it can be
+built, installed and re-installed quickly. This should, however, be mostly
+transparent to the app.
+
+The following options are supported:
+
+#### `--incremental` {:#incremental}
+
+If set, Bazel tries to install the app incrementally, that is, only those
+parts that have changed since the last build. This cannot update resources
+referenced from `AndroidManifest.xml`, native code or Java
+resources (such as those referenced by `Class.getResource()`). If these
+things change, this option must be omitted. Contrary to the spirit of Bazel
+and due to limitations of the Android platform, it is the
+**responsibility of the user** to know when this command is good enough and
+when a full install is needed.
+
+If you are using a device with Marshmallow or later, consider the
+[`--split_apks`](#split-apks) flag.
+
+#### `--split_apks` {:#split-apks}
+
+Whether to use split apks to install and update the application on the device.
+Works only with devices with Marshmallow or later. Note that the
+[`--incremental`](#incremental) flag
+is not necessary when using `--split_apks`.
+
+#### `--start_app` {:#start-app}
+
+Starts the app in a clean state after installing. Equivalent to `--start=COLD`.
+
+#### `--debug_app` {:#debug-app}
+
+Waits for debugger to be attached before starting the app in a clean state after installing.
+Equivalent to `--start=DEBUG`.
+
+#### `--start=_start_type_` {:#start}
+
+How the app should be started after installing it. Supported _start_type_s are:
+
+*   `NO` Does not start the app. This is the default.
+*   `COLD` Starts the app from a clean state after install.
+*   `WARM` Preserves and restores the application state on incremental installs.
+*   `DEBUG` Waits for the debugger before starting the app in a clean state after
+    install.
+
+Note: If more than one of `--start=_start_type_`, `--start_app` or
+`--debug_app` is set, the last value is used.
+
+#### `--adb={{ "<var>" }}path{{ "</var>" }}` {:#adb}
+
+Indicates the `adb` binary to be used.
+
+The default is to use the adb in the Android SDK specified by
+[`--android_sdk`](#android-sdk).
+
+#### `--adb_arg={{ "<var>" }}serial{{ "</var>" }}` {:#adb-arg}
+
+Extra arguments to `adb`. These come before the subcommand in the
+command line and are typically used to specify which device to install to.
+For example, to select the Android device or emulator to use:
+
+<pre>% bazel mobile-install --adb_arg=-s --adb_arg=deadbeef
+</pre>
+
+invokes `adb` as
+
+<pre>
+adb -s deadbeef install ...
+</pre>
+
+#### `--incremental_install_verbosity={{ "<var>" }}number{{ "</var>" }}` {:#incremental-install-verbosity}
+
+The verbosity for incremental install. Set to 1 for debug logging to be
+printed to the console.
+
+### `dump` {:#dump}
+
+The `dump` command prints to stdout a dump of the
+internal state of the Bazel server. This command is intended
+primarily for use by Bazel developers, so the output of this command
+is not specified, and is subject to change.
+
+By default, command will just print help message outlining possible
+options to dump specific areas of the Bazel state. In order to dump
+internal state, at least one of the options must be specified.
+
+Following options are supported:
+
+*   `--action_cache` dumps action cache content.
+*   `--packages` dumps package cache content.
+*   `--skyframe` dumps state of internal Bazel dependency graph.
+*   `--rules` dumps rule summary for each rule and aspect class,
+    including counts and action counts. This includes both native and Starlark rules.
+    If memory tracking is enabled, then the rules' memory consumption is also printed.
+*   `--skylark_memory` dumps a
+    [pprof](https://github.com/google/pprof) compatible .gz file to the specified path.
+    You must enable memory tracking for this to work.
+
+#### Memory tracking {:#memory-tracking}
+
+Some `dump` commands require memory tracking. To turn this on, you have to pass
+startup flags to Bazel:
+
+*   `--host_jvm_args=-javaagent:$BAZEL/third_party/allocation_instrumenter/java-allocation-instrumenter-3.3.4.jar`
+*   `--host_jvm_args=-DRULE_MEMORY_TRACKER=1`
+
+The java-agent is checked into Bazel at
+`third_party/allocation_instrumenter/java-allocation-instrumenter-3.3.4.jar`, so
+make sure you adjust `$BAZEL` for where you keep your Bazel repository.
+
+Do not forget to keep passing these options to Bazel for every command or the server will
+restart.
+
+Example:
+
+<pre>
+    % bazel --host_jvm_args=-javaagent:$BAZEL/third_party/allocation_instrumenter/java-allocation-instrumenter-3.3.4.jar \
+    --host_jvm_args=-DRULE_MEMORY_TRACKER=1 \
+    build --nobuild &lt;targets&gt;
+
+    # Dump rules
+    % bazel --host_jvm_args=-javaagent:$BAZEL/third_party/allocation_instrumenter/java-allocation-instrumenter-3.3.4.jar \
+    --host_jvm_args=-DRULE_MEMORY_TRACKER=1 \
+    dump --rules
+
+    # Dump Starlark heap and analyze it with pprof
+    % bazel --host_jvm_args=-javaagent:$BAZEL/third_party/allocation_instrumenter/java-allocation-instrumenter-3.3.4.jar \
+    --host_jvm_args=-DRULE_MEMORY_TRACKER=1 \
+    dump --skylark_memory=$HOME/prof.gz
+    % pprof -flame $HOME/prof.gz
+</pre>
+
+### `analyze-profile` {:#analyze-profile}
+
+The `analyze-profile` command analyzes a
+[JSON trace profile](/advanced/performance/json-trace-profile) previously
+gathered during a Bazel invocation.
+
+### `canonicalize-flags` {:#canonicalize-flags}
+
+The [`canonicalize-flags`](/reference/command-line-reference#canonicalize-flags-options)
+command, which takes a list of options for a Bazel command and returns a list of
+options that has the same effect. The new list of options is canonical. For example,
+two lists of options with the same effect are canonicalized to the same new list.
+
+The `--for_command` option can be used to select between different
+commands. At this time, only `build` and `test` are
+supported. Options that the given command does not support cause an error.
+
+Note: A small number of options cannot be reordered, because Bazel cannot
+ensure that the effect is identical. Also note that this command
+_does not_ expand flags from `--config`.
+
+As an example:
+
+<pre>
+  % bazel canonicalize-flags -- --config=any_name --test_tag_filters="-lint"
+  --config=any_name
+  --test_tag_filters=-lint
+</pre>
+
+### Startup options {:#startup-options}
+
+The options described in this section affect the startup of the Java
+virtual machine used by Bazel server process, and they apply to all
+subsequent commands handled by that server. If there is an already
+running Bazel server and the startup options do not match, it will
+be restarted.
+
+All of the options described in this section must be specified using the
+`--key=value` or `--key value`
+syntax. Also, these options must appear _before_ the name of the Bazel
+command. Use `startup --key=value` to list these in a `.bazelrc` file.
+
+#### `--output_base={{ "<var>" }}dir{{ "</var>" }}` {:#output-base}
+
+This option requires a path argument, which must specify a
+writable directory. Bazel will use this location to write all its
+output. The output base is also the key by which the client locates
+the Bazel server. By changing the output base, you change the server
+which will handle the command.
+
+By default, the output base is derived from the user's login name,
+and the name of the workspace directory (actually, its MD5 digest),
+so a typical value looks like:
+`/var/tmp/google/_bazel_johndoe/d41d8cd98f00b204e9800998ecf8427e`.
+
+Note: The client uses the output base to find the Bazel server
+instance, so if you specify a different output base in a Bazel
+command, a different server will be found (or started) to handle the
+request. It's possible to perform two concurrent builds in the same
+workspace directory by varying the output base.
+
+For example:
+
+<pre>
+ OUTPUT_BASE=/var/tmp/google/_bazel_johndoe/custom_output_base
+% bazel --output_base ${OUTPUT_BASE}1 build //foo  &amp;  bazel --output_base ${OUTPUT_BASE}2 build //bar
+</pre>
+
+In this command, the two Bazel commands run concurrently (because of
+the shell `&amp;` operator), each using a different Bazel
+server instance (because of the different output bases).
+In contrast, if the default output base was used in both commands,
+then both requests would be sent to the same server, which would
+handle them sequentially: building `//foo` first, followed
+by an incremental build of `//bar`.
+
+Note: We recommend you do not use an NFS or similar networked file system for the root
+directory, as the higher access latency will cause noticeably slower builds.
+
+#### `--output_user_root={{ "<var>" }}dir{{ "</var>" }}` {:#output-user-root}
+
+Points to the root directory where output and install bases are created. The directory
+must either not exist or be owned by the calling user. In the past,
+this was allowed to point to a directory shared among various users
+but it's not allowed any longer. This may be allowed once
+[issue #11100](https://github.com/bazelbuild/bazel/issues/11100){: .external} is addressed.
+
+If the `--output_base` option is specified, it overrides
+using `--output_user_root` to calculate the output base.
+
+The install base location is calculated based on
+`--output_user_root`, plus the MD5 identity of the Bazel embedded
+binaries.
+
+You can use the `--output_user_root` option to choose an
+alternate base location for all of Bazel's output (install base and output
+base) if there is a better location in your filesystem layout.
+
+Note: We recommend you do not use an NFS or similar networked file system for the root
+directory, as the higher access latency will cause noticeably slower builds.
+
+#### `--server_javabase={{ "<var>" }}dir{{ "</var>" }}` {:#server-javabase}
+
+Specifies the Java virtual machine in which _Bazel itself_ runs. The value must be a path to
+the directory containing a JDK or JRE. It should not be a label.
+This option should appear before any Bazel command, for example:
+
+<pre>
+  % bazel --server_javabase=/usr/local/buildtools/java/jdk build //foo
+</pre>
+
+This flag does _not_ affect the JVMs used by Bazel subprocesses such as applications, tests,
+tools, and so on. Use build options [--javabase](#javabase) or
+[--host_javabase](#host-javabase) instead.
+
+This flag was previously named `--host_javabase` (sometimes referred to as the
+'left-hand side' `--host_javabase`), but was renamed to avoid confusion with the
+build flag [--host_javabase](#host-javabase) (sometimes referred to as the
+'right-hand side' `--host_javabase`).
+
+#### `--host_jvm_args={{ "<var>" }}string{{ "</var>" }}` {:#host-jvm-args}
+
+Specifies a startup option to be passed to the Java virtual machine in which _Bazel itself_
+runs. This can be used to set the stack size, for example:
+
+<pre>
+  % bazel --host_jvm_args="-Xss256K" build //foo
+</pre>
+
+This option can be used multiple times with individual arguments. Note that
+setting this flag should rarely be needed. You can also pass a space-separated list of strings,
+each of which will be interpreted as a separate JVM argument, but this feature will soon be
+deprecated.
+
+That this does _not_ affect any JVMs used by
+subprocesses of Bazel: applications, tests, tools, and so on. To pass
+JVM options to executable Java programs, whether run by `bazel
+run` or on the command-line, you should use
+the `--jvm_flags` argument which
+all `java_binary` and `java_test` programs
+support. Alternatively for tests, use `bazel test --test_arg=--jvm_flags=foo ...`.
+
+#### `--host_jvm_debug` {:#host-java-debug}
+
+This option causes the Java virtual machine to wait for a connection
+from a JDWP-compliant debugger before
+calling the main method of _Bazel itself_. This is primarily
+intended for use by Bazel developers.
+
+Note: This does _not_ affect any JVMs used by subprocesses of Bazel:
+applications, tests, tools, etc.
+
+#### `--autodetect_server_javabase` {:#autodetect-server-javabase}
+
+This option causes Bazel to automatically search for an installed JDK on startup,
+and to fall back to the installed JRE if the embedded JRE isn't available.
+`--explicit_server_javabase` can be used to pick an explicit JRE to
+run Bazel with.
+
+#### `--batch` {:#batch}
+
+Batch mode causes Bazel to not use the
+[standard client/server mode](/run/client-server), but instead runs a bazel
+java process for a single command, which has been used for more predictable
+semantics with respect to signal handling, job control, and environment
+variable inheritance, and is necessary for running bazel in a chroot jail.
+
+Batch mode retains proper queueing semantics within the same output_base.
+That is, simultaneous invocations will be processed in order, without overlap.
+If a batch mode Bazel is run on a client with a running server, it first
+kills the server before processing the command.
+
+Bazel will run slower in batch mode, or with the alternatives described above.
+This is because, among other things, the build file cache is memory-resident, so it is not
+preserved between sequential batch invocations.
+Therefore, using batch mode often makes more sense in cases where performance
+is less critical, such as continuous builds.
+
+Warning: `--batch` is sufficiently slower than standard
+client/server mode. Additionally it might not support all of the features and optimizations which
+are made possible by a persistent Bazel server. If you're using `--batch`
+for the purpose of build isolation, you should use the command option
+`--nokeep_state_after_build`, which guarantees that no incremental
+in-memory state is kept between builds. In order to restart the Bazel server and JVM after a
+build, please explicitly do so using the "shutdown" command.
+
+#### `--max_idle_secs={{ "<var>" }}n{{ "</var>" }}` {:#max-idle-secs}
+
+This option specifies how long, in seconds, the Bazel server process
+should wait after the last client request, before it exits. The
+default value is 10800 (3 hours). `--max_idle_secs=0` will cause the
+Bazel server process to persist indefinitely.
+
+Note: this flag is only read if Bazel needs
+to start a new server. Changing this option will not cause the server to restart.
+
+Note: system sleep time where a build is not running is counted as idle time.
+
+This option may be used by scripts that invoke Bazel to ensure that
+they do not leave Bazel server processes on a user's machine when they
+would not be running otherwise.
+For example, a presubmit script might wish to
+invoke `bazel query` to ensure that a user's pending
+change does not introduce unwanted dependencies. However, if the
+user has not done a recent build in that workspace, it would be
+undesirable for the presubmit script to start a Bazel server just
+for it to remain idle for the rest of the day.
+By specifying a small value of `--max_idle_secs` in the
+query request, the script can ensure that _if_ it caused a new
+server to start, that server will exit promptly, but if instead
+there was already a server running, that server will continue to run
+until it has been idle for the usual time. Of course, the existing
+server's idle timer will be reset.
+
+#### `--[no]shutdown_on_low_sys_mem` {:#shutdown-on-low-sys-mem}
+
+If enabled and `--max_idle_secs` is set to a positive duration,
+after the build server has been idle for a while, shut down the server when the system is
+low on memory. Linux only.
+
+In addition to running an idle check corresponding to max_idle_secs, the build server will
+starts monitoring available system memory after the server has been idle for some time.
+If the available system memory becomes critically low, the server will exit.
+
+#### `--[no]block_for_lock` {:#block-for-lock}
+
+If enabled, Bazel will wait for other Bazel commands holding the
+server lock to complete before progressing. If disabled, Bazel will
+exit in error if it cannot immediately acquire the lock and
+proceed.
+
+Developers might use this in presubmit checks to avoid long waits caused
+by another Bazel command in the same client.
+
+#### `--io_nice_level={{ "<var>" }}n{{ "</var>" }}` {:#io-nice-level}
+
+Sets a level from 0-7 for best-effort IO scheduling. 0 is highest priority,
+7 is lowest. The anticipatory scheduler may only honor up to priority 4.
+Negative values are ignored.
+
+#### `--batch_cpu_scheduling` {:#batch-cpu-scheduling}
+
+Use `batch` CPU scheduling for Bazel. This policy is useful for
+workloads that are non-interactive, but do not want to lower their nice value.
+See 'man 2 sched_setscheduler'. This policy may provide for better system
+interactivity at the expense of Bazel throughput.
+
+### Miscellaneous options {:#misc-options}
+
+#### `--[no]announce_rc` {:#announce-rc}
+
+Controls whether Bazel announces startup options and command options read from
+the bazelrc files when starting up.
+
+#### `--color (yes|no|auto)` {:#color}
+
+This option determines whether Bazel will use colors to highlight
+its output on the screen.
+
+If this option is set to `yes`, color output is enabled.
+If this option is set to `auto`, Bazel will use color output only if
+the output is being sent to a terminal and the TERM environment variable
+is set to a value other than `dumb`, `emacs`, or `xterm-mono`.
+If this option is set to `no`, color output is disabled,
+regardless of whether the output is going to a terminal and regardless
+of the setting of the TERM environment variable.
+
+#### `--config={{ "<var>" }}name{{ "</var>" }}` {:#config}
+
+Selects additional config section from
+[the rc files](/run/bazelrc#bazelrc-file-locations); for the current `command`,
+it also pulls in the options from `command:name` if such a section exists. Can be
+specified multiple times to add flags from several config sections. Expansions can refer to other
+definitions (for example, expansions can be chained).
+
+#### `--curses (yes|no|auto)` {:#curses}
+
+This option determines whether Bazel will use cursor controls
+in its screen output. This results in less scrolling data, and a more
+compact, easy-to-read stream of output from Bazel. This works well with
+`--color`.
+
+If this option is set to `yes`, use of cursor controls is enabled.
+If this option is set to `no`, use of cursor controls is disabled.
+If this option is set to `auto`, use of cursor controls will be
+enabled under the same conditions as for `--color=auto`.
+
+#### `--[no]show_timestamps` {:#show-timestamps}
+
+If specified, a timestamp is added to each message generated by
+Bazel specifying the time at which the message was displayed.
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# Sandboxing
+
+{% include "_buttons.html" %}
+
+This article covers sandboxing in Bazel and debugging your sandboxing
+environment.
+
+*Sandboxing* is a permission restricting strategy that isolates processes from
+each other or from resources in a system. For Bazel, this means restricting file
+system access.
+
+Bazel's file system sandbox runs processes in a working directory that only
+contains known inputs, such that compilers and other tools don't see source
+files they should not access, unless they know the absolute paths to them.
+
+Sandboxing doesn't hide the host environment in any way. Processes can freely
+access all files on the file system. However, on platforms that support user
+namespaces, processes can't modify any files outside their working directory.
+This ensures that the build graph doesn't have hidden dependencies that could
+affect the reproducibility of the build.
+
+More specifically, Bazel constructs an `execroot/` directory for each action,
+which acts as the action's work directory at execution time. `execroot/`
+contains all input files to the action and serves as the container for any
+generated outputs. Bazel then uses an operating-system-provided technique,
+containers on Linux and `sandbox-exec` on macOS, to constrain the action within
+`execroot/`.
+
+## Reasons for sandboxing {:#sandboxing-reasons}
+
+-   Without action sandboxing, Bazel doesn't know if a tool uses undeclared
+    input files (files that are not explicitly listed in the dependencies of an
+    action). When one of the undeclared input files changes, Bazel still
+    believes that the build is up-to-date and won’t rebuild the action. This can
+    result in an incorrect incremental build.
+
+-   Incorrect reuse of cache entries creates problems during remote caching. A
+    bad cache entry in a shared cache affects every developer on the project,
+    and wiping the entire remote cache is not a feasible solution.
+
+-   Sandboxing mimics the behavior of remote execution — if a build works well
+    with sandboxing, it will likely also work with remote execution. By making
+    remote execution upload all necessary files (including local tools), you can
+    significantly reduce maintenance costs for compile clusters compared to
+    having to install the tools on every machine in the cluster every time you
+    want to try out a new compiler or make a change to an existing tool.
+
+## What sandbox strategy to use {:#sandboxing-strategies}
+
+You can choose which kind of sandboxing to use, if any, with the
+[strategy flags](user-manual.html#strategy-options). Using the `sandboxed`
+strategy makes Bazel pick one of the sandbox implementations listed below,
+preferring an OS-specific sandbox to the less hermetic generic one.
+[Persistent workers](/remote/persistent) run in a generic sandbox if you pass
+the `--worker_sandboxing` flag.
+
+The `local` (a.k.a. `standalone`) strategy does not do any kind of sandboxing.
+It simply executes the action's command line with the working directory set to
+the execroot of your workspace.
+
+`processwrapper-sandbox` is a sandboxing strategy that does not require any
+"advanced" features - it should work on any POSIX system out of the box. It
+builds a sandbox directory consisting of symlinks that point to the original
+source files, executes the action's command line with the working directory set
+to this directory instead of the execroot, then moves the known output artifacts
+out of the sandbox into the execroot and deletes the sandbox. This prevents the
+action from accidentally using any input files that are not declared and from
+littering the execroot with unknown output files.
+
+`linux-sandbox` goes one step further and builds on top of the
+`processwrapper-sandbox`. Similar to what Docker does under the hood, it uses
+Linux Namespaces (User, Mount, PID, Network and IPC namespaces) to isolate the
+action from the host. That is, it makes the entire filesystem read-only except
+for the sandbox directory, so the action cannot accidentally modify anything on
+the host filesystem. This prevents situations like a buggy test accidentally rm
+-rf'ing your $HOME directory. Optionally, you can also prevent the action from
+accessing the network. `linux-sandbox` uses PID namespaces to prevent the action
+from seeing any other processes and to reliably kill all processes (even daemons
+spawned by the action) at the end.
+
+`darwin-sandbox` is similar, but for macOS. It uses Apple's `sandbox-exec` tool
+to achieve roughly the same as the Linux sandbox.
+
+Both the `linux-sandbox` and the `darwin-sandbox` do not work in a "nested"
+scenario due to restrictions in the mechanisms provided by the operating
+systems. Because Docker also uses Linux namespaces for its container magic, you
+cannot easily run `linux-sandbox` inside a Docker container, unless you use
+`docker run --privileged`. On macOS, you cannot run `sandbox-exec` inside a
+process that's already being sandboxed. Thus, in these cases, Bazel
+automatically falls back to using `processwrapper-sandbox`.
+
+If you would rather get a build error — such as to not accidentally build with a
+less strict execution strategy — explicitly modify the list of execution
+strategies that Bazel tries to use (for example, `bazel build
+--spawn_strategy=worker,linux-sandbox`).
+
+Dynamic execution usually requires sandboxing for local execution. To opt out,
+pass the `--experimental_local_lockfree_output` flag. Dynamic execution silently
+sandboxes [persistent workers](/remote/persistent).
+
+## Downsides to sandboxing {:#sandboxing_downsides}
+
+-   Sandboxing incurs extra setup and teardown cost. How big this cost is
+    depends on many factors, including the shape of the build and the
+    performance of the host OS. For Linux, sandboxed builds are rarely more than
+    a few percent slower. Setting `--reuse_sandbox_directories` can
+    mitigate the setup and teardown cost.
+
+-   Sandboxing effectively disables any cache the tool may have. You can
+    mitigate this by using [persistent workers](/remote/persistent), at
+    the cost of weaker sandbox guarantees.
+
+-   [Multiplex workers](/remote/multiplex) require explicit worker support
+    to be sandboxed. Workers that do not support multiplex sandboxing run as
+    singleplex workers under dynamic execution, which can cost extra memory.
+
+## Debugging {:#debugging}
+
+Follow the strategies below to debug issues with sandboxing.
+
+### Deactivated namespaces {:#deactivated-namespaces}
+
+On some platforms, such as
+[Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine/){: .external}
+cluster nodes or Debian, user namespaces are deactivated by default due to
+security concerns. If the `/proc/sys/kernel/unprivileged_userns_clone` file
+exists and contains a 0, you can activate user namespaces by running:
+
+```posix-terminal
+   sudo sysctl kernel.unprivileged_userns_clone=1
+```
+
+### Rule execution failures {:#rule-failures}
+
+The sandbox may fail to execute rules because of the system setup. If you see a
+message like `namespace-sandbox.c:633: execvp(argv[0], argv): No such file or
+directory`, try to deactivate the sandbox with `--strategy=Genrule=local` for
+genrules, and `--spawn_strategy=local` for other rules.
+
+### Detailed debugging for build failures {:#debugging-build-failures}
+
+If your build failed, use `--verbose_failures` and `--sandbox_debug` to make
+Bazel show the exact command it ran when your build failed, including the part
+that sets up the sandbox.
+
+Example error message:
+
+```
+ERROR: path/to/your/project/BUILD:1:1: compilation of rule
+'//path/to/your/project:all' failed:
+
+Sandboxed execution failed, which may be legitimate (such as a compiler error),
+or due to missing dependencies. To enter the sandbox environment for easier
+debugging, run the following command in parentheses. On command failure, a bash
+shell running inside the sandbox will then automatically be spawned
+
+namespace-sandbox failed: error executing command
+  (cd /some/path && \
+  exec env - \
+    LANG=en_US \
+    PATH=/some/path/bin:/bin:/usr/bin \
+    PYTHONPATH=/usr/local/some/path \
+  /some/path/namespace-sandbox @/sandbox/root/path/this-sandbox-name.params --
+  /some/path/to/your/some-compiler --some-params some-target)
+```
+
+You can now inspect the generated sandbox directory and see which files Bazel
+created and run the command again to see how it behaves.
+
+Note that Bazel does not delete the sandbox directory when you use
+`--sandbox_debug`. Unless you are actively debugging, you should disable
+`--sandbox_debug` because it fills up your disk over time.
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# Apple Apps and Bazel
+
+{% include "_buttons.html" %}
+
+This page contains resources that help you use Bazel to build macOS and iOS
+projects. It links to a tutorial, build rules, and other information specific to
+using Bazel to build and test for those platforms.
+
+## Working with Bazel {:#working-with-bazel}
+
+The following resources will help you work with Bazel on macOS and iOS projects:
+
+*  [Tutorial: Building an iOS app](/start/ios-app)
+*  [Objective-C build rules](/reference/be/objective-c)
+*  [General Apple rules](https://github.com/bazelbuild/rules_apple){: .external}
+*  [Integration with Xcode](/install/ide)
+
+## Migrating to Bazel {:#migrating-to-bazel}
+
+If you currently build your macOS and iOS projects with Xcode, follow the steps
+in the migration guide to start building them with Bazel:
+
+*  [Migrating from Xcode to Bazel](/migrate/xcode)
+
+## Apple apps and new rules {:#apple-apps-new-rules}
+
+**Note**: Creating new rules is for advanced build and test scenarios.
+You do not need it when getting started with Bazel.
+
+The following modules, configuration fragments, and providers will help you
+[extend Bazel's capabilities](/extending/concepts)
+when building your macOS and iOS projects:
+
+*  Modules:
+
+   *  [`apple_bitcode_mode`](/rules/lib/builtins/apple_bitcode_mode)
+   *  [`apple_common`](/rules/lib/toplevel/apple_common)
+   *  [`apple_platform`](/rules/lib/builtins/apple_platform)
+   *  [`apple_platform_type`](/rules/lib/builtins/apple_platform_type)
+   *  [`apple_toolchain`](/rules/lib/builtins/apple_toolchain)
+
+*  Configuration fragments:
+
+   *  [`apple`](/rules/lib/fragments/apple)
+
+*  Providers:
+
+   *  [`ObjcProvider`](/rules/lib/providers/ObjcProvider)
+   *  [`XcodeVersionConfig`](/rules/lib/providers/XcodeVersionConfig)
+
+## Xcode selection {:#xcode-selection}
+
+If your build requires Xcode, Bazel will select an appropriate version based on
+the `--xcode_config` and `--xcode_version` flags. The `--xcode_config` consumes
+the set of available Xcode versions and sets a default version if
+`--xcode_version` is not passed. This default is overridden by the
+`--xcode_version` flag, as long as it is set to an Xcode version that is
+represented in the `--xcode_config` target.
+
+If you do not pass `--xcode_config`, Bazel will use the autogenerated
+[`XcodeVersionConfig`](/rules/lib/providers/XcodeVersionConfig) that represents the
+Xcode versions available on your host machine. The default version is
+the newest available Xcode version. This is appropriate for local execution.
+
+If you are performing remote builds, you should set `--xcode_config` to an
+[`xcode_config`](/reference/be/objective-c#xcode_config)
+target whose `versions` attribute is a list of remotely available
+[`xcode_version`](/reference/be/objective-c#xcode_version)
+targets, and whose `default` attribute is one of these
+[`xcode_versions`](/reference/be/objective-c#xcode_version).
+
+If you are using dynamic execution, you should set `--xcode_config` to an
+[`xcode_config`](/reference/be/objective-c#xcode_config)
+target whose `remote_versions` attribute is an
+[`available_xcodes`](/reference/be/workspace#available_xcodes)
+target containing the remotely available Xcode versions, and whose
+`local_versions` attribute is an
+[`available_xcodes`](/reference/be/workspace#available_xcodes)
+target containing the locally available Xcode versions. For `local_versions`,
+you probably want to use the autogenerated
+`@local_config_xcode//:host_available_xcodes`. The default Xcode version is the
+newest mutually available version, if there is one, otherwise the default of the
+`local_versions` target. If you prefer to use the `local_versions` default
+as the default, you can pass `--experimental_prefer_mutual_default=false`.
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# Java and Bazel
+
+{% include "_buttons.html" %}
+
+This page contains resources that help you use Bazel with Java projects. It
+links to a tutorial, build rules, and other information specific to building
+Java projects with Bazel.
+
+## Working with Bazel {:#working-with-bazel}
+
+The following resources will help you work with Bazel on Java projects:
+
+*   [Tutorial: Building a Java Project](/start/java)
+*   [Java rules](/reference/be/java)
+
+## Migrating to Bazel {:#migrating-to-bazel}
+
+If you currently build your Java projects with Maven, follow the steps in the
+migration guide to start building your Maven projects with Bazel:
+
+*   [Migrating from Maven to Bazel](/migrate/maven)
+
+## Java versions {:#java-versions}
+
+There are two relevant versions of Java that are set with configuration flags:
+
+*   the version of the source files in the repository
+*   the version of the Java runtime that is used to execute the code and to test
+    it
+
+### Configuring the version of the source code in your repository {:#config-source-code}
+
+Without an additional configuration, Bazel assumes all Java source files in the
+repository are written in a single Java version. To specify the version of the
+sources in the repository add `build --java_language_version={ver}` to
+`.bazelrc` file, where `{ver}` is for example `11`. Bazel repository owners
+should set this flag so that Bazel and its users can reference the source code's
+Java version number. For more details, see
+[Java language version flag](/docs/user-manual#java-language-version).
+
+### Configuring the JVM used to execute and test the code {:#config-jvm}
+
+Bazel uses one JDK for compilation and another JVM to execute and test the code.
+
+By default Bazel compiles the code using a JDK it downloads and it executes and
+tests the code with the JVM installed on the local machine. Bazel searches for
+the JVM using `JAVA_HOME` or path.
+
+The resulting binaries are compatible with locally installed JVM in system
+libraries, which means the resulting binaries depend on what is installed on the
+machine.
+
+To configure the JVM used for execution and testing use `--java_runtime_version`
+flag. The default value is `local_jdk`.
+
+### Hermetic testing and compilation {:#hermetic-testing}
+
+To create a hermetic compile, you can use command line flag
+`--java_runtime_version=remotejdk_11`. The code is compiled for, executed, and
+tested on the JVM downloaded from a remote repository. For more details, see
+[Java runtime version flag](/docs/user-manual#java_runtime_version).
+
+### Configuring compilation and execution of build tools in Java {:#config-build-tools-java}
+
+There is a second pair of JDK and JVM used to build and execute tools, which are
+used in the build process, but are not in the build results. That JDK and JVM
+are controlled using `--tool_java_language_version` and
+`--tool_java_runtime_version`. Default values are `11` and `remotejdk_11`,
+respectively.
+
+#### Compiling using locally installed JDK {:#compile-using-jdk}
+
+Bazel by default compiles using remote JDK, because it is overriding JDK's
+internals. The compilation toolchains using locally installed JDK are configured,
+however not used.
+
+To compile using locally installed JDK, that is use the compilation toolchains
+for local JDK, use additional flag `--extra_toolchains=@local_jdk//:all`,
+however, mind that this may not work on JDK of arbitrary vendors.
+
+For more details, see
+[configuring Java toolchains](#config-java-toolchains).
+
+## Best practices {:#best-practices}
+
+In addition to [general Bazel best practices](/configure/best-practices), below are
+best practices specific to Java projects.
+
+### Directory structure {:#directory-structure}
+
+Prefer Maven's standard directory layout (sources under `src/main/java`, tests
+under `src/test/java`).
+
+### BUILD files {:#build-files}
+
+Follow these guidelines when creating your `BUILD` files:
+
+*   Use one `BUILD` file per directory containing Java sources, because this
+    improves build performance.
+
+*   Every `BUILD` file should contain one `java_library` rule that looks like
+    this:
+
+    ```python
+    java_library(
+        name = "directory-name",
+        srcs = glob(["*.java"]),
+        deps = [...],
+    )
+    ```
+
+*   The name of the library should be the name of the directory containing the
+    `BUILD` file. This makes the label of the library shorter, that is use
+    `"//package"` instead of `"//package:package"`.
+
+*   The sources should be a non-recursive [`glob`](/reference/be/functions#glob) of
+    all Java files in the directory.
+
+*   Tests should be in a matching directory under `src/test` and depend on this
+    library.
+
+## Creating new rules for advanced Java builds {:#rules-advanced-java-builds}
+
+**Note**: Creating new rules is for advanced build and test scenarios. You do
+not need it when getting started with Bazel.
+
+The following modules, configuration fragments, and providers will help you
+[extend Bazel's capabilities](/extending/concepts) when building your Java
+projects:
+
+*   Main Java module: [`java_common`](/rules/lib/toplevel/java_common)
+*   Main Java provider: [`JavaInfo`](/rules/lib/providers/JavaInfo)
+*   Configuration fragment: [`java`](/rules/lib/fragments/java)
+*   Other modules:
+
+    *   [`java_annotation_processing`](/rules/lib/builtins/java_annotation_processing)
+    *   [`java_compilation_info`](/rules/lib/providers/java_compilation_info)
+    *   [`java_output_jars`](/rules/lib/providers/java_output_jars)
+    *   [`JavaRuntimeInfo`](/rules/lib/providers/JavaRuntimeInfo)
+    *   [`JavaToolchainInfo`](/rules/lib/providers/JavaToolchainInfo)
+
+## Configuring the Java toolchains {:#config-java-toolchains}
+
+Bazel uses two types of Java toolchains:
+- execution, used to execute and test Java binaries, controlled with
+  `--java_runtime_version` flag
+- compilation, used to compile Java sources, controlled with
+  `--java_language_version` flag
+
+### Configuring additional execution toolchains {:#config-execution-toolchains}
+
+Execution toolchain is the JVM, either local or from a repository, with some
+additional information about its version, operating system, and CPU
+architecture.
+
+Java execution toolchains may added using the `local_java_repository` or
+`remote_java_repository` repo rules in a module extension. Adding the rule makes
+the JVM available using a flag. When multiple definitions for the same operating
+system and CPU architecture are given, the first one is used.
+
+Example configuration of local JVM:
+
+```python
+load("@rules_java//toolchains:local_java_repository.bzl", "local_java_repository")
+
+local_java_repository(
+  name = "additionaljdk",          # Can be used with --java_runtime_version=additionaljdk, --java_runtime_version=11 or --java_runtime_version=additionaljdk_11
+  version = 11,                    # Optional, if not set it is autodetected
+  java_home = "/usr/lib/jdk-15/",  # Path to directory containing bin/java
+)
+```
+
+Example configuration of remote JVM:
+
+```python
+load("@rules_java//toolchains:remote_java_repository.bzl", "remote_java_repository")
+
+remote_java_repository(
+  name = "openjdk_canary_linux_arm",
+  prefix = "openjdk_canary", # Can be used with --java_runtime_version=openjdk_canary_11
+  version = "11",            # or --java_runtime_version=11
+  target_compatible_with = [ # Specifies constraints this JVM is compatible with
+    "@platforms//cpu:arm",
+    "@platforms//os:linux",
+  ],
+  urls = ...,               # Other parameters are from http_repository rule.
+  sha256 = ...,
+  strip_prefix = ...
+)
+```
+
+### Configuring additional compilation toolchains {:#config-compilation-toolchains}
+
+Compilation toolchain is composed of JDK and multiple tools that Bazel uses
+during the compilation and that provides additional features, such as: Error
+Prone, strict Java dependencies, header compilation, Android desugaring,
+coverage instrumentation, and genclass handling for IDEs.
+
+JavaBuilder is a Bazel-bundled tool that executes compilation, and provides the
+aforementioned features. Actual compilation is executed using the internal
+compiler by the JDK. The JDK used for compilation is specified by `java_runtime`
+attribute of the toolchain.
+
+Bazel overrides some JDK internals. In case of JDK version > 9,
+`java.compiler` and `jdk.compiler` modules are patched using JDK's flag
+`--patch_module`. In case of JDK version 8, the Java compiler is patched using
+`-Xbootclasspath` flag.
+
+VanillaJavaBuilder is a second implementation of JavaBuilder,
+which does not modify JDK's internal compiler and does not have any of the
+additional features. VanillaJavaBuilder is not used by any of the built-in
+toolchains.
+
+In addition to JavaBuilder, Bazel uses several other tools during compilation.
+
+The `ijar` tool processes `jar` files to remove everything except call
+signatures. Resulting jars are called header jars. They are used to improve the
+compilation incrementality by only recompiling downstream dependents when the
+body of a function changes.
+
+The `singlejar` tool packs together multiple `jar` files into a single one.
+
+The `genclass` tool post-processes the output of a Java compilation, and produces
+a `jar` containing only the class files for sources that were generated by
+annotation processors.
+
+The `JacocoRunner` tool runs Jacoco over instrumented files and outputs results in
+LCOV format.
+
+The `TestRunner` tool executes JUnit 4 tests in a controlled environment.
+
+You can reconfigure the compilation by adding `default_java_toolchain` macro to
+a `BUILD` file and registering it either by adding `register_toolchains` rule to
+the `MODULE.bazel` file or by using
+[`--extra_toolchains`](/docs/user-manual#extra-toolchains) flag.
+
+The toolchain is only used when the `source_version` attribute matches the
+value specified by `--java_language_version` flag.
+
+Example toolchain configuration:
+
+```python
+load(
+  "@rules_java//toolchains:default_java_toolchain.bzl",
+  "default_java_toolchain", "DEFAULT_TOOLCHAIN_CONFIGURATION", "BASE_JDK9_JVM_OPTS", "DEFAULT_JAVACOPTS"
+)
+
+default_java_toolchain(
+  name = "repository_default_toolchain",
+  configuration = DEFAULT_TOOLCHAIN_CONFIGURATION,        # One of predefined configurations
+                                                          # Other parameters are from java_toolchain rule:
+  java_runtime = "@rules_java//toolchains:remote_jdk11", # JDK to use for compilation and toolchain's tools execution
+  jvm_opts = BASE_JDK9_JVM_OPTS + ["--enable_preview"],   # Additional JDK options
+  javacopts = DEFAULT_JAVACOPTS + ["--enable_preview"],   # Additional javac options
+  source_version = "9",
+)
+```
+
+which can be used using `--extra_toolchains=//:repository_default_toolchain_definition`
+or by adding `register_toolchains("//:repository_default_toolchain_definition")`
+to the workpace.
+
+Predefined configurations:
+
+-   `DEFAULT_TOOLCHAIN_CONFIGURATION`: all features, supports JDK versions >= 9
+-   `VANILLA_TOOLCHAIN_CONFIGURATION`: no additional features, supports JDKs of
+    arbitrary vendors.
+-   `PREBUILT_TOOLCHAIN_CONFIGURATION`: same as default, but only use prebuilt
+    tools (`ijar`, `singlejar`)
+-   `NONPREBUILT_TOOLCHAIN_CONFIGURATION`: same as default, but all tools are
+    built from sources (this may be useful on operating system with different
+    libc)
+
+#### Configuring JVM and Java compiler flags {:#config-jvm}
+
+You may configure JVM and javac flags either with flags or with
+ `default_java_toolchain` attributes.
+
+The relevant flags are `--jvmopt`, `--host_jvmopt`, `--javacopt`,  and
+`--host_javacopt`.
+
+The relevant `default_java_toolchain` attributes are `javacopts`, `jvm_opts`,
+`javabuilder_jvm_opts`, and `turbine_jvm_opts`.
+
+#### Package specific Java compiler flags configuration {:#package-java-compiler-flags}
+
+You can configure different Java compiler flags for specific source
+files using `package_configuration` attribute of `default_java_toolchain`.
+Please refer to the example below.
+
+```python
+load("@rules_java//toolchains:default_java_toolchain.bzl", "default_java_toolchain")
+
+# This is a convenience macro that inherits values from Bazel's default java_toolchain
+default_java_toolchain(
+    name = "toolchain",
+    package_configuration = [
+        ":error_prone",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+# This associates a set of javac flags with a set of packages
+java_package_configuration(
+    name = "error_prone",
+    javacopts = [
+        "-Xep:MissingOverride:ERROR",
+    ],
+    packages = ["error_prone_packages"],
+)
+
+# This is a regular package_group, which is used to specify a set of packages to apply flags to
+package_group(
+    name = "error_prone_packages",
+    packages = [
+        "//foo/...",
+        "-//foo/bar/...", # this is an exclusion
+    ],
+)
+```
+
+#### Multiple versions of Java source code in a single repository {:#java-source-single-repo}
+
+Bazel only supports compiling a single version of Java sources in a build.
+build. This means that when building a Java test or an application, all
+ dependencies are built against the same Java version.
+
+However, separate builds may be executed using different flags.
+
+To make the task of using different flags easier, sets of flags for a specific
+version may be grouped with `.bazelrc` configs":
+
+```python
+build:java8 --java_language_version=8
+build:java8 --java_runtime_version=local_jdk_8
+build:java11 --java_language_version=11
+build:java11 --java_runtime_version=remotejdk_11
+```
+
+These configs can be used with the `--config` flag, for example
+`bazel test --config=java11 //:java11_test`.
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# Android Instrumentation Tests
+
+{% include "_buttons.html" %}
+
+_If you're new to Bazel, start with the [Building Android with
+Bazel](/start/android-app ) tutorial._
+
+![Running Android instrumentation tests in parallel](/docs/images/android_test.gif "Android instrumentation test")
+
+**Figure 1.** Running parallel Android instrumentation tests.
+
+[`android_instrumentation_test`](/reference/be/android#android_instrumentation_test)
+allows developers to test their apps on Android emulators and devices.
+It utilizes real Android framework APIs and the Android Test Library.
+
+For hermeticity and reproducibility, Bazel creates and launches Android
+emulators in a sandbox, ensuring that tests always run from a clean state. Each
+test gets an isolated emulator instance, allowing tests to run in parallel
+without passing states between them.
+
+For more information on Android instrumentation tests, check out the [Android
+developer
+documentation](https://developer.android.com/training/testing/unit-testing/instrumented-unit-tests.html){: .external}.
+
+Please file issues in the [GitHub issue tracker](https://github.com/bazelbuild/bazel/issues){: .external}.
+
+## How it works {:#how-it-works}
+
+When you run `bazel test` on an `android_instrumentation_test` target for the
+first time, Bazel performs the following steps:
+
+1. Builds the test APK, APK under test, and their transitive dependencies
+2. Creates, boots, and caches clean emulator states
+3. Starts the emulator
+4. Installs the APKs
+5. Runs tests utilizing the [Android Test Orchestrator](https://developer.android.com/training/testing/junit-runner.html#using-android-test-orchestrator){: .external}
+6. Shuts down the emulator
+7. Reports the results
+
+In subsequent test runs, Bazel boots the emulator from the clean, cached state
+created in step 2, so there are no leftover states from previous runs. Caching
+emulator state also speeds up test runs.
+
+## Prerequisites {:#prerequisites}
+
+Ensure your environment satisfies the following prerequisites:
+
+- **Linux**. Tested on Ubuntu 16.04, and 18.04.
+
+- **Bazel 0.12.0** or later. Verify the version by running `bazel info release`.
+
+```posix-terminal
+bazel info release
+```
+This results in output similar to the following:
+
+```none {:.devsite-disable-click-to-copy}
+release 4.1.0
+```
+
+- **KVM**. Bazel requires emulators to have [hardware
+  acceleration](https://developer.android.com/studio/run/emulator-acceleration.html#accel-check){: .external}
+  with KVM on Linux. You can follow these
+  [installation instructions](https://help.ubuntu.com/community/KVM/Installation){: .external}
+  for Ubuntu.
+
+To verify that KVM has the correct configuration, run:
+
+```posix-terminal
+apt-get install cpu-checker && kvm-ok
+```
+
+If it prints the following message, you have the correct configuration:
+
+```none {:.devsite-disable-click-to-copy}
+INFO: /dev/kvm exists
+KVM acceleration can be used
+```
+
+- **Xvfb**. To run headless tests (for example, on CI servers), Bazel requires
+  the [X virtual framebuffer](https://www.x.org/archive/X11R7.6/doc/man/man1/Xvfb.1.xhtml).
+
+To install it, run:
+
+```posix-terminal
+apt-get install xvfb
+```
+Verify that `Xvfb` is installed correctly and is installed at `/usr/bin/Xvfb`
+by running:
+
+```posix-terminal
+which Xvfb
+```
+The output is the following:
+
+```{:.devsite-disable-click-to-copy}
+/usr/bin/Xvfb
+```
+
+- **32-bit Libraries**. Some of the binaries used by the test infrastructure are
+  32-bit, so on 64-bit machines, ensure that 32-bit binaries can be run. For
+  Ubuntu, install these 32-bit libraries:
+
+```posix-terminal
+sudo apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386 lib32z1 libbz2-1.0:i386
+```
+
+## Getting started {:#getting-started}
+
+Here is a typical target dependency graph of an `android_instrumentation_test`:
+
+![The target dependency graph on an Android instrumentation test](/docs/images/android_instrumentation_test.png "Target dependency graph")
+
+**Figure 2.** Target dependency graph of an `android_instrumentation_test`.
+
+
+### BUILD file {:#build-file}
+
+The graph translates into a `BUILD` file like this:
+
+```python
+android_instrumentation_test(
+    name = "my_test",
+    test_app = ":my_test_app",
+    target_device = "@android_test_support//tools/android/emulated_devices/generic_phone:android_23_x86",
+)
+
+# Test app and library
+android_binary(
+    name = "my_test_app",
+    instruments = ":my_app",
+    manifest = "AndroidTestManifest.xml",
+    deps = [":my_test_lib"],
+    # ...
+)
+
+android_library(
+    name = "my_test_lib",
+    srcs = glob(["javatest/**/*.java"]),
+    deps = [
+        ":my_app_lib",
+        "@maven//:androidx_test_core",
+        "@maven//:androidx_test_runner",
+        "@maven//:androidx_test_espresso_espresso_core",
+    ],
+    # ...
+)
+
+# Target app and library under test
+android_binary(
+    name = "my_app",
+    manifest = "AndroidManifest.xml",
+    deps = [":my_app_lib"],
+    # ...
+)
+
+android_library(
+    name = "my_app_lib",
+    srcs = glob(["java/**/*.java"]),
+    deps = [
+        "@maven//:androidx_appcompat_appcompat",
+        "@maven//:androidx_annotation_annotation",
+    ]
+    # ...
+)
+```
+
+The main attributes of the rule `android_instrumentation_test` are:
+
+- `test_app`: An `android_binary` target. This target contains test code and
+  dependencies like Espresso and UIAutomator. The selected `android_binary`
+  target is required to specify an `instruments` attribute pointing to another
+  `android_binary`, which is the app under test.
+
+- `target_device`: An `android_device` target. This target describes the
+  specifications of the Android emulator which Bazel uses to create, launch and
+  run the tests. See the [section on choosing an Android
+  device](#android-device-target) for more information.
+
+The test app's `AndroidManifest.xml` must include [an `<instrumentation>`
+tag](https://developer.android.com/studio/test/#configure_instrumentation_manifest_settings){: .external}.
+This tag must specify the attributes for the **package of the target app** and
+the **fully qualified class name of the instrumentation test runner**,
+`androidx.test.runner.AndroidJUnitRunner`.
+
+Here is an example `AndroidTestManifest.xml` for the test app:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
+          package="com.example.android.app.test"
+    android:versionCode="1"
+    android:versionName="1.0">
+
+    <instrumentation
+        android:name="androidx.test.runner.AndroidJUnitRunner"
+        android:targetPackage="com.example.android.app" />
+
+    <uses-sdk
+        android:minSdkVersion="16"
+        android:targetSdkVersion="27" />
+
+    <application >
+       <!-- ... -->
+    </application>
+</manifest>
+```
+
+### WORKSPACE dependencies {:#workspace-dependencies}
+
+In order to use this rule, your project needs to depend on these external
+repositories:
+
+- `@androidsdk`: The Android SDK. Download this through Android Studio.
+
+- `@android_test_support`: Hosts the test runner, emulator launcher, and
+  `android_device` targets. You can find the [latest release
+  here](https://github.com/android/android-test/releases){: .external}.
+
+Enable these dependencies by adding the following lines to your `WORKSPACE`
+file:
+
+```python
+# Android SDK
+android_sdk_repository(
+    name = "androidsdk",
+    path = "/path/to/sdk", # or set ANDROID_HOME
+)
+
+# Android Test Support
+ATS_COMMIT = "$COMMIT_HASH"
+http_archive(
+    name = "android_test_support",
+    strip_prefix = "android-test-%s" % ATS_COMMIT,
+    urls = ["https://github.com/android/android-test/archive/%s.tar.gz" % ATS_COMMIT],
+)
+load("@android_test_support//:repo.bzl", "android_test_repositories")
+android_test_repositories()
+```
+
+## Maven dependencies {:#maven-dependencies}
+
+For managing dependencies on Maven artifacts from repositories, such as [Google
+Maven](https://maven.google.com){: .external} or [Maven Central](https://central.maven.org){: .external},
+you should use a Maven resolver, such as
+[`rules_jvm_external`](https://github.com/bazelbuild/rules_jvm_external){: .external}.
+
+The rest of this page shows how to use `rules_jvm_external` to
+resolve and fetch dependencies from Maven repositories.
+
+## Choosing an android_device target {:#android-device-target}
+
+`android_instrumentation_test.target_device` specifies which Android device to
+run the tests on. These `android_device` targets are defined in
+[`@android_test_support`](https://github.com/google/android-testing-support-library/tree/master/tools/android/emulated_devices){: .external}.
+
+For example, you can query for the sources for a particular target by running:
+
+```posix-terminal
+bazel query --output=build @android_test_support//tools/android/emulated_devices/generic_phone:android_23_x86
+```
+Which results in output that looks similar to:
+
+```python
+# .../external/android_test_support/tools/android/emulated_devices/generic_phone/BUILD:43:1
+android_device(
+  name = "android_23_x86",
+  visibility = ["//visibility:public"],
+  tags = ["requires-kvm"],
+  generator_name = "generic_phone",
+  generator_function = "make_device",
+  generator_location = "tools/android/emulated_devices/generic_phone/BUILD:43",
+  vertical_resolution = 800,
+  horizontal_resolution = 480,
+  ram = 2048,
+  screen_density = 240,
+  cache = 32,
+  vm_heap = 256,
+  system_image = "@android_test_support//tools/android/emulated_devices/generic_phone:android_23_x86_images",
+  default_properties = "@android_test_support//tools/android/emulated_devices/generic_phone:_android_23_x86_props",
+)
+```
+
+The device target names use this template:
+
+```
+@android_test_support//tools/android/emulated_devices/{{ "<var>" }}device_type{{ "</var>" }}:{{ "<var>" }}system{{ "</var>" }}_{{ "<var>" }}api_level{{ "</var>" }}_x86_qemu2
+```
+
+In order to launch an `android_device`, the `system_image` for the selected API
+level is required. To download the system image, use Android SDK's
+`tools/bin/sdkmanager`. For example, to download the system image for
+`generic_phone:android_23_x86`, run `$sdk/tools/bin/sdkmanager
+"system-images;android-23;default;x86"`.
+
+To see the full list of supported `android_device` targets in
+`@android_test_support`, run the following command:
+
+```posix-terminal
+bazel query 'filter("x86_qemu2$", kind(android_device, @android_test_support//tools/android/emulated_devices/...:*))'
+```
+
+Bazel currently supports x86-based emulators only. For better performance, use
+`QEMU2` `android_device` targets instead of `QEMU` ones.
+
+## Running tests {:#running-tests}
+
+To run tests, add these lines to your project's
+`{{ '<var>' }}project root{{ '</var>' }}:{{ '<var>' }}/.bazelrc` file.
+
+```
+# Configurations for testing with Bazel
+# Select a configuration by running
+# `bazel test //my:target --config={headless, gui, local_device}`
+
+# Headless instrumentation tests (No GUI)
+test:headless --test_arg=--enable_display=false
+
+# Graphical instrumentation tests. Ensure that $DISPLAY is set.
+test:gui --test_env=DISPLAY
+test:gui --test_arg=--enable_display=true
+
+# Testing with a local emulator or device. Ensure that `adb devices` lists the
+# device.
+# Run tests serially.
+test:local_device --test_strategy=exclusive
+# Use the local device broker type, as opposed to WRAPPED_EMULATOR.
+test:local_device --test_arg=--device_broker_type=LOCAL_ADB_SERVER
+# Uncomment and set $device_id if there is more than one connected device.
+# test:local_device --test_arg=--device_serial_number=$device_id
+```
+
+Then, use one of the configurations to run tests:
+
+- `bazel test //my/test:target --config=gui`
+- `bazel test //my/test:target --config=headless`
+- `bazel test //my/test:target --config=local_device`
+
+Use __only one configuration__ or tests will fail.
+
+### Headless testing {:#headless-testing}
+
+With `Xvfb`, it is possible to test with emulators without the graphical
+interface, also known as headless testing. To disable the graphical interface
+when running tests, pass the test argument `--enable_display=false` to Bazel:
+
+```posix-terminal
+bazel test //my/test:target --test_arg=--enable_display=false
+```
+
+### GUI testing {:#gui-testing}
+
+If the `$DISPLAY` environment variable is set, it's possible to enable the
+graphical interface of the emulator while the test is running. To do this, pass
+these test arguments to Bazel:
+
+```posix-terminal
+bazel test //my/test:target --test_arg=--enable_display=true --test_env=DISPLAY
+```
+
+### Testing with a local emulator or device {:#testing-local-emulator}
+
+Bazel also supports testing directly on a locally launched emulator or connected
+device. Pass the flags
+`--test_strategy=exclusive` and
+`--test_arg=--device_broker_type=LOCAL_ADB_SERVER` to enable local testing mode.
+If there is more than one connected device, pass the flag
+`--test_arg=--device_serial_number=$device_id` where `$device_id` is the id of
+the device/emulator listed in `adb devices`.
+
+## Sample projects {:#sample-projects}
+
+If you are looking for canonical project samples, see the [Android testing
+samples](https://github.com/googlesamples/android-testing#experimental-bazel-support){: .external}
+for projects using Espresso and UIAutomator.
+
+## Espresso setup {:#espresso-setup}
+
+If you write UI tests with [Espresso](https://developer.android.com/training/testing/espresso/){: .external}
+(`androidx.test.espresso`), you can use the following snippets to set up your
+Bazel workspace with the list of commonly used Espresso artifacts and their
+dependencies:
+
+```
+androidx.test.espresso:espresso-core
+androidx.test:rules
+androidx.test:runner
+javax.inject:javax.inject
+org.hamcrest:java-hamcrest
+junit:junit
+```
+
+One way to organize these dependencies is to create a `//:test_deps` shared
+library in your `{{ "<var>" }}project root{{ "</var>" }}/BUILD.bazel` file:
+
+```python
+java_library(
+    name = "test_deps",
+    visibility = ["//visibility:public"],
+    exports = [
+        "@maven//:androidx_test_espresso_espresso_core",
+        "@maven//:androidx_test_rules",
+        "@maven//:androidx_test_runner",
+        "@maven//:javax_inject_javax_inject"
+        "@maven//:org_hamcrest_java_hamcrest",
+        "@maven//:junit_junit",
+    ],
+)
+```
+
+Then, add the required dependencies in `{{ "<var>" }}project root{{ "</var>" }}/WORKSPACE`:
+
+```python
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+RULES_JVM_EXTERNAL_TAG = "2.8"
+RULES_JVM_EXTERNAL_SHA = "79c9850690d7614ecdb72d68394f994fef7534b292c4867ce5e7dec0aa7bdfad"
+
+http_archive(
+    name = "rules_jvm_external",
+    strip_prefix = "rules_jvm_external-%s" % RULES_JVM_EXTERNAL_TAG,
+    sha256 = RULES_JVM_EXTERNAL_SHA,
+    url = "https://github.com/bazelbuild/rules_jvm_external/archive/%s.zip" % RULES_JVM_EXTERNAL_TAG,
+)
+
+load("@rules_jvm_external//:defs.bzl", "maven_install")
+
+maven_install(
+    artifacts = [
+        "junit:junit:4.12",
+        "javax.inject:javax.inject:1",
+        "org.hamcrest:java-hamcrest:2.0.0.0"
+        "androidx.test.espresso:espresso-core:3.1.1",
+        "androidx.test:rules:aar:1.1.1",
+        "androidx.test:runner:aar:1.1.1",
+    ],
+    repositories = [
+        "https://maven.google.com",
+        "https://repo1.maven.org/maven2",
+    ],
+)
+```
+
+Finally, in your test `android_binary` target, add the `//:test_deps`
+dependency:
+
+```python
+android_binary(
+    name = "my_test_app",
+    instruments = "//path/to:app",
+    deps = [
+        "//:test_deps",
+        # ...
+    ],
+    # ...
+)
+```
+
+## Tips {:#tips}
+
+### Reading test logs {:#reading-test-logs}
+
+Use `--test_output=errors` to print logs for failing tests, or
+`--test_output=all` to print all test output. If you're looking for an
+individual test log, go to
+`$PROJECT_ROOT/bazel-testlogs/path/to/InstrumentationTestTargetName`.
+
+For example, the test logs for `BasicSample` canonical project are in
+`bazel-testlogs/ui/espresso/BasicSample/BasicSampleInstrumentationTest`, run:
+
+```posix-terminal
+tree bazel-testlogs/ui/espresso/BasicSample/BasicSampleInstrumentationTest
+```
+This results in the following output:
+
+```none
+
+$ tree bazel-testlogs/ui/espresso/BasicSample/BasicSampleInstrumentationTest
+.
+├── adb.409923.log
+├── broker_logs
+│   ├── aapt_binary.10.ok.txt
+│   ├── aapt_binary.11.ok.txt
+│   ├── adb.12.ok.txt
+│   ├── adb.13.ok.txt
+│   ├── adb.14.ok.txt
+│   ├── adb.15.fail.txt
+│   ├── adb.16.ok.txt
+│   ├── adb.17.fail.txt
+│   ├── adb.18.ok.txt
+│   ├── adb.19.fail.txt
+│   ├── adb.20.ok.txt
+│   ├── adb.21.ok.txt
+│   ├── adb.22.ok.txt
+│   ├── adb.23.ok.txt
+│   ├── adb.24.fail.txt
+│   ├── adb.25.ok.txt
+│   ├── adb.26.fail.txt
+│   ├── adb.27.ok.txt
+│   ├── adb.28.fail.txt
+│   ├── adb.29.ok.txt
+│   ├── adb.2.ok.txt
+│   ├── adb.30.ok.txt
+│   ├── adb.3.ok.txt
+│   ├── adb.4.ok.txt
+│   ├── adb.5.ok.txt
+│   ├── adb.6.ok.txt
+│   ├── adb.7.ok.txt
+│   ├── adb.8.ok.txt
+│   ├── adb.9.ok.txt
+│   ├── android_23_x86.1.ok.txt
+│   └── exec-1
+│       ├── adb-2.txt
+│       ├── emulator-2.txt
+│       └── mksdcard-1.txt
+├── device_logcat
+│   └── logcat1635880625641751077.txt
+├── emulator_itCqtc.log
+├── outputs.zip
+├── pipe.log.txt
+├── telnet_pipe.log.txt
+└── tmpuRh4cy
+    ├── watchdog.err
+    └── watchdog.out
+
+4 directories, 41 files
+```
+
+### Reading emulator logs {:#reading-emulator-logs}
+
+The emulator logs for `android_device` targets are stored in the `/tmp/`
+directory with the name `emulator_xxxxx.log`, where `xxxxx` is a
+randomly-generated sequence of characters.
+
+Use this command to find the latest emulator log:
+
+```posix-terminal
+ls -1t /tmp/emulator_*.log | head -n 1
+```
+
+### Testing against multiple API levels {:#testing-multiple-apis}
+
+If you would like to test against multiple API levels, you can use a list
+comprehension to create test targets for each API level. For example:
+
+```python
+API_LEVELS = [
+    "19",
+    "20",
+    "21",
+    "22",
+]
+
+[android_instrumentation_test(
+    name = "my_test_%s" % API_LEVEL,
+    test_app = ":my_test_app",
+    target_device = "@android_test_support//tools/android/emulated_devices/generic_phone:android_%s_x86_qemu2" % API_LEVEL,
+) for API_LEVEL in API_LEVELS]
+```
+
+## Known issues {:#known-issues}
+
+- [Forked adb server processes are not terminated after
+  tests](https://github.com/bazelbuild/bazel/issues/4853){: .external}
+- While APK building works on all platforms (Linux, macOS, Windows), testing
+  only works on Linux.
+- Even with `--config=local_adb`, users still need to specify
+  `android_instrumentation_test.target_device`.
+- If using a local device or emulator, Bazel does not uninstall the APKs after
+  the test. Clean the packages by running this command:
+
+```posix-terminal
+adb shell pm list
+packages com.example.android.testing | cut -d ':' -f 2 | tr -d '\r' | xargs
+-L1 -t adb uninstall
+```
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# C++ and Bazel
+
+{% include "_buttons.html" %}
+
+This page contains resources that help you use Bazel with C++ projects. It links
+to a tutorial, build rules, and other information specific to building C++
+projects with Bazel.
+
+## Working with Bazel {:#working-with-bazel}
+
+The following resources will help you work with Bazel on C++ projects:
+
+*  [Tutorial: Building a C++ project](/start/cpp)
+*  [C++ common use cases](/tutorials/cpp-use-cases)
+*  [C/C++ rules](/reference/be/c-cpp)
+*  Essential Libraries
+   -  [Abseil](https://abseil.io/docs/cpp/quickstart){: .external}
+   -  [Boost](https://github.com/nelhage/rules_boost){: .external}
+   -  [HTTPS Requests: CPR and libcurl](https://github.com/hedronvision/bazel-make-cc-https-easy){: .external}
+*  [C++ toolchain configuration](/docs/cc-toolchain-config-reference)
+*  [Tutorial: Configuring C++ toolchains](/tutorials/ccp-toolchain-config)
+*  [Integrating with C++ rules](/configure/integrate-cpp)
+
+## Best practices {:#best-practices}
+
+In addition to [general Bazel best practices](/configure/best-practices), below are
+best practices specific to C++ projects.
+
+### BUILD files {:#build-files}
+
+Follow the guidelines below when creating your BUILD files:
+
+*  Each `BUILD` file should contain one [`cc_library`](/reference/be/c-cpp#cc_library)
+   rule target per compilation unit in the directory.
+
+*  You should granularize your C++ libraries as much as
+   possible to maximize incrementality and parallelize the build.
+
+*  If there is a single source file in `srcs`, name the library the same as
+   that C++ file's name. This library should contain C++ file(s), any matching
+   header file(s), and the library's direct dependencies. For example:
+
+   ```python
+   cc_library(
+       name = "mylib",
+       srcs = ["mylib.cc"],
+       hdrs = ["mylib.h"],
+       deps = [":lower-level-lib"]
+   )
+   ```
+
+*  Use one `cc_test` rule target per `cc_library` target in the file. Name the
+   target `[library-name]_test` and the source file `[library-name]_test.cc`.
+   For example, a test target for the `mylib` library target shown above would
+   look like this:
+
+   ```python
+   cc_test(
+       name = "mylib_test",
+       srcs = ["mylib_test.cc"],
+       deps = [":mylib"]
+   )
+   ```
+
+### Include paths {:#include-paths}
+
+Follow these guidelines for include paths:
+
+*  Make all include paths relative to the workspace directory.
+
+*  Use quoted includes (`#include "foo/bar/baz.h"`) for non-system headers, not
+   angle-brackets (`#include <foo/bar/baz.h>`).
+
+*  Avoid using UNIX directory shortcuts, such as `.` (current directory) or `..`
+   (parent directory).
+
+*  For legacy or `third_party` code that requires includes pointing outside the
+   project repository, such as external repository includes requiring a prefix,
+   use the [`include_prefix`](/reference/be/c-cpp#cc_library.include_prefix) and
+   [`strip_include_prefix`](/reference/be/c-cpp#cc_library.strip_include_prefix)
+   arguments on the `cc_library` rule target.
+
+### Toolchain features {:#toolchain-features}
+
+The following optional [features](/docs/cc-toolchain-config-reference#features)
+can improve the hygiene of a C++ project. They can be enabled using the
+`--features` command-line flag or the `features` attribute of
+[`repo`](/external/overview#repo.bazel),
+[`package`](/reference/be/functions#package) or `cc_*` rules:
+
+* The `parse_headers` feature makes it so that the C++ compiler is used to parse
+  (but not compile) all header files in the built targets and their dependencies
+  when using the
+  [`--process_headers_in_dependencies`](/reference/command-line-reference#flag--process_headers_in_dependencies)
+  flag. This can help catch issues in header-only libraries and ensure that
+  headers are self-contained and independent of the order in which they are
+  included.
+* The `layering_check` feature enforces that targets only include headers
+  provided by their direct dependencies. The default toolchain supports this
+  feature on Linux with `clang` as the compiler.
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# Configurable Build Attributes
+
+{% include "_buttons.html" %}
+
+**_Configurable attributes_**, commonly known as [`select()`](
+/reference/be/functions#select), is a Bazel feature that lets users toggle the values
+of build rule attributes at the command line.
+
+This can be used, for example, for a multiplatform library that automatically
+chooses the appropriate implementation for the architecture, or for a
+feature-configurable binary that can be customized at build time.
+
+## Example {:#configurable-build-example}
+
+```python
+# myapp/BUILD
+
+cc_binary(
+    name = "mybinary",
+    srcs = ["main.cc"],
+    deps = select({
+        ":arm_build": [":arm_lib"],
+        ":x86_debug_build": [":x86_dev_lib"],
+        "//conditions:default": [":generic_lib"],
+    }),
+)
+
+config_setting(
+    name = "arm_build",
+    values = {"cpu": "arm"},
+)
+
+config_setting(
+    name = "x86_debug_build",
+    values = {
+        "cpu": "x86",
+        "compilation_mode": "dbg",
+    },
+)
+```
+
+This declares a `cc_binary` that "chooses" its deps based on the flags at the
+command line. Specifically, `deps` becomes:
+
+<table>
+  <tr style="background: #E9E9E9; font-weight: bold">
+    <td>Command</td>
+    <td>deps =</td>
+  </tr>
+  <tr>
+    <td><code>bazel build //myapp:mybinary --cpu=arm</code></td>
+    <td><code>[":arm_lib"]</code></td>
+  </tr>
+  <tr>
+    <td><code>bazel build //myapp:mybinary -c dbg --cpu=x86</code></td>
+    <td><code>[":x86_dev_lib"]</code></td>
+  </tr>
+  <tr>
+    <td><code>bazel build //myapp:mybinary --cpu=ppc</code></td>
+    <td><code>[":generic_lib"]</code></td>
+  </tr>
+  <tr>
+    <td><code>bazel build //myapp:mybinary -c dbg --cpu=ppc</code></td>
+    <td><code>[":generic_lib"]</code></td>
+  </tr>
+</table>
+
+`select()` serves as a placeholder for a value that will be chosen based on
+*configuration conditions*, which are labels referencing [`config_setting`](/reference/be/general#config_setting)
+targets. By using `select()` in a configurable attribute, the attribute
+effectively adopts different values when different conditions hold.
+
+Matches must be unambiguous: if multiple conditions match then either:
+
+*  They all resolve to the same value. For example, when running on linux x86, this is unambiguous
+   `{"@platforms//os:linux": "Hello", "@platforms//cpu:x86_64": "Hello"}` because both branches resolve to "hello".
+*  One's `values` is a strict superset of all others'. For example, `values = {"cpu": "x86", "compilation_mode": "dbg"}`
+   is an unambiguous specialization of `values = {"cpu": "x86"}`.
+
+The built-in condition [`//conditions:default`](#default-condition) automatically matches when
+nothing else does.
+
+While this example uses `deps`, `select()` works just as well on `srcs`,
+`resources`, `cmd`, and most other attributes. Only a small number of attributes
+are *non-configurable*, and these are clearly annotated. For example,
+`config_setting`'s own
+[`values`](/reference/be/general#config_setting.values) attribute is non-configurable.
+
+## `select()` and dependencies {:#select-and-dependencies}
+
+Certain attributes change the build parameters for all transitive dependencies
+under a target. For example, `genrule`'s `tools` changes `--cpu` to the CPU of
+the machine running Bazel (which, thanks to cross-compilation, may be different
+than the CPU the target is built for). This is known as a
+[configuration transition](/reference/glossary#transition).
+
+Given
+
+```python
+#myapp/BUILD
+
+config_setting(
+    name = "arm_cpu",
+    values = {"cpu": "arm"},
+)
+
+config_setting(
+    name = "x86_cpu",
+    values = {"cpu": "x86"},
+)
+
+genrule(
+    name = "my_genrule",
+    srcs = select({
+        ":arm_cpu": ["g_arm.src"],
+        ":x86_cpu": ["g_x86.src"],
+    }),
+    tools = select({
+        ":arm_cpu": [":tool1"],
+        ":x86_cpu": [":tool2"],
+    }),
+)
+
+cc_binary(
+    name = "tool1",
+    srcs = select({
+        ":arm_cpu": ["armtool.cc"],
+        ":x86_cpu": ["x86tool.cc"],
+    }),
+)
+```
+
+running
+
+```sh
+$ bazel build //myapp:my_genrule --cpu=arm
+```
+
+on an `x86` developer machine binds the build to `g_arm.src`, `tool1`, and
+`x86tool.cc`. Both of the `select`s attached to `my_genrule` use `my_genrule`'s
+build parameters, which include `--cpu=arm`. The `tools` attribute changes
+`--cpu` to `x86` for `tool1` and its transitive dependencies. The `select` on
+`tool1` uses `tool1`'s build parameters, which include `--cpu=x86`.
+
+## Configuration conditions {:#configuration-conditions}
+
+Each key in a configurable attribute is a label reference to a
+[`config_setting`](/reference/be/general#config_setting) or
+[`constraint_value`](/reference/be/platforms-and-toolchains#constraint_value).
+
+`config_setting` is just a collection of
+expected command line flag settings. By encapsulating these in a target, it's
+easy to maintain "standard" conditions users can reference from multiple places.
+
+`constraint_value` provides support for [multi-platform behavior](#platforms).
+
+### Built-in flags {:#built-in-flags}
+
+Flags like `--cpu` are built into Bazel: the build tool natively understands
+them for all builds in all projects. These are specified with
+[`config_setting`](/reference/be/general#config_setting)'s
+[`values`](/reference/be/general#config_setting.values) attribute:
+
+```python
+config_setting(
+    name = "meaningful_condition_name",
+    values = {
+        "flag1": "value1",
+        "flag2": "value2",
+        ...
+    },
+)
+```
+
+`flagN` is a flag name (without `--`, so `"cpu"` instead of `"--cpu"`). `valueN`
+is the expected value for that flag. `:meaningful_condition_name` matches if
+*every* entry in `values` matches. Order is irrelevant.
+
+`valueN` is parsed as if it was set on the command line. This means:
+
+*  `values = { "compilation_mode": "opt" }` matches `bazel build -c opt`
+*  `values = { "force_pic": "true" }` matches `bazel build --force_pic=1`
+*  `values = { "force_pic": "0" }` matches `bazel build --noforce_pic`
+
+`config_setting` only supports flags that affect target behavior. For example,
+[`--show_progress`](/docs/user-manual#show-progress) isn't allowed because
+it only affects how Bazel reports progress to the user. Targets can't use that
+flag to construct their results. The exact set of supported flags isn't
+documented. In practice, most flags that "make sense" work.
+
+### Custom flags {:#custom-flags}
+
+You can model your own project-specific flags with
+[Starlark build settings][BuildSettings]. Unlike built-in flags, these are
+defined as build targets, so Bazel references them with target labels.
+
+These are triggered with [`config_setting`](/reference/be/general#config_setting)'s
+[`flag_values`](/reference/be/general#config_setting.flag_values)
+attribute:
+
+```python
+config_setting(
+    name = "meaningful_condition_name",
+    flag_values = {
+        "//myflags:flag1": "value1",
+        "//myflags:flag2": "value2",
+        ...
+    },
+)
+```
+
+Behavior is the same as for [built-in flags](#built-in-flags). See [here](https://github.com/bazelbuild/examples/tree/HEAD/configurations/select_on_build_setting){: .external}
+for a working example.
+
+[`--define`](/reference/command-line-reference#flag--define)
+is an alternative legacy syntax for custom flags (for example
+`--define foo=bar`). This can be expressed either in the
+[values](/reference/be/general#config_setting.values) attribute
+(`values = {"define": "foo=bar"}`) or the
+[define_values](/reference/be/general#config_setting.define_values) attribute
+(`define_values = {"foo": "bar"}`). `--define` is only supported for backwards
+compatibility. Prefer Starlark build settings whenever possible.
+
+`values`, `flag_values`, and `define_values` evaluate independently. The
+`config_setting` matches if all values across all of them match.
+
+## The default condition {:#default-condition}
+
+The built-in condition `//conditions:default` matches when no other condition
+matches.
+
+Because of the "exactly one match" rule, a configurable attribute with no match
+and no default condition emits a `"no matching conditions"` error. This can
+protect against silent failures from unexpected settings:
+
+```python
+# myapp/BUILD
+
+config_setting(
+    name = "x86_cpu",
+    values = {"cpu": "x86"},
+)
+
+cc_library(
+    name = "x86_only_lib",
+    srcs = select({
+        ":x86_cpu": ["lib.cc"],
+    }),
+)
+```
+
+```sh
+$ bazel build //myapp:x86_only_lib --cpu=arm
+ERROR: Configurable attribute "srcs" doesn't match this configuration (would
+a default condition help?).
+Conditions checked:
+  //myapp:x86_cpu
+```
+
+For even clearer errors, you can set custom messages with `select()`'s
+[`no_match_error`](#custom-error-messages) attribute.
+
+## Platforms {:#platforms}
+
+While the ability to specify multiple flags on the command line provides
+flexibility, it can also be burdensome to individually set each one every time
+you want to build a target.
+   [Platforms](/extending/platforms)
+let you consolidate these into simple bundles.
+
+```python
+# myapp/BUILD
+
+sh_binary(
+    name = "my_rocks",
+    srcs = select({
+        ":basalt": ["pyroxene.sh"],
+        ":marble": ["calcite.sh"],
+        "//conditions:default": ["feldspar.sh"],
+    }),
+)
+
+config_setting(
+    name = "basalt",
+    constraint_values = [
+        ":black",
+        ":igneous",
+    ],
+)
+
+config_setting(
+    name = "marble",
+    constraint_values = [
+        ":white",
+        ":metamorphic",
+    ],
+)
+
+# constraint_setting acts as an enum type, and constraint_value as an enum value.
+constraint_setting(name = "color")
+constraint_value(name = "black", constraint_setting = "color")
+constraint_value(name = "white", constraint_setting = "color")
+constraint_setting(name = "texture")
+constraint_value(name = "smooth", constraint_setting = "texture")
+constraint_setting(name = "type")
+constraint_value(name = "igneous", constraint_setting = "type")
+constraint_value(name = "metamorphic", constraint_setting = "type")
+
+platform(
+    name = "basalt_platform",
+    constraint_values = [
+        ":black",
+        ":igneous",
+    ],
+)
+
+platform(
+    name = "marble_platform",
+    constraint_values = [
+        ":white",
+        ":smooth",
+        ":metamorphic",
+    ],
+)
+```
+
+The platform can be specified on the command line. It activates the
+`config_setting`s that contain a subset of the platform's `constraint_values`,
+allowing those `config_setting`s to match in `select()` expressions.
+
+For example, in order to set the `srcs` attribute of `my_rocks` to `calcite.sh`,
+you can simply run
+
+```sh
+bazel build //my_app:my_rocks --platforms=//myapp:marble_platform
+```
+
+Without platforms, this might look something like
+
+```sh
+bazel build //my_app:my_rocks --define color=white --define texture=smooth --define type=metamorphic
+```
+
+`select()` can also directly read `constraint_value`s:
+
+```python
+constraint_setting(name = "type")
+constraint_value(name = "igneous", constraint_setting = "type")
+constraint_value(name = "metamorphic", constraint_setting = "type")
+sh_binary(
+    name = "my_rocks",
+    srcs = select({
+        ":igneous": ["igneous.sh"],
+        ":metamorphic" ["metamorphic.sh"],
+    }),
+)
+```
+
+This saves the need for boilerplate `config_setting`s when you only need to
+check against single values.
+
+Platforms are still under development. See the
+[documentation](/concepts/platforms) for details.
+
+## Combining `select()`s {:#combining-selects}
+
+`select` can appear multiple times in the same attribute:
+
+```python
+sh_binary(
+    name = "my_target",
+    srcs = ["always_include.sh"] +
+           select({
+               ":armeabi_mode": ["armeabi_src.sh"],
+               ":x86_mode": ["x86_src.sh"],
+           }) +
+           select({
+               ":opt_mode": ["opt_extras.sh"],
+               ":dbg_mode": ["dbg_extras.sh"],
+           }),
+)
+```
+
+Note: Some restrictions apply on what can be combined in the `select`s values:
+ - Duplicate labels can appear in different paths of the same `select`.
+ - Duplicate labels can *not* appear within the same path of a `select`.
+ - Duplicate labels can *not* appear across multiple combined `select`s (no matter what path)
+
+`select` cannot appear inside another `select`. If you need to nest `selects`
+and your attribute takes other targets as values, use an intermediate target:
+
+```python
+sh_binary(
+    name = "my_target",
+    srcs = ["always_include.sh"],
+    deps = select({
+        ":armeabi_mode": [":armeabi_lib"],
+        ...
+    }),
+)
+
+sh_library(
+    name = "armeabi_lib",
+    srcs = select({
+        ":opt_mode": ["armeabi_with_opt.sh"],
+        ...
+    }),
+)
+```
+
+If you need a `select` to match when multiple conditions match, consider [AND
+chaining](#and-chaining).
+
+## OR chaining {:#or-chaining}
+
+Consider the following:
+
+```python
+sh_binary(
+    name = "my_target",
+    srcs = ["always_include.sh"],
+    deps = select({
+        ":config1": [":standard_lib"],
+        ":config2": [":standard_lib"],
+        ":config3": [":standard_lib"],
+        ":config4": [":special_lib"],
+    }),
+)
+```
+
+Most conditions evaluate to the same dep. But this syntax is hard to read and
+maintain. It would be nice to not have to repeat `[":standard_lib"]` multiple
+times.
+
+One option is to predefine the value as a BUILD variable:
+
+```python
+STANDARD_DEP = [":standard_lib"]
+
+sh_binary(
+    name = "my_target",
+    srcs = ["always_include.sh"],
+    deps = select({
+        ":config1": STANDARD_DEP,
+        ":config2": STANDARD_DEP,
+        ":config3": STANDARD_DEP,
+        ":config4": [":special_lib"],
+    }),
+)
+```
+
+This makes it easier to manage the dependency. But it still causes unnecessary
+duplication.
+
+For more direct support, use one of the following:
+
+### `selects.with_or` {:#selects-with-or}
+
+The
+[with_or](https://github.com/bazelbuild/bazel-skylib/blob/main/docs/selects_doc.md#selectswith_or){: .external}
+macro in [Skylib](https://github.com/bazelbuild/bazel-skylib){: .external}'s
+[`selects`](https://github.com/bazelbuild/bazel-skylib/blob/main/docs/selects_doc.md){: .external}
+module supports `OR`ing conditions directly inside a `select`:
+
+```python
+load("@bazel_skylib//lib:selects.bzl", "selects")
+```
+
+```python
+sh_binary(
+    name = "my_target",
+    srcs = ["always_include.sh"],
+    deps = selects.with_or({
+        (":config1", ":config2", ":config3"): [":standard_lib"],
+        ":config4": [":special_lib"],
+    }),
+)
+```
+
+### `selects.config_setting_group` {:#selects-config-setting-or-group}
+
+
+The
+[config_setting_group](https://github.com/bazelbuild/bazel-skylib/blob/main/docs/selects_doc.md#selectsconfig_setting_group){: .external}
+macro in [Skylib](https://github.com/bazelbuild/bazel-skylib){: .external}'s
+[`selects`](https://github.com/bazelbuild/bazel-skylib/blob/main/docs/selects_doc.md){: .external}
+module supports `OR`ing multiple `config_setting`s:
+
+```python
+load("@bazel_skylib//lib:selects.bzl", "selects")
+```
+
+
+```python
+config_setting(
+    name = "config1",
+    values = {"cpu": "arm"},
+)
+config_setting(
+    name = "config2",
+    values = {"compilation_mode": "dbg"},
+)
+selects.config_setting_group(
+    name = "config1_or_2",
+    match_any = [":config1", ":config2"],
+)
+sh_binary(
+    name = "my_target",
+    srcs = ["always_include.sh"],
+    deps = select({
+        ":config1_or_2": [":standard_lib"],
+        "//conditions:default": [":other_lib"],
+    }),
+)
+```
+
+Unlike `selects.with_or`, different targets can share `:config1_or_2` across
+different attributes.
+
+It's an error for multiple conditions to match unless one is an unambiguous
+"specialization" of the others or they all resolve to the same value. See [here](#configurable-build-example) for details.
+
+## AND chaining {:#and-chaining}
+
+If you need a `select` branch to match when multiple conditions match, use the
+[Skylib](https://github.com/bazelbuild/bazel-skylib){: .external} macro
+[config_setting_group](https://github.com/bazelbuild/bazel-skylib/blob/main/docs/selects_doc.md#selectsconfig_setting_group){: .external}:
+
+```python
+config_setting(
+    name = "config1",
+    values = {"cpu": "arm"},
+)
+config_setting(
+    name = "config2",
+    values = {"compilation_mode": "dbg"},
+)
+selects.config_setting_group(
+    name = "config1_and_2",
+    match_all = [":config1", ":config2"],
+)
+sh_binary(
+    name = "my_target",
+    srcs = ["always_include.sh"],
+    deps = select({
+        ":config1_and_2": [":standard_lib"],
+        "//conditions:default": [":other_lib"],
+    }),
+)
+```
+
+Unlike OR chaining, existing `config_setting`s can't be directly `AND`ed
+inside a `select`. You have to explicitly wrap them in a `config_setting_group`.
+
+## Custom error messages {:#custom-error-messages}
+
+By default, when no condition matches, the target the `select()` is attached to
+fails with the error:
+
+```sh
+ERROR: Configurable attribute "deps" doesn't match this configuration (would
+a default condition help?).
+Conditions checked:
+  //tools/cc_target_os:darwin
+  //tools/cc_target_os:android
+```
+
+This can be customized with the [`no_match_error`](/reference/be/functions#select)
+attribute:
+
+```python
+cc_library(
+    name = "my_lib",
+    deps = select(
+        {
+            "//tools/cc_target_os:android": [":android_deps"],
+            "//tools/cc_target_os:windows": [":windows_deps"],
+        },
+        no_match_error = "Please build with an Android or Windows toolchain",
+    ),
+)
+```
+
+```sh
+$ bazel build //myapp:my_lib
+ERROR: Configurable attribute "deps" doesn't match this configuration: Please
+build with an Android or Windows toolchain
+```
+
+## Rules compatibility {:#rules-compatibility}
+
+Rule implementations receive the *resolved values* of configurable
+attributes. For example, given:
+
+```python
+# myapp/BUILD
+
+some_rule(
+    name = "my_target",
+    some_attr = select({
+        ":foo_mode": [":foo"],
+        ":bar_mode": [":bar"],
+    }),
+)
+```
+
+```sh
+$ bazel build //myapp/my_target --define mode=foo
+```
+
+Rule implementation code sees `ctx.attr.some_attr` as `[":foo"]`.
+
+Macros can accept `select()` clauses and pass them through to native
+rules. But *they cannot directly manipulate them*. For example, there's no way
+for a macro to convert
+
+```python
+select({"foo": "val"}, ...)
+```
+
+to
+
+```python
+select({"foo": "val_with_suffix"}, ...)
+```
+
+This is for two reasons.
+
+First, macros that need to know which path a `select` will choose *cannot work*
+because macros are evaluated in Bazel's [loading phase](/run/build#loading),
+which occurs before flag values are known.
+This is a core Bazel design restriction that's unlikely to change any time soon.
+
+Second, macros that just need to iterate over *all* `select` paths, while
+technically feasible, lack a coherent UI. Further design is necessary to change
+this.
+
+## Bazel query and cquery {:#query-and-cquery}
+
+Bazel [`query`](/query/guide) operates over Bazel's
+[loading phase](/reference/glossary#loading-phase).
+This means it doesn't know what command line flags a target uses since those
+flags aren't evaluated until later in the build (in the
+[analysis phase](/reference/glossary#analysis-phase)).
+So it can't determine which `select()` branches are chosen.
+
+Bazel [`cquery`](/query/cquery) operates after Bazel's analysis phase, so it has
+all this information and can accurately resolve `select()`s.
+
+Consider:
+
+```python
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+```
+```python
+# myapp/BUILD
+
+string_flag(
+    name = "dog_type",
+    build_setting_default = "cat"
+)
+
+cc_library(
+    name = "my_lib",
+    deps = select({
+        ":long": [":foo_dep"],
+        ":short": [":bar_dep"],
+    }),
+)
+
+config_setting(
+    name = "long",
+    flag_values = {":dog_type": "dachshund"},
+)
+
+config_setting(
+    name = "short",
+    flag_values = {":dog_type": "pug"},
+)
+```
+
+`query` overapproximates `:my_lib`'s dependencies:
+
+```sh
+$ bazel query 'deps(//myapp:my_lib)'
+//myapp:my_lib
+//myapp:foo_dep
+//myapp:bar_dep
+```
+
+while `cquery` shows its exact dependencies:
+
+```sh
+$ bazel cquery 'deps(//myapp:my_lib)' --//myapp:dog_type=pug
+//myapp:my_lib
+//myapp:bar_dep
+```
+
+## FAQ {:#faq}
+
+### Why doesn't select() work in macros? {:#faq-select-macro}
+
+select() *does* work in rules! See [Rules compatibility](#rules-compatibility) for
+details.
+
+The key issue this question usually means is that select() doesn't work in
+*macros*. These are different than *rules*. See the
+documentation on [rules](/extending/rules) and [macros](/extending/macros)
+to understand the difference.
+Here's an end-to-end example:
+
+Define a rule and macro:
+
+```python
+# myapp/defs.bzl
+
+# Rule implementation: when an attribute is read, all select()s have already
+# been resolved. So it looks like a plain old attribute just like any other.
+def _impl(ctx):
+    name = ctx.attr.name
+    allcaps = ctx.attr.my_config_string.upper()  # This works fine on all values.
+    print("My name is " + name + " with custom message: " + allcaps)
+
+# Rule declaration:
+my_custom_bazel_rule = rule(
+    implementation = _impl,
+    attrs = {"my_config_string": attr.string()},
+)
+
+# Macro declaration:
+def my_custom_bazel_macro(name, my_config_string):
+    allcaps = my_config_string.upper()  # This line won't work with select(s).
+    print("My name is " + name + " with custom message: " + allcaps)
+```
+
+Instantiate the rule and macro:
+
+```python
+# myapp/BUILD
+
+load("//myapp:defs.bzl", "my_custom_bazel_rule")
+load("//myapp:defs.bzl", "my_custom_bazel_macro")
+
+my_custom_bazel_rule(
+    name = "happy_rule",
+    my_config_string = select({
+        "//third_party/bazel_platforms/cpu:x86_32": "first string",
+        "//third_party/bazel_platforms/cpu:ppc": "second string",
+    }),
+)
+
+my_custom_bazel_macro(
+    name = "happy_macro",
+    my_config_string = "fixed string",
+)
+
+my_custom_bazel_macro(
+    name = "sad_macro",
+    my_config_string = select({
+        "//third_party/bazel_platforms/cpu:x86_32": "first string",
+        "//third_party/bazel_platforms/cpu:ppc": "other string",
+    }),
+)
+```
+
+Building fails because `sad_macro` can't process the `select()`:
+
+```sh
+$ bazel build //myapp:all
+ERROR: /myworkspace/myapp/BUILD:17:1: Traceback
+  (most recent call last):
+File "/myworkspace/myapp/BUILD", line 17
+my_custom_bazel_macro(name = "sad_macro", my_config_stri..."}))
+File "/myworkspace/myapp/defs.bzl", line 4, in
+  my_custom_bazel_macro
+my_config_string.upper()
+type 'select' has no method upper().
+ERROR: error loading package 'myapp': Package 'myapp' contains errors.
+```
+
+Building succeeds when you comment out `sad_macro`:
+
+```sh
+# Comment out sad_macro so it doesn't mess up the build.
+$ bazel build //myapp:all
+DEBUG: /myworkspace/myapp/defs.bzl:5:3: My name is happy_macro with custom message: FIXED STRING.
+DEBUG: /myworkspace/myapp/hi.bzl:15:3: My name is happy_rule with custom message: FIRST STRING.
+```
+
+This is impossible to change because *by definition* macros are evaluated before
+Bazel reads the build's command line flags. That means there isn't enough
+information to evaluate select()s.
+
+Macros can, however, pass `select()`s as opaque blobs to rules:
+
+```python
+# myapp/defs.bzl
+
+def my_custom_bazel_macro(name, my_config_string):
+    print("Invoking macro " + name)
+    my_custom_bazel_rule(
+        name = name + "_as_target",
+        my_config_string = my_config_string,
+    )
+```
+
+```sh
+$ bazel build //myapp:sad_macro_less_sad
+DEBUG: /myworkspace/myapp/defs.bzl:23:3: Invoking macro sad_macro_less_sad.
+DEBUG: /myworkspace/myapp/defs.bzl:15:3: My name is sad_macro_less_sad with custom message: FIRST STRING.
+```
+
+### Why does select() always return true? {:#faq-boolean-select}
+
+Because *macros* (but not rules) by definition
+[can't evaluate `select()`s](#faq-select-macro), any attempt to do so
+usually produces an error:
+
+```sh
+ERROR: /myworkspace/myapp/BUILD:17:1: Traceback
+  (most recent call last):
+File "/myworkspace/myapp/BUILD", line 17
+my_custom_bazel_macro(name = "sad_macro", my_config_stri..."}))
+File "/myworkspace/myapp/defs.bzl", line 4, in
+  my_custom_bazel_macro
+my_config_string.upper()
+type 'select' has no method upper().
+```
+
+Booleans are a special case that fail silently, so you should be particularly
+vigilant with them:
+
+```sh
+$ cat myapp/defs.bzl
+def my_boolean_macro(boolval):
+  print("TRUE" if boolval else "FALSE")
+
+$ cat myapp/BUILD
+load("//myapp:defs.bzl", "my_boolean_macro")
+my_boolean_macro(
+    boolval = select({
+        "//third_party/bazel_platforms/cpu:x86_32": True,
+        "//third_party/bazel_platforms/cpu:ppc": False,
+    }),
+)
+
+$ bazel build //myapp:all --cpu=x86
+DEBUG: /myworkspace/myapp/defs.bzl:4:3: TRUE.
+$ bazel build //mypro:all --cpu=ppc
+DEBUG: /myworkspace/myapp/defs.bzl:4:3: TRUE.
+```
+
+This happens because macros don't understand the contents of `select()`.
+So what they're really evaluting is the `select()` object itself. According to
+[Pythonic](https://docs.python.org/release/2.5.2/lib/truth.html) design
+standards, all objects aside from a very small number of exceptions
+automatically return true.
+
+### Can I read select() like a dict? {:#faq-inspectable-select}
+
+Macros [can't](#faq-select-macro) evaluate select(s) because macros evaluate before
+Bazel knows what the build's command line parameters are. Can they at least read
+the `select()`'s dictionary to, for example, add a suffix to each value?
+
+Conceptually this is possible, but [it isn't yet a Bazel feature](https://github.com/bazelbuild/bazel/issues/8419).
+What you *can* do today is prepare a straight dictionary, then feed it into a
+`select()`:
+
+```sh
+$ cat myapp/defs.bzl
+def selecty_genrule(name, select_cmd):
+  for key in select_cmd.keys():
+    select_cmd[key] += " WITH SUFFIX"
+  native.genrule(
+      name = name,
+      outs = [name + ".out"],
+      srcs = [],
+      cmd = "echo " + select(select_cmd + {"//conditions:default": "default"})
+        + " > $@"
+  )
+
+$ cat myapp/BUILD
+selecty_genrule(
+    name = "selecty",
+    select_cmd = {
+        "//third_party/bazel_platforms/cpu:x86_32": "x86 mode",
+    },
+)
+
+$ bazel build //testapp:selecty --cpu=x86 && cat bazel-genfiles/testapp/selecty.out
+x86 mode WITH SUFFIX
+```
+
+If you'd like to support both `select()` and native types, you can do this:
+
+```sh
+$ cat myapp/defs.bzl
+def selecty_genrule(name, select_cmd):
+    cmd_suffix = ""
+    if type(select_cmd) == "string":
+        cmd_suffix = select_cmd + " WITH SUFFIX"
+    elif type(select_cmd) == "dict":
+        for key in select_cmd.keys():
+            select_cmd[key] += " WITH SUFFIX"
+        cmd_suffix = select(select_cmd + {"//conditions:default": "default"})
+
+    native.genrule(
+        name = name,
+        outs = [name + ".out"],
+        srcs = [],
+        cmd = "echo " + cmd_suffix + "> $@",
+    )
+```
+
+### Why doesn't select() work with bind()? {:#faq-select-bind}
+
+First of all, do not use `bind()`. It is deprecated in favor of `alias()`.
+
+The technical answer is that [`bind()`](/reference/be/workspace#bind) is a repo
+rule, not a BUILD rule.
+
+Repo rules do not have a specific configuration, and aren't evaluated in
+the same way as BUILD rules. Therefore, a `select()` in a `bind()` can't
+actually evaluate to any specific branch.
+
+Instead, you should use [`alias()`](/reference/be/general#alias), with a `select()` in
+the `actual` attribute, to perform this type of run-time determination. This
+works correctly, since `alias()` is a BUILD rule, and is evaluated with a
+specific configuration.
+
+You can even have a `bind()` target point to an `alias()`, if needed.
+
+```sh
+$ cat WORKSPACE
+workspace(name = "myapp")
+bind(name = "openssl", actual = "//:ssl")
+http_archive(name = "alternative", ...)
+http_archive(name = "boringssl", ...)
+
+$ cat BUILD
+config_setting(
+    name = "alt_ssl",
+    define_values = {
+        "ssl_library": "alternative",
+    },
+)
+
+alias(
+    name = "ssl",
+    actual = select({
+        "//:alt_ssl": "@alternative//:ssl",
+        "//conditions:default": "@boringssl//:ssl",
+    }),
+)
+```
+
+With this setup, you can pass `--define ssl_library=alternative`, and any target
+that depends on either `//:ssl` or `//external:ssl` will see the alternative
+located at `@alternative//:ssl`.
+
+But really, stop using `bind()`.
+
+### Why doesn't my select() choose what I expect? {:#faq-select-choose-condition}
+
+If `//myapp:foo` has a `select()` that doesn't choose the condition you expect,
+use [cquery](/query/cquery) and `bazel config` to debug:
+
+If `//myapp:foo` is the top-level target you're building, run:
+
+```sh
+$ bazel cquery //myapp:foo <desired build flags>
+//myapp:foo (12e23b9a2b534a)
+```
+
+If you're building some other target `//bar` that depends on
+//myapp:foo somewhere in its subgraph, run:
+
+```sh
+$ bazel cquery 'somepath(//bar, //myapp:foo)' <desired build flags>
+//bar:bar   (3ag3193fee94a2)
+//bar:intermediate_dep (12e23b9a2b534a)
+//myapp:foo (12e23b9a2b534a)
+```
+
+The `(12e23b9a2b534a)` next to `//myapp:foo` is a *hash* of the
+configuration that resolves `//myapp:foo`'s `select()`. You can inspect its
+values with `bazel config`:
+
+```sh
+$ bazel config 12e23b9a2b534a
+BuildConfigurationValue 12e23b9a2b534a
+Fragment com.google.devtools.build.lib.analysis.config.CoreOptions {
+  cpu: darwin
+  compilation_mode: fastbuild
+  ...
+}
+Fragment com.google.devtools.build.lib.rules.cpp.CppOptions {
+  linkopt: [-Dfoo=bar]
+  ...
+}
+...
+```
+
+Then compare this output against the settings expected by each `config_setting`.
+
+`//myapp:foo` may exist in different configurations in the same build. See the
+[cquery docs](/query/cquery) for guidance on using `somepath` to get the right
+one.
+
+Caution: To prevent restarting the Bazel server, invoke `bazel config` with the
+same command line flags as the `bazel cquery`. The `config` command relies on
+the configuration nodes from the still-running server of the previous command.
+
+### Why doesn't `select()` work with platforms? {:#faq-select-platforms}
+
+Bazel doesn't support configurable attributes checking whether a given platform
+is the target platform because the semantics are unclear.
+
+For example:
+
+```py
+platform(
+    name = "x86_linux_platform",
+    constraint_values = [
+        "@platforms//cpu:x86",
+        "@platforms//os:linux",
+    ],
+)
+
+cc_library(
+    name = "lib",
+    srcs = [...],
+    linkopts = select({
+        ":x86_linux_platform": ["--enable_x86_optimizations"],
+        "//conditions:default": [],
+    }),
+)
+```
+
+In this `BUILD` file, which `select()` should be used if the target platform has both the
+`@platforms//cpu:x86` and `@platforms//os:linux` constraints, but is **not** the
+`:x86_linux_platform` defined here? The author of the `BUILD` file and the user
+who defined the separate platform may have different ideas.
+
+#### What should I do instead?
+
+Instead, define a `config_setting` that matches **any** platform with
+these constraints:
+
+```py
+config_setting(
+    name = "is_x86_linux",
+    constraint_values = [
+        "@platforms//cpu:x86",
+        "@platforms//os:linux",
+    ],
+)
+
+cc_library(
+    name = "lib",
+    srcs = [...],
+    linkopts = select({
+        ":is_x86_linux": ["--enable_x86_optimizations"],
+        "//conditions:default": [],
+    }),
+)
+```
+
+This process defines specific semantics, making it clearer to users what
+platforms meet the desired conditions.
+
+#### What if I really, really want to `select` on the platform?
+
+If your build requirements specifically require checking the platform, you
+can flip the value of the `--platforms` flag in a `config_setting`:
+
+```py
+config_setting(
+    name = "is_specific_x86_linux_platform",
+    values = {
+        "platforms": ["//package:x86_linux_platform"],
+    },
+)
+
+cc_library(
+    name = "lib",
+    srcs = [...],
+    linkopts = select({
+        ":is_specific_x86_linux_platform": ["--enable_x86_optimizations"],
+        "//conditions:default": [],
+    }),
+)
+```
+
+The Bazel team doesn't endorse doing this; it overly constrains your build and
+confuses users when the expected condition does not match.
+
+[BuildSettings]: /extending/config#user-defined-build-settings
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# bazel mobile-install
+
+{% include "_buttons.html" %}
+
+<p class="lead">Fast iterative development for Android</p>
+
+This page describes how `bazel mobile-install` makes iterative development
+for Android much faster. It describes the benefits of this approach versus the
+challenges of the traditional app install method.
+
+## Summary {:#summary}
+
+To install small changes to an Android app very quickly, do the following:
+
+ 1. Find the `android_binary` rule of the app you want to install.
+ 2. Disable Proguard by removing the `proguard_specs` attribute.
+ 3. Set the `multidex` attribute to `native`.
+ 4. Set the `dex_shards` attribute to `10`.
+ 5. Connect your device running ART (not Dalvik) over USB and enable USB
+    debugging on it.
+ 6. Run `bazel mobile-install :your_target`. App startup will be a little
+    slower than usual.
+ 7. Edit the code or Android resources.
+ 8. Run `bazel mobile-install --incremental :your_target`.
+ 9. Enjoy not having to wait a lot.
+
+Some command line options to Bazel that may be useful:
+
+ - `--adb` tells Bazel which adb binary to use
+ - `--adb_arg` can be used to  add extra arguments to the command line of `adb`.
+   One useful application of this is to select which device you want to install
+   to if you have multiple devices connected to your workstation:
+   `bazel mobile-install --adb_arg=-s --adb_arg=<SERIAL> :your_target`
+ - `--start_app` automatically starts the app
+
+When in doubt, look at the
+[example](https://github.com/bazelbuild/bazel/tree/master/examples/android){: .external}
+or [contact us](https://groups.google.com/forum/#!forum/bazel-discuss){: .external}.
+
+## Introduction {:#introduction}
+
+One of the most important attributes of a developer's toolchain is speed: there
+is a world of difference between changing the code and seeing it run within a
+second and having to wait minutes, sometimes hours, before you get any feedback
+on whether your changes do what you expect them to.
+
+Unfortunately, the traditional Android toolchain for building an .apk entails
+many monolithic, sequential steps and all of these have to be done in order to
+build an Android app. At Google, waiting five minutes to build a single-line
+change was not unusual on larger projects like Google Maps.
+
+`bazel mobile-install` makes iterative development for Android much faster by
+using a combination of change pruning, work sharding, and clever manipulation of
+Android internals, all without changing any of your app's code.
+
+## Problems with traditional app installation {:#problems-app-install}
+
+Building an Android app has some issues, including:
+
+- Dexing. By default, "dx" is invoked exactly once in the build and it does not
+know how to reuse work from previous builds: it dexes every method again, even
+though only one method was changed.
+
+- Uploading data to the device. adb does not use the full bandwidth of a USB 2.0
+connection, and larger apps can take a lot of time to upload. The entire app is
+uploaded, even if only small parts have changed, for example, a resource or a
+single method, so this can be a major bottleneck.
+
+- Compilation to native code. Android L introduced ART, a new Android runtime,
+which compiles apps ahead-of-time rather than compiling them just-in-time like
+Dalvik. This makes apps much faster at the cost of longer installation
+time. This is a good tradeoff for users because they typically install an app
+once and use it many times, but results in slower development where an app is
+installed many times and each version is run at most a handful of times.
+
+## The approach of `bazel mobile-install` {:#approach-mobile-install}
+
+`bazel mobile-install `makes the following improvements:
+
+ - Sharded dexing. After building the app's Java code, Bazel shards the class
+   files into approximately equal-sized parts and invokes `dx` separately on
+   them. `dx` is not invoked on shards that did not change since the last build.
+
+ - Incremental file transfer. Android resources, .dex files, and native
+   libraries are removed from the main .apk and are stored in under a separate
+   mobile-install directory. This makes it possible to update code and Android
+   resources independently without reinstalling the whole app. Thus,
+   transferring the files takes less time and only the .dex files that have
+   changed are recompiled on-device.
+
+ - Loading parts of the app from outside the .apk. A tiny stub application is
+   put into the .apk that loads Android resources, Java code and native code
+   from the on-device mobile-install directory, then transfers control to the
+   actual app. This is all transparent to the app, except in a few corner cases
+   described below.
+
+### Sharded Dexing {:#sharded-dexing}
+
+Sharded dexing is reasonably straightforward: once the .jar files are built, a
+[tool](https://github.com/bazelbuild/bazel/blob/master/src/tools/android/java/com/google/devtools/build/android/ziputils/DexMapper.java){: .external}
+shards them into separate .jar files of approximately equal size, then invokes
+`dx` on those that were changed since the previous build. The logic that
+determines which shards to dex is not specific to Android: it just uses the
+general change pruning algorithm of Bazel.
+
+The first version of the sharding algorithm simply ordered the .class files
+alphabetically, then cut the list up into equal-sized parts, but this proved to
+be suboptimal: if a class was added or removed (even a nested or an anonymous
+one), it would cause all the classes alphabetically after it to shift by one,
+resulting in dexing those shards again. Thus, it was decided to shard Java
+packages rather than individual classes. Of course, this still results in
+dexing many shards if a new package is added or removed, but that is much less
+frequent than adding or removing a single class.
+
+The number of shards is controlled by the BUILD file (using the
+`android_binary.dex_shards` attribute). In an ideal world, Bazel would
+automatically determine how many shards are best, but Bazel currently must know
+the set of actions (for example, commands to be executed during the build) before
+executing any of them, so it cannot determine the optimal number of shards
+because it doesn't know how many Java classes there will eventually be in the
+app. Generally speaking, the more shards, the faster the build and the
+installation will be, but the slower app startup becomes, because the dynamic
+linker has to do more work. The sweet spot is usually between 10 and 50 shards.
+
+### Incremental file transfer {:#incremental-file-transfer}
+
+After building the app, the next step is to install it, preferably with the
+least effort possible. Installation consists of the following steps:
+
+ 1. Installing the .apk (typically using `adb install`)
+ 2. Uploading the .dex files, Android resources, and native libraries to the
+    mobile-install directory
+
+There is not much incrementality in the first step: the app is either installed
+or not. Bazel currently relies on the user to indicate if it should do this step
+through the `--incremental` command line option because it cannot determine in
+all cases if it is necessary.
+
+In the second step, the app's files from the build are compared to an on-device
+manifest file that lists which app files are on the device and their
+checksums. Any new files are uploaded to the device, any files that have changed
+are updated, and any files that have been removed are deleted from the
+device. If the manifest is not present, it is assumed that every file needs to
+be uploaded.
+
+Note that it is possible to fool the incremental installation algorithm by
+changing a file on the device, but not its checksum in the manifest. This could
+have been safeguarded against by computing the checksum of the files on the
+device, but this was deemed to be not worth the increase in installation time.
+
+### The Stub application {:#stub-app}
+
+The stub application is where the magic to load the dexes, native code and
+Android resources from the on-device `mobile-install` directory happens.
+
+The actual loading is implemented by subclassing `BaseDexClassLoader` and is a
+reasonably well-documented technique. This happens before any of the app's
+classes are loaded, so that any application classes that are in the apk can be
+placed in the on-device `mobile-install` directory so that they can be updated
+without `adb install`.
+
+This needs to happen before any of the
+classes of the app are loaded, so that no application class needs to be in the
+.apk which would mean that changes to those classes would require a full
+re-install.
+
+This is accomplished by replacing the `Application` class specified in
+`AndroidManifest.xml` with the
+[stub application](https://github.com/bazelbuild/bazel/blob/master/src/tools/android/java/com/google/devtools/build/android/incrementaldeployment/StubApplication.java){: .external}. This
+takes control when the app is started, and tweaks the class loader and the
+resource manager appropriately at the earliest moment (its constructor) using
+Java reflection on the internals of the Android framework.
+
+Another thing the stub application does is to copy the native libraries
+installed by mobile-install to another location. This is necessary because the
+dynamic linker needs the `X` bit to be set on the files, which is not possible to
+do for any location accessible by a non-root `adb`.
+
+Once all these things are done, the stub application then instantiates the
+actual `Application` class, changing all references to itself to the actual
+application within the Android framework.
+
+## Results {:#results}
+
+### Performance {:#performance}
+
+In general, `bazel mobile-install` results in a 4x to 10x speedup of building
+and installing large apps after a small change.
+
+The following numbers were computed for a few Google products:
+
+<img src="/docs/images/mobile-install-performance.svg"/>
+
+This, of course, depends on the nature of the change: recompilation after
+changing a base library takes more time.
+
+### Limitations {:#limitations}
+
+The tricks the stub application plays don't work in every case.
+The following cases highlight where it does not work as expected:
+
+ - When `Context` is cast to the `Application` class in
+   `ContentProvider#onCreate()`. This method is called during application
+   startup before we have a chance to replace the instance of the `Application`
+   class, therefore, `ContentProvider` will still reference the stub application
+   instead of the real one. Arguably, this is not a bug since you are not
+   supposed to downcast `Context` like this, but this seems to happen in a few
+   apps at Google.
+
+ - Resources installed by `bazel mobile-install` are only available from within
+   the app. If resources are accessed by other apps via
+   `PackageManager#getApplicationResources()`, these resources will be from the
+   last non-incremental install.
+
+ - Devices that aren't running ART. While the stub application works well on
+   Froyo and later, Dalvik has a bug that makes it think that the app is
+   incorrect if its code is distributed over multiple .dex files in certain
+   cases, for example, when Java annotations are used in a
+   [specific](https://code.google.com/p/android/issues/detail?id=78144){: .external}
+   way. As long as your app doesn't tickle these bugs, it should work with Dalvik,
+   too (note, however, that support for old Android versions isn't exactly our
+   focus)
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# Using the Android Native Development Kit with Bazel
+
+{% include "_buttons.html" %}
+
+_If you're new to Bazel, please start with the [Building Android with
+Bazel](/start/android-app ) tutorial._
+
+## Overview {:#overview}
+
+Bazel can run in many different build configurations, including several that use
+the Android Native Development Kit (NDK) toolchain. This means that normal
+`cc_library` and `cc_binary` rules can be compiled for Android directly within
+Bazel. Bazel accomplishes this by using the `android_ndk_repository` repository
+rule.
+
+## Prerequisites {:#prerequisites}
+
+Please ensure that you have installed the Android SDK and NDK.
+
+To set up the SDK and NDK, add the following snippet to your `WORKSPACE`:
+
+```python
+android_sdk_repository(
+    name = "androidsdk", # Required. Name *must* be "androidsdk".
+    path = "/path/to/sdk", # Optional. Can be omitted if `ANDROID_HOME` environment variable is set.
+)
+
+android_ndk_repository(
+    name = "androidndk", # Required. Name *must* be "androidndk".
+    path = "/path/to/ndk", # Optional. Can be omitted if `ANDROID_NDK_HOME` environment variable is set.
+)
+```
+
+For more information about the `android_ndk_repository` rule, see the [Build
+Encyclopedia entry](/reference/be/android#android_ndk_repository).
+
+If you're using a recent version of the Android NDK (r22 and beyond), use the
+Starlark implementation of `android_ndk_repository`.
+Follow the instructions in
+[its README](https://github.com/bazelbuild/rules_android_ndk).
+
+## Quick start {:#quick-start}
+
+To build C++ for Android, simply add `cc_library` dependencies to your
+`android_binary` or `android_library` rules.
+
+For example, given the following `BUILD` file for an Android app:
+
+```python
+# In <project>/app/src/main/BUILD.bazel
+
+cc_library(
+    name = "jni_lib",
+    srcs = ["cpp/native-lib.cpp"],
+)
+
+android_library(
+    name = "lib",
+    srcs = ["java/com/example/android/bazel/MainActivity.java"],
+    resource_files = glob(["res/**/*"]),
+    custom_package = "com.example.android.bazel",
+    manifest = "LibraryManifest.xml",
+    deps = [":jni_lib"],
+)
+
+android_binary(
+    name = "app",
+    deps = [":lib"],
+    manifest = "AndroidManifest.xml",
+)
+```
+
+This `BUILD` file results in the following target graph:
+
+![Example results](/docs/images/android_ndk.png "Build graph results")
+
+**Figure 1.** Build graph of Android project with cc_library dependencies.
+
+To build the app, simply run:
+
+```posix-terminal
+bazel build //app/src/main:app
+```
+
+The `bazel build` command compiles the Java files, Android resource files, and
+`cc_library` rules, and packages everything into an APK:
+
+```posix-terminal
+$ zipinfo -1 bazel-bin/app/src/main/app.apk
+nativedeps
+lib/armeabi-v7a/libapp.so
+classes.dex
+AndroidManifest.xml
+...
+res/...
+...
+META-INF/CERT.SF
+META-INF/CERT.RSA
+META-INF/MANIFEST.MF
+```
+
+Bazel compiles all of the cc_libraries into a single shared object (`.so`) file,
+targeted for the `armeabi-v7a` ABI by default. To change this or build for
+multiple ABIs at the same time, see the section on [configuring the target
+ABI](#configuring-target-abi).
+
+## Example setup {:#example-setup}
+
+This example is available in the [Bazel examples
+repository](https://github.com/bazelbuild/examples/tree/master/android/ndk){: .external}.
+
+In the `BUILD.bazel` file, three targets are defined with the `android_binary`,
+`android_library`, and `cc_library` rules.
+
+The `android_binary` top-level target builds the APK.
+
+The `cc_library` target contains a single C++ source file with a JNI function
+implementation:
+
+```c++
+#include <jni.h>
+#include <string>
+
+extern "C"
+JNIEXPORT jstring
+
+JNICALL
+Java_com_example_android_bazel_MainActivity_stringFromJNI(
+        JNIEnv *env,
+        jobject /* this */) {
+    std::string hello = "Hello from C++";
+    return env->NewStringUTF(hello.c_str());
+}
+```
+
+The `android_library` target specifies the Java sources, resource files, and the
+dependency on a `cc_library` target. For this example, `MainActivity.java` loads
+the shared object file `libapp.so`, and defines the method signature for the JNI
+function:
+
+```java
+public class MainActivity extends AppCompatActivity {
+
+    static {
+        System.loadLibrary("app");
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+       // ...
+    }
+
+    public native String stringFromJNI();
+
+}
+```
+
+Note: The name of the native library is derived from the name of the top
+level `android_binary` target. In this example, it is `app`.
+
+## Configuring the target ABI {:#configuring-target-abi}
+
+To configure the target ABI, use the `--android_platforms` flag as follows:
+
+```posix-terminal
+bazel build //:app --android_platforms={{ "<var>" }}comma-separated list of platforms{{ "</var>" }}
+```
+
+Just like the `--platforms` flag, the values passed to `--android_platforms` are
+the labels of [`platform`](https://bazel.build/reference/be/platforms-and-toolchains#platform)
+targets, using standard constraint values to describe your device.
+
+For example, for an Android device with a 64-bit ARM processor, you'd define
+your platform like this:
+
+```py
+platform(
+    name = "android_arm64",
+    constraint_values = [
+        "@platforms//os:android",
+        "@platforms//cpu:arm64",
+    ],
+)
+```
+
+Every Android `platform` should use the [`@platforms//os:android`](https://github.com/bazelbuild/platforms/blob/33a3b209f94856193266871b1545054afb90bb28/os/BUILD#L36)
+OS constraint. To migrate the CPU constraint, check this chart:
+
+CPU Value     | Platform
+------------- | ------------------------------------------
+`armeabi-v7a` | `@platforms//cpu:armv7`
+`arm64-v8a`   | `@platforms//cpu:arm64`
+`x86`         | `@platforms//cpu:x86_32`
+`x86_64`      | `@platforms//cpu:x86_64`
+
+And, of course, for a multi-architecture APK, you pass multiple labels, for
+example: `--android_platforms=//:arm64,//:x86_64` (assuming you defined those in
+your top-level `BUILD.bazel` file).
+
+Bazel is unable to select a default Android platform, so one must be defined and
+specified with `--android_platforms`.
+
+Depending on the NDK revision and Android API level, the following ABIs are
+available:
+
+| NDK revision | ABIs                                                        |
+|--------------|-------------------------------------------------------------|
+| 16 and lower | armeabi, armeabi-v7a, arm64-v8a, mips, mips64, x86, x86\_64 |
+| 17 and above | armeabi-v7a, arm64-v8a, x86, x86\_64                        |
+
+See [the NDK docs](https://developer.android.com/ndk/guides/abis.html){: .external}
+for more information on these ABIs.
+
+Multi-ABI Fat APKs are not recommended for release builds since they increase
+the size of the APK, but can be useful for development and QA builds.
+
+## Selecting a C++ standard {:#selecting-c-standard}
+
+Use the following flags to build according to a C++ standard:
+
+| C++ Standard | Flag                    |
+|--------------|-------------------------|
+| C++98        | Default, no flag needed |
+| C++11        | `--cxxopt=-std=c++11`   |
+| C++14        | `--cxxopt=-std=c++14`   |
+| C++17        | `--cxxopt=-std=c++17`   |
+
+For example:
+
+```posix-terminal
+bazel build //:app --cxxopt=-std=c++11
+```
+
+Read more about passing compiler and linker flags with `--cxxopt`, `--copt`, and
+`--linkopt` in the [User Manual](/docs/user-manual#cxxopt).
+
+Compiler and linker flags can also be specified as attributes in `cc_library`
+using `copts` and `linkopts`. For example:
+
+```python
+cc_library(
+    name = "jni_lib",
+    srcs = ["cpp/native-lib.cpp"],
+    copts = ["-std=c++11"],
+    linkopts = ["-ldl"], # link against libdl
+)
+```
+
+## Building a `cc_library` for Android without using `android_binary` {:#cclibrary-android}
+
+To build a standalone `cc_binary` or `cc_library` for Android without using an
+`android_binary`, use the `--platforms` flag.
+
+For example, assuming you have defined Android platforms in
+`my/platforms/BUILD`:
+
+```posix-terminal
+bazel build //my/cc/jni:target \
+      --platforms=//my/platforms:x86_64
+```
+
+With this approach, the entire build tree is affected.
+
+Note: All of the targets on the command line must be compatible with
+building for Android when specifying these flags, which may make it difficult to
+use [Bazel wild-cards](/run/build#specifying-build-targets) like
+`/...` and `:all`.
+
+These flags can be put into a `bazelrc` config (one for each ABI), in
+`{{ "<var>" }}project{{ "</var>" }}/.bazelrc`:
+
+```
+common:android_x86 --platforms=//my/platforms:x86
+
+common:android_armeabi-v7a --platforms=//my/platforms:armeabi-v7a
+
+# In general
+common:android_<abi> --platforms=//my/platforms:<abi>
+```
+
+Then, to build a `cc_library` for `x86` for example, run:
+
+```posix-terminal
+bazel build //my/cc/jni:target --config=android_x86
+```
+
+In general, use this method for low-level targets (like `cc_library`) or when
+you know exactly what you're building; rely on the automatic configuration
+transitions from `android_binary` for high-level targets where you're expecting
+to build a lot of targets you don't control.
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# Android and Bazel
+
+{% include "_buttons.html" %}
+
+This page contains resources that help you use Bazel with Android projects. It
+links to a tutorial, build rules, and other information specific to building
+Android projects with Bazel.
+
+## Getting started {:#getting-started}
+
+The following resources will help you work with Bazel on Android projects:
+
+*  [Tutorial: Building an Android app](/start/android-app ). This
+   tutorial is a good place to start learning about Bazel commands and concepts,
+   and how to build Android apps with Bazel.
+*  [Codelab: Building Android Apps with Bazel](https://developer.android.com/codelabs/bazel-android-intro#0){: .external}.
+   This codelab explains how to build Android apps with Bazel.
+
+## Features {:#features}
+
+Bazel has Android rules for building and testing Android apps, integrating with
+the SDK/NDK, and creating emulator images. There are also Bazel plugins for
+Android Studio and IntelliJ.
+
+*  [Android rules](/reference/be/android). The Build Encyclopedia describes the rules
+   for building and testing Android apps with Bazel.
+*  [Integration with Android Studio](/install/ide). Bazel is compatible with
+   Android Studio using the [Android Studio with Bazel](https://ij.bazel.build/)
+   plugin.
+*  [`mobile-install` for Android](/docs/mobile-install). Bazel's `mobile-install`
+   feature provides automated build-and-deploy functionality for building and
+   testing Android apps directly on Android devices and emulators.
+*  [Android instrumentation testing](/docs/android-instrumentation-test) on
+   emulators and devices.
+*  [Android NDK integration](/docs/android-ndk). Bazel supports compiling to
+   native code through direct NDK integration and the C++ rules.
+*  [Android build performance](/docs/android-build-performance). This page
+   provides information on optimizing build performance for Android apps.
+
+## Further reading {:#further-reading}
+
+*  Integrating with dependencies from Google Maven and Maven Central with [rules_jvm_external](https://github.com/bazelbuild/rules_jvm_external){: .external}.
+*  Learn [How Android Builds Work in Bazel](https://blog.bazel.build/2018/02/14/how-android-builds-work-in-bazel.html).
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# C++ Toolchain Configuration
+
+{% include "_buttons.html" %}
+
+## Overview {:#overview}
+
+To invoke the compiler with the right options, Bazel needs some knowledge about
+the compiler internals, such as include directories and important flags.
+In other words, Bazel needs a simplified model of the compiler to understand its
+workings.
+
+Bazel needs to know the following:
+
+* Whether the compiler supports thinLTO, modules, dynamic linking, or PIC
+  (position independent code).
+* Paths to the required tools such as gcc, ld, ar, objcopy, and so on.
+* The built-in system include directories. Bazel needs these to validate that
+  all headers that were included in the source file were properly declared in
+  the `BUILD` file.
+* The default sysroot.
+* Which flags to use for compilation, linking, archiving.
+* Which flags to use for the supported compilation modes (opt, dbg, fastbuild).
+* Make variables specifically required by the compiler.
+
+If the compiler has support for multiple architectures, Bazel needs to configure
+them separately.
+
+[`CcToolchainConfigInfo`](/rules/lib/providers/CcToolchainConfigInfo) is a provider that provides the necessary level of
+granularity for configuring the behavior of Bazel's C++ rules. By default,
+Bazel automatically configures `CcToolchainConfigInfo` for your build, but you
+have the option to configure it manually. For that, you need a Starlark rule
+that provides the `CcToolchainConfigInfo` and you need to point the
+[`toolchain_config`](/reference/be/c-cpp#cc_toolchain.toolchain_config) attribute of the
+[`cc_toolchain`](/reference/be/c-cpp#cc_toolchain) to your rule.
+You can create the `CcToolchainConfigInfo` by calling
+[`cc_common.create_cc_toolchain_config_info()`](/rules/lib/toplevel/cc_common#create_cc_toolchain_config_info).
+You can find Starlark constructors for all structs you'll need in the process in
+[`@rules_cc//cc:cc_toolchain_config_lib.bzl`](https://github.com/bazelbuild/rules_cc/blob/master/cc/cc_toolchain_config_lib.bzl){: .external}.
+
+
+When a C++ target enters the analysis phase, Bazel selects the appropriate
+`cc_toolchain` target based on the `BUILD` file, and obtains the
+`CcToolchainConfigInfo` provider from the target specified in the
+`cc_toolchain.toolchain_config` attribute. The `cc_toolchain` target
+passes this information to the C++ target through a `CcToolchainProvider`.
+
+For example, a compile or link action, instantiated by a rule such as
+`cc_binary` or `cc_library`, needs the following information:
+
+*   The compiler or linker to use
+*   Command-line flags for the compiler/linker
+*   Configuration flags passed through the `--copt/--linkopt` options
+*   Environment variables
+*   Artifacts needed in the sandbox in which the action executes
+
+All of the above information except the artifacts required in the sandbox is
+specified in the Starlark target that the `cc_toolchain` points to.
+
+The artifacts to be shipped to the sandbox are declared in the `cc_toolchain`
+target. For example, with the `cc_toolchain.linker_files` attribute you can
+specify the linker binary and toolchain libraries to ship into the sandbox.
+
+## Toolchain selection {:#toolchain-selection}
+
+The toolchain selection logic operates as follows:
+
+1.  User specifies a `cc_toolchain_suite` target in the `BUILD` file and points
+    Bazel to the target using the
+    [`--crosstool_top` option](/docs/user-manual#flag--crosstool_top).
+
+2.  The `cc_toolchain_suite` target references multiple toolchains. The
+    values of the `--cpu` and `--compiler` flags determine which of those
+    toolchains is selected, either based only on the `--cpu` flag value, or
+    based on a joint `--cpu | --compiler` value. The selection process is as
+    follows:
+
+  * If the `--compiler` option is specified, Bazel selects the
+        corresponding entry from the `cc_toolchain_suite.toolchains`
+        attribute with `--cpu | --compiler`. If Bazel does not find
+        a corresponding entry, it throws an error.
+
+  * If the `--compiler` option is not specified, Bazel selects
+    the corresponding entry from the `cc_toolchain_suite.toolchains`
+    attribute with just `--cpu`.
+
+  * If no flags are specified, Bazel inspects the host system and selects a
+    `--cpu` value based on its findings. See the
+    [inspection mechanism code](https://source.bazel.build/bazel/+/1b73bc37e184e71651eb631223dcce321ba16211:src/main/java/com/google/devtools/build/lib/analysis/config/AutoCpuConverter.java).
+
+Once a toolchain has been selected, corresponding `feature` and `action_config`
+objects in the Starlark rule govern the configuration of the build (that is,
+items described later). These messages allow the implementation of
+fully fledged C++ features in Bazel without modifying the
+Bazel binary. C++ rules support multiple unique actions documented in detail
+[in the Bazel source code](https://source.bazel.build/bazel/+/4f547a7ea86df80e4c76145ffdbb0c8b75ba3afa:tools/build_defs/cc/action_names.bzl).
+
+## Features {:#features}
+
+A feature is an entity that requires command-line flags, actions,
+constraints on the execution environment, or dependency alterations. A feature
+can be something as simple as allowing `BUILD` files to select configurations of
+flags, such as `treat_warnings_as_errors`, or interact with the C++ rules and
+include new compile actions and inputs to the compilation, such as
+`header_modules` or `thin_lto`.
+
+Ideally, `CcToolchainConfigInfo` contains a list of features, where each
+feature consists of one or more flag groups, each defining a list of flags
+that apply to specific Bazel actions.
+
+A feature is specified by name, which allows full decoupling of the Starlark
+rule configuration from Bazel releases. In other words, a Bazel release does not
+affect the behavior of `CcToolchainConfigInfo` configurations as long as those
+configurations do not require the use of new features.
+
+A feature is enabled in one of the following ways:
+
+*  The feature's `enabled` field is set to `true`.
+*  Bazel or the rule owner explicitly enable it.
+*  The user enables it through the `--feature` Bazel option or `features` rule
+   attribute.
+
+Features can have interdependencies, depend on command line flags, `BUILD` file
+settings, and other variables.
+
+### Feature relationships {:#feature-relationships}
+
+Dependencies are typically managed directly with Bazel, which simply enforces
+the requirements and manages conflicts intrinsic to the nature of the features
+defined in the build. The toolchain specification allows for more granular
+constraints for use directly within the Starlark rule that govern feature
+support and expansion. These are:
+
+<table>
+  <col width="300">
+  <col width="600">
+  <tr>
+   <td><strong>Constraint</strong>
+   </td>
+   <td><strong>Description</strong>
+   </td>
+  </tr>
+  <tr>
+   <td><pre>requires = [
+   feature_set (features = [
+       'feature-name-1',
+       'feature-name-2'
+   ]),
+]</pre>
+   </td>
+   <td>Feature-level. The feature is supported only if the specified required
+       features are enabled. For example, when a feature is only supported in
+       certain build modes (<code>opt</code>, <code>dbg</code>, or
+       <code>fastbuild</code>). If `requires` contains multiple `feature_set`s
+       the feature is supported if any of the `feature_set`s is satisfied
+       (when all specified features are enabled).
+   </td>
+  </tr>
+  <tr>
+   <td><pre>implies = ['feature']</pre>
+   </td>
+   <td><p>Feature-level. This feature implies the specified feature(s).
+       Enabling a feature also implicitly enables all features implied by it
+       (that is, it functions recursively).</p>
+       <p>Also provides the ability to factor common subsets of functionality out of
+       a set of features, such as the common parts of sanitizers. Implied
+       features cannot be disabled.</p>
+   </td>
+  </tr>
+  <tr>
+   <td><pre>provides = ['feature']</pre>
+   </td>
+   <td><p>Feature-level. Indicates that this feature is one of several mutually
+       exclusive alternate features. For example, all of the sanitizers could
+       specify <code>provides = ["sanitizer"]</code>.</p>
+       <p>This improves error handling by listing the alternatives if the user asks
+       for two or more mutually exclusive features at once.</p>
+   </td>
+  </tr>
+  <tr>
+   <td><pre>with_features = [
+  with_feature_set(
+    features = ['feature-1'],
+    not_features = ['feature-2'],
+  ),
+]</pre>
+   </td>
+   <td>Flag set-level. A feature can specify multiple flag sets with multiple.
+     When <code>with_features</code> is specified, the flag set will only expand
+     to the build command if there is at least one <code>with_feature_set</code>
+     for which all of the features in the specified <code>features</code> set
+     are enabled, and all the features specified in <code>not_features</code>
+     set are disabled.
+     If <code>with_features</code> is not specified, the flag set will be
+     applied unconditionally for every action specified.
+   </td>
+  </tr>
+</table>
+
+## Actions {:#actions}
+
+Actions provide the flexibility to modify the circumstances under
+which an action executes without assuming how the action will be run. An
+`action_config` specifies the tool binary that an action invokes, while a
+`feature` specifies the configuration (flags) that determine how that tool
+behaves when the action is invoked.
+
+[Features](#features) reference actions to signal which Bazel actions
+they affect since actions can modify the Bazel action graph. The
+`CcToolchainConfigInfo` provider contains actions that have flags and tools
+associated with them, such as `c++-compile`. Flags are assigned to each action
+by associating them with a feature.
+
+Each action name represents a single type of action performed by Bazel, such as
+compiling or linking. There is, however, a many-to-one relationship between
+actions and Bazel action types, where a Bazel action type refers to a Java class
+that implements an action (such as `CppCompileAction`). In particular, the
+"assembler actions" and "compiler actions" in the table below are
+`CppCompileAction`, while the link actions are `CppLinkAction`.
+
+### Assembler actions {:#assembler-actions}
+
+<table>
+  <col width="300">
+  <col width="600">
+  <tr>
+   <td><strong>Action</strong>
+   </td>
+   <td><strong>Description</strong>
+   </td>
+  </tr>
+  <tr>
+   <td><code>preprocess-assemble</code>
+   </td>
+   <td>Assemble with preprocessing. Typically for <code>.S</code> files.
+   </td>
+  </tr>
+  <tr>
+   <td><code>assemble</code>
+   </td>
+   <td>Assemble without preprocessing. Typically for <code>.s</code> files.
+   </td>
+  </tr>
+</table>
+
+### Compiler actions {:#compiler-actions}
+
+<table>
+  <col width="300">
+  <col width="600">
+  <tr>
+   <td><strong>Action</strong>
+   </td>
+   <td><strong>Description</strong>
+   </td>
+  </tr>
+  <tr>
+   <td><code>cc-flags-make-variable</code>
+   </td>
+   <td>Propagates <code>CC_FLAGS</code> to genrules.
+   </td>
+  </tr>
+  <tr>
+   <td><code>c-compile</code>
+   </td>
+   <td>Compile as C.
+   </td>
+  </tr>
+  <tr>
+   <td><code>c++-compile</code>
+   </td>
+   <td>Compile as C++.
+   </td>
+  </tr>
+  <tr>
+   <td><code>c++-header-parsing</code>
+   </td>
+   <td>Run the compiler's parser on a header file to ensure that the header is
+     self-contained, as it will otherwise produce compilation errors. Applies
+     only to toolchains that support modules.
+   </td>
+  </tr>
+</table>
+
+### Link actions {:#link-actions}
+
+<table>
+  <col width="300">
+  <col width="600">
+  <tr>
+   <td><strong>Action</strong>
+   </td>
+   <td><strong>Description</strong>
+   </td>
+  </tr>
+  <tr>
+   <td><code>c++-link-dynamic-library</code>
+   </td>
+   <td>Link a shared library containing all of its dependencies.
+   </td>
+  </tr>
+  <tr>
+   <td><code>c++-link-nodeps-dynamic-library</code>
+   </td>
+   <td>Link a shared library only containing <code>cc_library</code> sources.
+   </td>
+  </tr>
+  <tr>
+   <td><code>c++-link-executable</code>
+   </td>
+   <td>Link a final ready-to-run library.
+   </td>
+  </tr>
+</table>
+
+### AR actions {:#ar-actions}
+
+AR actions assemble object files into archive libraries (`.a` files) via `ar`
+and encode some semantics into the name.
+
+<table>
+  <col width="300">
+  <col width="600">
+  <tr>
+   <td><strong>Action</strong>
+   </td>
+   <td><strong>Description</strong>
+   </td>
+  </tr>
+  <tr>
+   <td><code>c++-link-static-library</code>
+   </td>
+   <td>Create a static library (archive).
+   </td>
+  </tr>
+</table>
+
+### LTO actions {:#lto-actions}
+
+<table>
+  <col width="300">
+  <col width="600">
+  <tr>
+   <td><strong>Action</strong>
+   </td>
+   <td><strong>Description</strong>
+   </td>
+  </tr>
+  <tr>
+   <td><code>lto-backend</code>
+   </td>
+   <td>ThinLTO action compiling bitcodes into native objects.
+   </td>
+  </tr>
+  <tr>
+   <td><code>lto-index</code>
+   </td>
+   <td>ThinLTO action generating global index.
+   </td>
+  </tr>
+</table>
+
+## Using action_config {:#using-action-config}
+
+The `action_config` is a Starlark struct that describes a Bazel
+action by specifying the tool (binary) to invoke during the action and sets of
+flags, defined by features. These flags apply constraints to the action's
+execution.
+
+The `action_config()` constructor has the following parameters:
+
+<table>
+  <col width="300">
+  <col width="600">
+  <tr>
+   <td><strong>Attribute</strong>
+   </td>
+   <td><strong>Description</strong>
+   </td>
+  </tr>
+  <tr>
+   <td><code>action_name</code>
+   </td>
+    <td>The Bazel action to which this action corresponds.
+        Bazel uses this attribute to discover per-action tool and execution
+        requirements.
+   </td>
+  </tr>
+  <tr>
+   <td><code>tools</code>
+   </td>
+   <td>The executable to invoke. The tool applied to the action will be the
+       first tool in the list with a feature set that matches the feature
+       configuration. Default value must be provided.
+   </td>
+  </tr>
+  <tr>
+   <td><code>flag_sets</code>
+   </td>
+   <td>A list of flags that applies to a group of actions. Same as for a
+       feature.
+   </td>
+  </tr>
+  <tr>
+   <td><code>env_sets</code>
+   </td>
+   <td>A list of environment constraints that applies to a group of actions.
+       Same as for a feature.
+   </td>
+  </tr>
+</table>
+
+An `action_config` can require and imply other features and
+<code>action_config</code>s as dictated by the
+[feature relationships](#feature-relationships) described earlier. This behavior
+is similar to that of a feature.
+
+The last two attributes are redundant against the corresponding attributes on
+features and are included because some Bazel actions require certain flags or
+environment variables and the goal is to avoid unnecessary `action_config`+`feature`
+pairs. Typically, sharing a single feature across multiple `action_config`s is
+preferred.
+
+You can not define more than one `action_config` with the same `action_name`
+within the same toolchain. This prevents ambiguity in tool paths
+and enforces the intention behind `action_config` - that an action's properties
+are clearly described in a single place in the toolchain.
+
+### Using tool constructor {:#using-tool-constructor}
+
+An`action_config` can specify a set of tools via its `tools` parameter.
+The `tool()` constructor takes in the following parameters:
+
+
+<table>
+  <col width="300">
+  <col width="600">
+  <tr>
+   <td><strong>Field</strong>
+   </td>
+   <td><strong>Description</strong>
+   </td>
+  </tr>
+  <tr>
+   <td><code>path</code>
+   </td>
+   <td>Path to the tool in question (relative to the current location).
+   </td>
+  </tr>
+  <tr>
+   <td><code>with_features</code>
+   </td>
+   <td>A list of feature sets out of which at least one must be satisfied
+       for this tool to apply.
+   </td>
+  </tr>
+</table>
+
+For a given `action_config`, only a single `tool` applies
+its tool path and execution requirements to the Bazel action. A tool is selected
+by iterating through the `tools` attribute on an `action_config` until a tool
+with a `with_feature` set matching the feature configuration is found
+(see [Feature relationships](#feature-relationships) earlier on this page
+for more information). You should end your tool lists with a default
+tool that corresponds to an empty feature configuration.
+
+### Example usage {:#example-usage}
+
+Features and actions can be used together to implement Bazel actions
+with diverse cross-platform semantics. For example, debug symbol generation on
+macOS requires generating symbols in the compile action, then invoking a
+specialized tool during the link action to create  compressed dsym archive, and
+then decompressing that archive to produce the application bundle and `.plist`
+files consumable by Xcode.
+
+With Bazel, this process can instead be implemented as follows, with
+`unbundle-debuginfo` being a Bazel action:
+
+    load("@rules_cc//cc:defs.bzl", "ACTION_NAMES")
+
+    action_configs = [
+        action_config (
+            action_name = ACTION_NAMES.cpp_link_executable,
+            tools = [
+                tool(
+                    with_features = [
+                        with_feature(features=["generate-debug-symbols"]),
+                    ],
+                    path = "toolchain/mac/ld-with-dsym-packaging",
+                ),
+                tool (path = "toolchain/mac/ld"),
+            ],
+        ),
+    ]
+
+    features = [
+        feature(
+            name = "generate-debug-symbols",
+            flag_sets = [
+                flag_set (
+                    actions = [
+                        ACTION_NAMES.c_compile,
+                        ACTION_NAMES.cpp_compile
+                    ],
+                    flag_groups = [
+                        flag_group(
+                            flags = ["-g"],
+                        ),
+                    ],
+                )
+            ],
+            implies = ["unbundle-debuginfo"],
+       ),
+    ]
+
+
+This same feature can be implemented entirely differently for Linux, which uses
+`fission`, or for Windows, which produces `.pdb` files. For example, the
+implementation for `fission`-based debug symbol generation might look as
+follows:
+
+    load("@rules_cc//cc:defs.bzl", "ACTION_NAMES")
+
+    action_configs = [
+        action_config (
+            name = ACTION_NAMES.cpp_compile,
+            tools = [
+                tool(
+                    path = "toolchain/bin/gcc",
+                ),
+            ],
+        ),
+    ]
+
+    features = [
+        feature (
+            name = "generate-debug-symbols",
+            requires = [with_feature_set(features = ["dbg"])],
+            flag_sets = [
+                flag_set(
+                    actions = [ACTION_NAMES.cpp_compile],
+                    flag_groups = [
+                        flag_group(
+                            flags = ["-gsplit-dwarf"],
+                        ),
+                    ],
+                ),
+                flag_set(
+                    actions = [ACTION_NAMES.cpp_link_executable],
+                    flag_groups = [
+                        flag_group(
+                            flags = ["-Wl", "--gdb-index"],
+                        ),
+                    ],
+                ),
+          ],
+        ),
+    ]
+
+
+### Flag groups {:#flag-groups}
+
+`CcToolchainConfigInfo` allows you to bundle flags into groups that serve a
+specific purpose. You can specify a flag within using pre-defined variables
+within the flag value, which the compiler expands when adding the flag to the
+build command. For example:
+
+    flag_group (
+        flags = ["%{output_execpath}"],
+    )
+
+
+In this case, the contents of the flag will be replaced by the output file path
+of the action.
+
+Flag groups are expanded to the build command in the order in which they appear
+in the list, top-to-bottom, left-to-right.
+
+For flags that need to repeat with different values when added to the build
+command, the flag group can iterate variables of type `list`. For example, the
+variable `include_path` of type `list`:
+
+    flag_group (
+        iterate_over = "include_paths",
+        flags = ["-I%{include_paths}"],
+    )
+
+expands to `-I<path>` for each path element in the `include_paths` list. All
+flags (or `flag_group`s) in the body of a flag group declaration are expanded as
+a unit. For example:
+
+    flag_group (
+        iterate_over = "include_paths",
+        flags = ["-I", "%{include_paths}"],
+    )
+
+expands to `-I <path>` for each path element in the `include_paths` list.
+
+A variable can repeat multiple times. For example:
+
+    flag_group (
+        iterate_over = "include_paths",
+        flags = ["-iprefix=%{include_paths}", "-isystem=%{include_paths}"],
+    )
+
+expands to:
+
+    -iprefix=<inc0> -isystem=<inc0> -iprefix=<inc1> -isystem=<inc1>
+
+Variables can correspond to structures accessible using dot-notation. For
+example:
+
+    flag_group (
+        flags = ["-l%{libraries_to_link.name}"],
+    )
+
+Structures can be nested and may also contain sequences. To prevent name clashes
+and to be explicit, you must specify the full path through the fields. For
+example:
+
+    flag_group (
+        iterate_over = "libraries_to_link",
+        flag_groups = [
+            flag_group (
+                iterate_over = "libraries_to_link.shared_libraries",
+                flags = ["-l%{libraries_to_link.shared_libraries.name}"],
+            ),
+        ],
+    )
+
+
+### Conditional expansion {:#conditional-expansion}
+
+Flag groups support conditional expansion based on the presence of a particular
+variable or its field using the `expand_if_available`, `expand_if_not_available`,
+`expand_if_true`, `expand_if_false`, or `expand_if_equal` attributes. For example:
+
+
+    flag_group (
+        iterate_over = "libraries_to_link",
+        flag_groups = [
+            flag_group (
+                iterate_over = "libraries_to_link.shared_libraries",
+                flag_groups = [
+                    flag_group (
+                        expand_if_available = "libraries_to_link.shared_libraries.is_whole_archive",
+                        flags = ["--whole_archive"],
+                    ),
+                    flag_group (
+                        flags = ["-l%{libraries_to_link.shared_libraries.name}"],
+                    ),
+                    flag_group (
+                        expand_if_available = "libraries_to_link.shared_libraries.is_whole_archive",
+                        flags = ["--no_whole_archive"],
+                    ),
+                ],
+            ),
+        ],
+    )
+
+Note: The `--whole_archive` and `--no_whole_archive` options are added to
+the build command only when a currently iterated library has an
+`is_whole_archive` field.
+
+## CcToolchainConfigInfo reference {:#cctoolchainconfiginfo-reference}
+
+This section provides a reference of build variables, features, and other
+information required to successfully configure C++ rules.
+
+### CcToolchainConfigInfo build variables {:#cctoolchainconfiginfo-build-variables}
+
+The following is a reference of `CcToolchainConfigInfo` build variables.
+
+Note: The **Action** column indicates the relevant action type, if applicable.
+
+<table>
+  <tr>
+   <td><strong>Variable</strong>
+   </td>
+   <td><strong>Action</strong>
+   </td>
+   <td><strong>Description</strong>
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>source_file</code></strong>
+   </td>
+   <td>compile</td>
+   <td>Source file to compile.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>input_file</code></strong>
+   </td>
+   <td>strip</td>
+   <td>Artifact to strip.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>output_file</code></strong>
+   </td>
+   <td>compile, strip</td>
+   <td>Compilation output.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>output_assembly_file</code></strong>
+   </td>
+   <td>compile</td>
+   <td>Emitted assembly file. Applies only when the
+       <code>compile</code> action emits assembly text, typically when using the
+       <code>--save_temps</code> flag. The contents are the same as for
+       <code>output_file</code>.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>output_preprocess_file</code></strong>
+   </td>
+   <td>compile</td>
+   <td>Preprocessed output. Applies only to compile
+       actions that only preprocess the source files, typically when using the
+     <code>--save_temps</code> flag. The contents are the same as for
+     <code>output_file</code>.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>includes</code></strong>
+   </td>
+   <td>compile</td>
+   <td>Sequence of files the compiler must
+       unconditionally include in the compiled source.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>include_paths</code></strong>
+   </td>
+   <td>compile</td>
+   <td>Sequence directories in which the compiler
+       searches for headers included using <code>#include&lt;foo.h&gt;</code>
+       and <code>#include "foo.h"</code>.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>quote_include_paths</code></strong>
+   </td>
+   <td>compile</td>
+   <td>Sequence of <code>-iquote</code> includes -
+       directories in which the compiler searches for headers included using
+       <code>#include "foo.h"</code>.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>system_include_paths</code></strong>
+   </td>
+   <td>compile</td>
+   <td>Sequence of <code>-isystem</code> includes -
+       directories in which the compiler searches for headers included using
+       <code>#include &lt;foo.h&gt;</code>.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>dependency_file</code></strong>
+   </td>
+   <td>compile</td>
+   <td>The <code>.d</code> dependency file generated by the compiler.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>preprocessor_defines</code></strong>
+   </td>
+   <td>compile</td>
+   <td>Sequence of <code>defines</code>, such as <code>--DDEBUG</code>.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>pic</code></strong>
+   </td>
+   <td>compile</td>
+   <td>Compiles the output as position-independent code.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>gcov_gcno_file</code></strong>
+   </td>
+   <td>compile</td>
+   <td>The <code>gcov</code> coverage file.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>per_object_debug_info_file</code></strong>
+   </td>
+   <td>compile</td>
+   <td>The per-object debug info (<code>.dwp</code>) file.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>stripopts</code></strong>
+   </td>
+   <td>strip</td>
+   <td>Sequence of <code>stripopts</code>.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>legacy_compile_flags</code></strong>
+   </td>
+   <td>compile</td>
+   <td>Sequence of flags from legacy
+       <code>CROSSTOOL</code> fields such as <code>compiler_flag</code>,
+       <code>optional_compiler_flag</code>, <code>cxx_flag</code>, and
+       <code>optional_cxx_flag</code>.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>user_compile_flags</code></strong>
+   </td>
+   <td>compile</td>
+   <td>Sequence of flags from either the
+       <code>copt</code> rule attribute or the <code>--copt</code>,
+       <code>--cxxopt</code>, and <code>--conlyopt</code> flags.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>unfiltered_compile_flags</code></strong>
+   </td>
+   <td>compile</td>
+   <td>Sequence of flags from the
+     <code>unfiltered_cxx_flag</code> legacy <code>CROSSTOOL</code> field or the
+       <code>unfiltered_compile_flags</code> feature. These are not filtered by
+       the <code>nocopts</code> rule attribute.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>sysroot</code></strong>
+   </td>
+   <td></td>
+   <td>The <code>sysroot</code>.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>runtime_library_search_directories</code></strong>
+   </td>
+   <td>link</td>
+   <td>Entries in the linker runtime search path (usually
+       set with the <code>-rpath</code> flag).
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>library_search_directories</code></strong>
+   </td>
+   <td>link</td>
+   <td>Entries in the linker search path (usually set with
+       the <code>-L</code> flag).
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>libraries_to_link</code></strong>
+   </td>
+   <td>link</td>
+   <td>Flags providing files to link as inputs in the linker invocation.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>def_file_path</code></strong>
+   </td>
+   <td>link</td>
+   <td>Location of def file used on Windows with MSVC.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>linker_param_file</code></strong>
+   </td>
+   <td>link</td>
+   <td>Location of linker param file created by bazel to
+       overcome command line length limit.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>output_execpath</code></strong>
+   </td>
+   <td>link</td>
+   <td>Execpath of the output of the linker.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>generate_interface_library</code></strong>
+   </td>
+   <td>link</td>
+   <td><code>"yes"</code> or <code>"no"</code> depending on whether interface library should
+       be generated.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>interface_library_builder_path</code></strong>
+   </td>
+   <td>link</td>
+   <td>Path to the interface library builder tool.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>interface_library_input_path</code></strong>
+   </td>
+   <td>link</td>
+   <td>Input for the interface library <code>ifso</code> builder tool.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>interface_library_output_path</code></strong>
+   </td>
+   <td>link</td>
+   <td>Path where to generate interface library using the <code>ifso</code> builder tool.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>legacy_link_flags</code></strong>
+   </td>
+   <td>link</td>
+   <td>Linker flags coming from the legacy <code>CROSSTOOL</code> fields.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>user_link_flags</code></strong>
+   </td>
+   <td>link</td>
+   <td>Linker flags coming from the <code>--linkopt</code>
+       or <code>linkopts</code> attribute.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>linkstamp_paths</code></strong>
+   </td>
+   <td>link</td>
+   <td>A build variable giving linkstamp paths.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>force_pic</code></strong>
+   </td>
+   <td>link</td>
+   <td>Presence of this variable indicates that PIC/PIE code should
+     be generated (Bazel option `--force_pic` was passed).
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>strip_debug_symbols</code></strong>
+   </td>
+   <td>link</td>
+   <td>Presence of this variable indicates that the debug
+       symbols should be stripped.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>is_cc_test</code></strong>
+   </td>
+   <td>link</td>
+   <td>Truthy when current action is a <code>cc_test</code>
+       linking action, false otherwise.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>is_using_fission</code></strong>
+   </td>
+   <td>compile, link</td>
+   <td>Presence of this variable indicates that fission (per-object debug info)
+     is activated. Debug info will be in <code>.dwo</code> files instead
+       of <code>.o</code> files and the compiler and linker need to know this.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>fdo_instrument_path</code></strong>
+   </td>
+   <td>compile, link</td>
+   <td> Path to the directory that stores FDO instrumentation profile.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>fdo_profile_path</code></strong>
+   </td>
+   <td>compile</td>
+   <td> Path to FDO profile.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>fdo_prefetch_hints_path</code></strong>
+   </td>
+   <td>compile</td>
+   <td> Path to the cache prefetch profile.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>cs_fdo_instrument_path</code></strong>
+   </td>
+   <td>compile, link</td>
+   <td> Path to the directory that stores context sensitive FDO
+        instrumentation profile.
+   </td>
+  </tr>
+</table>
+
+### Well-known features {:#wellknown-features}
+
+The following is a reference of features and their activation
+conditions.
+
+<table>
+  <col width="300">
+  <col width="600">
+  <tr>
+   <td><strong>Feature</strong>
+   </td>
+   <td><strong>Documentation</strong>
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>opt | dbg | fastbuild</code></strong>
+   </td>
+   <td>Enabled by default based on compilation mode.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>static_linking_mode | dynamic_linking_mode</code></strong>
+   </td>
+   <td>Enabled by default based on linking mode.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>per_object_debug_info</code></strong>
+   </td>
+    <td>Enabled if the <code>supports_fission</code> feature is specified and
+        enabled and the current compilation mode is specified in the
+        <code>--fission</code> flag.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>supports_start_end_lib</code></strong>
+   </td>
+   <td>If enabled (and the option <code>--start_end_lib</code> is set), Bazel
+     will not link against static libraries but instead use the
+     <code>--start-lib/--end-lib</code> linker options to link against objects
+     directly. This speeds up the build since Bazel doesn't have to build
+     static libraries.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>supports_interface_shared_libraries</code></strong>
+   </td>
+   <td>If enabled (and the option <code>--interface_shared_objects</code> is
+     set), Bazel will link targets that have <code>linkstatic</code> set to
+     False (<code>cc_test</code>s by default) against interface shared
+     libraries. This makes incremental relinking faster.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>supports_dynamic_linker</code></strong>
+   </td>
+   <td>If enabled, C++ rules will know the toolchain can produce shared
+     libraries.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>static_link_cpp_runtimes</code></strong>
+   </td>
+   <td>If enabled, Bazel will link the C++ runtime statically in static linking
+     mode and dynamically in dynamic linking mode. Artifacts
+     specified in the <code>cc_toolchain.static_runtime_lib</code> or
+     <code>cc_toolchain.dynamic_runtime_lib</code> attribute (depending on the
+     linking mode) will be added to the linking actions.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>supports_pic</code></strong>
+   </td>
+   <td>If enabled, toolchain will know to use PIC objects for dynamic libraries.
+     The `pic` variable is present whenever PIC compilation is needed. If not enabled
+     by default, and `--force_pic` is passed, Bazel will request `supports_pic` and
+     validate that the feature is enabled. If the feature is missing, or couldn't
+      be enabled, `--force_pic` cannot be used.
+   </td>
+  </tr>
+  <tr>
+    <td>
+      <strong><code>static_linking_mode | dynamic_linking_mode</code></strong>
+    </td>
+    <td>Enabled by default based on linking mode.</td>
+  </tr>
+  <tr>
+     <td><strong><code>no_legacy_features</code></strong>
+     </td>
+     <td>
+       Prevents Bazel from adding legacy features to
+       the C++ configuration when present. See the complete list of
+       features below.
+     </td>
+    </tr>
+</table>
+
+#### Legacy features patching logic {:#legacy-features-patching-logic}
+
+<p>
+  Bazel applies the following changes to the toolchain's features for backwards
+  compatibility:
+
+  <ul>
+    <li>Moves <code>legacy_compile_flags</code> feature to the top of the toolchain</li>
+    <li>Moves <code>default_compile_flags</code> feature to the top of the toolchain</li>
+    <li>Adds <code>dependency_file</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>pic</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>per_object_debug_info</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>preprocessor_defines</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>includes</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>include_paths</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>fdo_instrument</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>fdo_optimize</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>cs_fdo_instrument</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>cs_fdo_optimize</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>fdo_prefetch_hints</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>autofdo</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>build_interface_libraries</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>dynamic_library_linker_tool</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>shared_flag</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>linkstamps</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>output_execpath_flags</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>runtime_library_search_directories</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>library_search_directories</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>archiver_flags</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>libraries_to_link</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>force_pic_flags</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>user_link_flags</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>legacy_link_flags</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>static_libgcc</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>fission_support</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>strip_debug_symbols</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>coverage</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>llvm_coverage_map_format</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>gcc_coverage_map_format</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>fully_static_link</code> (if not present) feature to the bottom of the toolchain</li>
+    <li>Adds <code>user_compile_flags</code> (if not present) feature to the bottom of the toolchain</li>
+    <li>Adds <code>sysroot</code> (if not present) feature to the bottom of the toolchain</li>
+    <li>Adds <code>unfiltered_compile_flags</code> (if not present) feature to the bottom of the toolchain</li>
+    <li>Adds <code>linker_param_file</code> (if not present) feature to the bottom of the toolchain</li>
+    <li>Adds <code>compiler_input_flags</code> (if not present) feature to the bottom of the toolchain</li>
+    <li>Adds <code>compiler_output_flags</code> (if not present) feature to the bottom of the toolchain</li>
+  </ul>
+</p>
+
+This is a long list of features. The plan is to get rid of them once
+[Crosstool in Starlark](https://github.com/bazelbuild/bazel/issues/5380){: .external} is
+done. For the curious reader see the implementation in
+[CppActionConfigs](https://source.bazel.build/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java?q=cppactionconfigs&ss=bazel),
+and for production toolchains consider adding `no_legacy_features` to make
+the toolchain more standalone.
+
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# Android Build Performance
+
+{% include "_buttons.html" %}
+
+This page contains information on optimizing build performance for Android
+apps specifically. For general build performance optimization with Bazel, see
+[Optimizing Performance](/rules/performance).
+
+## Recommended flags {:#recommended-flags}
+
+The flags are in the
+[`bazelrc` configuration syntax](/run/bazelrc#bazelrc-syntax-semantics), so
+they can be pasted directly into a `bazelrc` file and invoked with
+`--config=<configuration_name>` on the command line.
+
+**Profiling performance**
+
+Bazel writes a JSON trace profile by default to a file called
+`command.profile.gz` in Bazel's output base.
+See the [JSON Profile documentation](/rules/performance#performance-profiling) for
+how to read and interact with the profile.
+
+**Persistent workers for Android build actions**.
+
+A subset of Android build actions has support for
+[persistent workers](https://blog.bazel.build/2015/12/10/java-workers.html).
+
+These actions' mnemonics are:
+
+*   DexBuilder
+*   Javac
+*   Desugar
+*   AaptPackage
+*   AndroidResourceParser
+*   AndroidResourceValidator
+*   AndroidResourceCompiler
+*   RClassGenerator
+*   AndroidResourceLink
+*   AndroidAapt2
+*   AndroidAssetMerger
+*   AndroidResourceMerger
+*   AndroidCompiledResourceMerger
+
+Enabling workers can result in better build performance by saving on JVM
+startup costs from invoking each of these tools, but at the cost of increased
+memory usage on the system by persisting them.
+
+To enable workers for these actions, apply these flags with
+`--config=android_workers` on the command line:
+
+```
+build:android_workers --strategy=DexBuilder=worker
+build:android_workers --strategy=Javac=worker
+build:android_workers --strategy=Desugar=worker
+
+# A wrapper flag for these resource processing actions:
+# - AndroidResourceParser
+# - AndroidResourceValidator
+# - AndroidResourceCompiler
+# - RClassGenerator
+# - AndroidResourceLink
+# - AndroidAapt2
+# - AndroidAssetMerger
+# - AndroidResourceMerger
+# - AndroidCompiledResourceMerger
+build:android_workers --persistent_android_resource_processor
+```
+
+The default number of persistent workers created per action is `4`. We have
+[measured improved build performance](https://github.com/bazelbuild/bazel/issues/8586#issuecomment-500070549){: .external}
+by capping the number of instances for each action to `1` or `2`, although this
+may vary depending on the system Bazel is running on, and the project being
+built.
+
+To cap the number of instances for an action, apply these flags:
+
+```
+build:android_workers --worker_max_instances=DexBuilder=2
+build:android_workers --worker_max_instances=Javac=2
+build:android_workers --worker_max_instances=Desugar=2
+build:android_workers --worker_max_instances=AaptPackage=2
+# .. and so on for each action you're interested in.
+```
+
+**Using AAPT2**
+
+[`aapt2`](https://developer.android.com/studio/command-line/aapt2){: .external} has improved
+performance over `aapt` and also creates smaller APKs. To use `aapt2`, use the
+`--android_aapt=aapt2` flag or set `aapt2` on the `aapt_version` on
+`android_binary` and `android_local_test`.
+
+**SSD optimizations**
+
+The `--experimental_multi_threaded_digest` flag is useful for optimizing digest
+computation on SSDs.
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# JavaScript and Bazel
+
+{% include "_buttons.html" %}
+
+This page contains resources that help you use Bazel with JavaScript projects.
+It links to build rules and other information specific to building JavaScript
+with Bazel.
+
+The following resources will help you work with Bazel on JavaScript projects:
+
+*  [NodeJS toolchain](https://github.com/bazelbuild/rules_nodejs){: .external}
+*  [rules_js](https://github.com/aspect-build/rules_js){: .external} - Bazel rules for building JavaScript programs
+*  [rules_esbuild](https://github.com/aspect-build/rules_esbuild){: .external} - Bazel rules for [esbuild](https://esbuild.github.io) JS bundler
+*  [rules_terser](https://github.com/aspect-build/rules_terser){: .external} - Bazel rules for [Terser](https://terser.org) - a JavaScript minifier
+*  [rules_swc](https://github.com/aspect-build/rules_swc){: .external} - Bazel rules for [swc](https://swc.rs)
+*  [rules_ts](https://github.com/aspect-build/rules_ts){: .external} - Bazel rules for [TypeScript](http://typescriptlang.org)
+*  [rules_webpack](https://github.com/aspect-build/rules_webpack){: .external} - Bazel rules for [Webpack](https://webpack.js.org)
+*  [rules_rollup](https://github.com/aspect-build/rules_rollup){: .external} - Bazel rules for [Rollup](https://rollupjs.org) - a JavaScript bundler
+*  [rules_jest](https://github.com/aspect-build/rules_jest){: .external} - Bazel rules to run tests using [Jest](https://jestjs.io)
+*  [rules_jasmine](https://github.com/aspect-build/rules_jasmine){: .external} - Bazel rules to run tests using [Jasmine](https://jasmine.github.io/)
+*  [rules_cypress](https://github.com/aspect-build/rules_cypress){: .external} - Bazel rules to run tests using [Cypress](https://cypress.io)
+*  [rules_deno](https://github.com/aspect-build/rules_deno){: .external} - Bazel rules for [Deno](http://deno.land)
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# Commands and Options
+
+{% include "_buttons.html" %}
+
+This page covers the options that are available with various Bazel commands,
+such as `bazel build`, `bazel run`, and `bazel test`. This page is a companion
+to the list of Bazel's commands in [Build with Bazel](/run/build).
+
+## Target syntax {:#target-syntax}
+
+Some commands, like `build` or `test`, can operate on a list of targets. They
+use a syntax more flexible than labels, which is documented in
+[Specifying targets to build](/run/build#specifying-build-targets).
+
+## Options {:#build-options}
+
+The following sections describe the options available during a
+build. When `--long` is used on a help command, the on-line
+help messages provide summary information about the meaning, type and
+default value for each option.
+
+Most options can only be specified once. When specified multiple times, the
+last instance wins. Options that can be specified multiple times are
+identified in the on-line help with the text 'may be used multiple times'.
+
+### Package location {:#package-location}
+
+#### `--package_path` {:#package-path}
+
+**WARNING:** The `--package_path` option is deprecated. Bazel prefers packages
+in the main repository to be under the workspace root.
+
+This option specifies the set of directories that are searched to
+find the BUILD file for a given package.
+
+Bazel finds its packages by searching the package path. This is a colon
+separated ordered list of bazel directories, each being the root of a
+partial source tree.
+
+_To specify a custom package path_ using the `--package_path` option:
+
+<pre>
+  % bazel build --package_path %workspace%:/some/other/root
+</pre>
+
+Package path elements may be specified in three formats:
+
+1.  If the first character is `/`, the path is absolute.
+2.  If the path starts with `%workspace%`, the path is taken relative
+    to the nearest enclosing bazel directory.
+    For instance, if your working directory
+    is `/home/bob/clients/bob_client/bazel/foo`, then the
+    string `%workspace%` in the package-path is expanded
+    to `/home/bob/clients/bob_client/bazel`.
+3.  Anything else is taken relative to the working directory.
+    This is usually not what you mean to do,
+    and may behave unexpectedly if you use Bazel from directories below the bazel workspace.
+    For instance, if you use the package-path element `.`,
+    and then cd into the directory
+    `/home/bob/clients/bob_client/bazel/foo`, packages
+    will be resolved from the
+    `/home/bob/clients/bob_client/bazel/foo` directory.
+
+If you use a non-default package path, specify it in your
+[Bazel configuration file](/run/bazelrc) for convenience.
+
+_Bazel doesn't require any packages to be in the
+current directory_, so you can do a build from an empty bazel
+workspace if all the necessary packages can be found somewhere else
+on the package path.
+
+Example: Building from an empty client
+
+<pre>
+  % mkdir -p foo/bazel
+  % cd foo/bazel
+  % touch MODULE.bazel
+  % bazel build --package_path /some/other/path //foo
+</pre>
+
+#### `--deleted_packages` {:flag--deleted_packages}
+
+This option specifies a comma-separated list of packages which Bazel
+should consider deleted, and not attempt to load from any directory
+on the package path. This can be used to simulate the deletion of packages without
+actually deleting them. This option can be passed multiple times, in which case
+the individual lists are concatenated.
+
+### Error checking {:#error-checking}
+
+These options control Bazel's error-checking and/or warnings.
+
+#### `--[no]check_visibility` {:#check-visibility}
+
+If this option is set to false, visibility checks are demoted to warnings.
+The default value of this option is true, so that by default, visibility
+checking is done.
+
+#### `--output_filter={{ "<var>" }}regex{{ "</var>" }}` {:#output-filter}
+
+The `--output_filter` option will only show build and compilation
+warnings for targets that match the regular expression. If a target does not
+match the given regular expression and its execution succeeds, its standard
+output and standard error are thrown away.
+
+Here are some typical values for this option:
+
+<table>
+  <tr>
+    <td>`--output_filter='^//(first/project|second/project):'`</td>
+    <td>Show the output for the specified packages.</td>
+  </tr>
+  <tr>
+    <td>`--output_filter='^//((?!(first/bad_project|second/bad_project):).)*$'`</td>
+    <td>Don't show output for the specified packages.</td>
+  </tr>
+  <tr>
+    <td>`--output_filter=`</td>
+    <td>Show everything.
+    </td>
+  </tr>
+  <tr>
+    <td>`--output_filter=DONT_MATCH_ANYTHING`</td>
+    <td>Show nothing.
+    </td>
+  </tr>
+</table>
+
+### Tool flags {:#tool-flags}
+
+These options control which options Bazel will pass to other tools.
+
+#### `--copt={{ "<var>" }}cc-option{{ "</var>" }}` {:#copt}
+
+This option takes an argument which is to be passed to the compiler.
+The argument will be passed to the compiler whenever it is invoked
+for preprocessing, compiling, and/or assembling C, C++, or
+assembler code. It will not be passed when linking.
+
+This option can be used multiple times. For example:
+
+<pre>
+  % bazel build --copt="-g0" --copt="-fpic" //foo
+</pre>
+
+will compile the `foo` library without debug tables, generating
+position-independent code.
+
+Note: Changing `--copt` settings will force a recompilation
+of all affected object files. Also note that copts values listed in specific
+cc_library or cc_binary build rules will be placed on the compiler command line
+_after_ these options.
+
+Warning: C++-specific options (such as `-fno-implicit-templates`)
+should be specified in `--cxxopt`, not in
+`--copt`. Likewise, C-specific options (such as -Wstrict-prototypes)
+should be specified in `--conlyopt`, not in `copt`.
+Similarly, compiler options that only have an
+effect at link time (such as `-l`) should be specified in
+`--linkopt`, not in `--copt`.
+
+#### `--host_copt={{ "<var>" }}cc-option{{ "</var>" }}` {:#host-copt}
+
+This option takes an argument which is to be passed to the compiler for source files
+that are compiled in the exec configuration. This is analogous to
+the [`--copt`](#copt) option, but applies only to the
+exec configuration.
+
+#### `--host_conlyopt={{ "<var>" }}cc-option{{ "</var>" }}` {:#host-conlyopt}
+
+This option takes an argument which is to be passed to the compiler for C source files
+that are compiled in the exec configuration. This is analogous to
+the [`--conlyopt`](#cconlyopt) option, but applies only
+to the exec configuration.
+
+#### `--host_cxxopt={{ "<var>" }}cc-option{{ "</var>" }}` {:#host-cxxopt}
+
+This option takes an argument which is to be passed to the compiler for C++ source files
+that are compiled in the exec configuration. This is analogous to
+the [`--cxxopt`](#cxxopt) option, but applies only to the
+exec configuration.
+
+#### `--host_linkopt={{ "<var>" }}linker-option{{ "</var>" }}` {:#host-linkopt}
+
+This option takes an argument which is to be passed to the linker for source files
+that are compiled in the exec configuration. This is analogous to
+the [`--linkopt`](#linkopt) option, but applies only to
+the exec configuration.
+
+#### `--conlyopt={{ "<var>" }}cc-option{{ "</var>" }}` {:#cconlyopt}
+
+This option takes an argument which is to be passed to the compiler when compiling C source files.
+
+This is similar to `--copt`, but only applies to C compilation,
+not to C++ compilation or linking. So you can pass C-specific options
+(such as `-Wno-pointer-sign`) using `--conlyopt`.
+
+Note: copts parameters listed in specific cc_library or cc_binary build rules
+are placed on the compiler command line _after_ these options.
+
+#### `--cxxopt={{ "<var>" }}cc-option{{ "</var>" }}` {:#cxxopt}
+
+This option takes an argument which is to be passed to the compiler when
+compiling C++ source files.
+
+This is similar to `--copt`, but only applies to C++ compilation,
+not to C compilation or linking. So you can pass C++-specific options
+(such as `-fpermissive` or `-fno-implicit-templates`) using `--cxxopt`.
+
+For example:
+
+<pre>
+  % bazel build --cxxopt="-fpermissive" --cxxopt="-Wno-error" //foo/cruddy_code
+</pre>
+
+Note: copts parameters listed in specific cc_library or cc_binary build rules
+are placed on the compiler command line _after_ these options.
+
+#### `--linkopt={{ "<var>" }}linker-option{{ "</var>" }}` {:#linkopt}
+
+This option takes an argument which is to be passed to the compiler when linking.
+
+This is similar to `--copt`, but only applies to linking,
+not to compilation. So you can pass compiler options that only make sense
+at link time (such as `-lssp` or `-Wl,--wrap,abort`)
+using `--linkopt`. For example:
+
+<pre>
+  % bazel build --copt="-fmudflap" --linkopt="-lmudflap" //foo/buggy_code
+</pre>
+
+Build rules can also specify link options in their attributes. This option's
+settings always take precedence. Also see
+[cc_library.linkopts](/reference/be/c-cpp#cc_library.linkopts).
+
+#### `--strip (always|never|sometimes)` {:#strip}
+
+This option determines whether Bazel will strip debugging information from
+all binaries and shared libraries, by invoking the linker with the `-Wl,--strip-debug` option.
+`--strip=always` means always strip debugging information.
+`--strip=never` means never strip debugging information.
+The default value of `--strip=sometimes` means strip if the `--compilation_mode`
+is `fastbuild`.
+
+<pre>
+  % bazel build --strip=always //foo:bar
+</pre>
+
+will compile the target while stripping debugging information from all generated
+binaries.
+
+Note: If you want debugging information, it's not enough to disable stripping;
+you also need to make sure that the debugging information was generated by the
+compiler, which you can do by using either `-c dbg` or `--copt -g`.
+
+Bazel's `--strip` option corresponds with ld's `--strip-debug` option:
+it only strips debugging information. If for some reason you want to strip _all_ symbols,
+not just _debug_ symbols, you would need to use ld's `--strip-all` option,
+which you can do by passing `--linkopt=-Wl,--strip-all` to Bazel. Also be
+aware that setting Bazel's `--strip` flag will override
+`--linkopt=-Wl,--strip-all`, so you should only set one or the other.
+
+If you are only building a single binary and want all symbols stripped, you could also
+pass `--stripopt=--strip-all` and explicitly build the
+`//foo:bar.stripped` version of the target. As described in the section on
+`--stripopt`, this applies a strip action after the final binary is
+linked rather than including stripping in all of the build's link actions.
+
+#### `--stripopt={{ "<var>" }}strip-option{{ "</var>" }}` {:#stripopt}
+
+This is an additional option to pass to the `strip` command when generating
+a [`*.stripped` binary](/reference/be/c-cpp#cc_binary_implicit_outputs). The default
+is `-S -p`. This option can be used multiple times.
+
+Note: `--stripopt` does not apply to the stripping of the main
+binary with `[--strip](#flag--strip)=(always|sometimes)`.
+
+#### `--fdo_instrument={{ "<var>" }}profile-output-dir{{ "</var>" }}` {:#fdo-instrument}
+
+The `--fdo_instrument` option enables the generation of
+FDO (feedback directed optimization) profile output when the
+built C/C++ binary is executed. For GCC, the argument provided is used as a
+directory prefix for a per-object file directory tree of .gcda files
+containing profile information for each .o file.
+
+Once the profile data tree has been generated, the profile tree
+should be zipped up, and provided to the
+`--fdo_optimize={{ "<var>" }}profile-zip{{ "</var>" }}`
+Bazel option to enable the FDO-optimized compilation.
+
+For the LLVM compiler the argument is also the directory under which the raw LLVM profile
+data file(s) is dumped. For example:
+`--fdo_instrument={{ "<var>" }}/path/to/rawprof/dir/{{ "</var>" }}`.
+
+The options `--fdo_instrument` and `--fdo_optimize` cannot be used at the same time.
+
+#### `--fdo_optimize={{ "<var>" }}profile-zip{{ "</var>" }}` {:#fdo-optimize}
+
+The `--fdo_optimize` option enables the use of the
+per-object file profile information to perform FDO (feedback
+directed optimization) optimizations when compiling. For GCC, the argument
+provided is the zip file containing the previously-generated file tree
+of .gcda files containing profile information for each .o file.
+
+Alternatively, the argument provided can point to an auto profile
+identified by the extension .afdo.
+
+Note: This option also accepts labels that resolve to source files. You
+may need to add an `exports_files` directive to the corresponding package to
+make the file visible to Bazel.
+
+For the LLVM compiler the argument provided should point to the indexed LLVM
+profile output file prepared by the llvm-profdata tool, and should have a .profdata
+extension.
+
+The options `--fdo_instrument` and `--fdo_optimize` cannot be used at the same time.
+
+#### `--java_language_version={{ "<var>" }}version{{ "</var>" }}` {:#java-language-version}
+
+This option specifies the version of Java sources. For example:
+
+<pre>
+  % bazel build --java_language_version=8 java/com/example/common/foo:all
+</pre>
+
+compiles and allows only constructs compatible with Java 8 specification.
+Default value is 11. -->
+Possible values are: 8, 9, 10, 11, 17, and 21 and may be extended by
+registering custom Java toolchains using `default_java_toolchain`.
+
+#### `--tool_java_language_version={{ "<var>" }}version{{ "</var>" }}` {:#tool-java-language-version}
+
+The Java language version used to build tools that are executed during a build.
+Default value is 11.
+
+#### `--java_runtime_version={{ "<var>" }}version{{ "</var>" }}` {:#java-runtime-version}
+
+This option specifies the version of JVM to use to execute the code and run the tests. For
+example:
+
+<pre>
+  % bazel run --java_runtime_version=remotejdk_11 java/com/example/common/foo:java_application
+</pre>
+
+downloads JDK 11 from a remote repository and run the Java application using it.
+
+Default value is `local_jdk`.
+Possible values are: `local_jdk`, `local_jdk_{{ "<var>" }}version{{ "</var>" }}`,
+`remotejdk_11`, `remotejdk_17`, and `remotejdk_21`.
+You can extend the values by registering custom JVM using either
+`local_java_repository` or `remote_java_repository` repository rules.
+
+#### `--tool_java_runtime_version={{ "<var>" }}version{{ "</var>" }}` {:#tool-java-runtime-version}
+
+The version of JVM used to execute tools that are needed during a build.
+Default value is `remotejdk_11`.
+
+#### `--jvmopt={{ "<var>" }}jvm-option{{ "</var>" }}` {:#jvmopt}
+
+This option allows option arguments to be passed to the Java VM. It can be used
+with one big argument, or multiple times with individual arguments. For example:
+
+<pre>
+  % bazel build --jvmopt="-server -Xms256m" java/com/example/common/foo:all
+</pre>
+
+will use the server VM for launching all Java binaries and set the
+startup heap size for the VM to 256 MB.
+
+#### `--javacopt={{ "<var>" }}javac-option{{ "</var>" }}` {:#javacopt}
+
+This option allows option arguments to be passed to javac. It can be used
+with one big argument, or multiple times with individual arguments. For example:
+
+<pre>
+  % bazel build --javacopt="-g:source,lines" //myprojects:prog
+</pre>
+
+will rebuild a java_binary with the javac default debug info
+(instead of the bazel default).
+
+The option is passed to javac after the Bazel built-in default options for
+javac and before the per-rule options. The last specification of
+any option to javac wins. The default options for javac are:
+
+<pre>
+  -source 8 -target 8 -encoding UTF-8
+</pre>
+
+Note: Changing `--javacopt` settings will force a recompilation
+of all affected classes. Also note that javacopts parameters listed in
+specific java_library or java_binary build rules will be placed on the javac
+command line _after_ these options.
+
+#### `--strict_java_deps (default|strict|off|warn|error)` {:#strict-java-deps}
+
+This option controls whether javac checks for missing direct dependencies.
+Java targets must explicitly declare all directly used targets as
+dependencies. This flag instructs javac to determine the jars actually used
+for type checking each java file, and warn/error if they are not the output
+of a direct dependency of the current target.
+
+* `off` means checking is disabled.
+* `warn` means javac will generate standard java warnings of
+  type `[strict]` for each missing direct dependency.
+* `default`, `strict` and `error` all
+  mean javac will generate errors instead of warnings, causing the current
+  target to fail to build if any missing direct dependencies are found.
+  This is also the default behavior when the flag is unspecified.
+
+### Build semantics {:#build-semantics}
+
+These options affect the build commands and/or the output file contents.
+
+#### `--compilation_mode (fastbuild|opt|dbg)` (-c) {:#compilation-mode}
+
+The `--compilation_mode` option (often shortened to `-c`,
+especially `-c opt`) takes an argument of `fastbuild`, `dbg`
+or `opt`, and affects various C/C++ code-generation
+options, such as the level of optimization and the completeness of
+debug tables. Bazel uses a different output directory for each
+different compilation mode, so you can switch between modes without
+needing to do a full rebuild _every_ time.
+
+* `fastbuild` means build as fast as possible:
+  generate minimal debugging information (`-gmlt
+  -Wl,-S`), and don't optimize. This is the
+  default. Note: `-DNDEBUG` will **not** be set.
+* `dbg` means build with debugging enabled (`-g`),
+  so that you can use gdb (or another debugger).
+* `opt` means build with optimization enabled and
+  with `assert()` calls disabled (`-O2 -DNDEBUG`).
+  Debugging information will not be generated in `opt` mode
+  unless you also pass `--copt -g`.
+
+#### `--cpu={{ "<var>" }}cpu{{ "</var>" }}` {:#cpu}
+
+This option specifies the target CPU architecture to be used for
+the compilation of binaries during the build.
+
+Note: A particular combination of crosstool version, compiler version,
+and target CPU is allowed only if it has been specified in the currently
+used CROSSTOOL file.
+
+#### `--action_env={{ "<var>" }}VAR=VALUE{{ "</var>" }}` {:#action-env}
+
+Specifies the set of environment variables available during the execution of all actions.
+Variables can be either specified by name, in which case the value will be taken from the
+invocation environment, or by the `name=value` pair which sets the value independent of the
+invocation environment.
+
+This `--action_env` flag can be specified multiple times. If a value is assigned to the same
+variable across multiple `--action_env` flags, the latest assignment wins.
+
+#### `--experimental_action_listener={{ "<var>" }}label{{ "</var>" }}` {:#experimental-action-listener}
+
+Warning: Extra actions are deprecated. Use
+[aspects](/extending/aspects)
+instead.
+
+The `experimental_action_listener` option instructs Bazel to use
+details from the [`action_listener`](/reference/be/extra-actions#action_listener) rule specified by {{ "<var>" }}label{{ "</var>" }} to
+insert [`extra_actions`](/reference/be/extra-actions#extra_action) into the build graph.
+
+#### `--[no]experimental_extra_action_top_level_only` {:experimental-extra-action-top-level-only}
+
+Warning: Extra actions are deprecated. Use
+[aspects](/extending/aspects) instead.
+
+If this option is set to true, extra actions specified by the
+[ `--experimental_action_listener`](#experimental-action-listener) command
+line option will only be scheduled for top level targets.
+
+#### `--experimental_extra_action_filter={{ "<var>" }}regex{{ "</var>" }}` {:#experimental-extra-action-filter}
+
+Warning: Extra actions are deprecated. Use
+[aspects](/extending/aspects) instead.
+
+The `experimental_extra_action_filter` option instructs Bazel to
+filter the set of targets to schedule `extra_actions` for.
+
+This flag is only applicable in combination with the
+[`--experimental_action_listener`](#experimental-action-listener) flag.
+
+By default all `extra_actions` in the transitive closure of the
+requested targets-to-build get scheduled for execution.
+`--experimental_extra_action_filter` will restrict scheduling to
+`extra_actions` of which the owner's label matches the specified
+regular expression.
+
+The following example will limit scheduling of `extra_actions`
+to only apply to actions of which the owner's label contains '/bar/':
+
+<pre>% bazel build --experimental_action_listener=//test:al //foo/... \
+  --experimental_extra_action_filter=.*/bar/.*
+</pre>
+
+#### `--host_cpu={{ "<var>" }}cpu{{ "</var>" }}` {:#host-cpu}
+
+This option specifies the name of the CPU architecture that should be
+used to build host tools.
+
+#### `--android_platforms={{ "<var>" }}platform[,platform]*{{ "</var>" }}` {:#android-platforms}
+
+The platforms to build the transitive `deps` of
+`android_binary` rules (specifically for native dependencies like C++). For
+example, if a `cc_library` appears in the transitive `deps` of an
+`android_binary` rule it is be built once for each platform specified with
+`--android_platforms` for the `android_binary` rule, and included in the final
+output.
+
+There is no default value for this flag: a custom Android platform must be
+defined and used.
+
+One `.so` file is created and packaged in the APK for each platform specified
+with `--android_platforms`. The `.so` file's name prefixes the name of the
+`android_binary` rule with "lib". For example, if the name of the
+`android_binary` is "foo", then the file is `libfoo.so`.
+
+#### `--per_file_copt={{ "<var>" }}[+-]regex[,[+-]regex]...@option[,option]...{{ "</var>" }}` {:#per-file-copt}
+
+When present, any C++ file with a label or an execution path matching one of the inclusion regex
+expressions and not matching any of the exclusion expressions will be built
+with the given options. The label matching uses the canonical form of the label
+(i.e //`package`:`label_name`).
+
+The execution path is the relative path to your workspace directory including the base name
+(including extension) of the C++ file. It also includes any platform dependent prefixes.
+
+Note: If only one of the label or the execution path matches the options will be used.
+
+To match the generated files (such as genrule outputs)
+Bazel can only use the execution path. In this case the regexp shouldn't start with '//'
+since that doesn't match any execution paths. Package names can be used like this:
+`--per_file_copt=base/.*\.pb\.cc@-g0`. This will match every
+`.pb.cc` file under a directory called `base`.
+
+This option can be used multiple times.
+
+The option is applied regardless of the compilation mode used. For example, it is possible
+to compile with `--compilation_mode=opt` and selectively compile some
+files with stronger optimization turned on, or with optimization disabled.
+
+**Caveat**: If some files are selectively compiled with debug symbols the symbols
+might be stripped during linking. This can be prevented by setting
+`--strip=never`.
+
+**Syntax**: `[+-]regex[,[+-]regex]...@option[,option]...` Where
+`regex` stands for a regular expression that can be prefixed with
+a `+` to identify include patterns and with `-` to identify
+exclude patterns. `option` stands for an arbitrary option that is passed
+to the C++ compiler. If an option contains a `,` it has to be quoted like so
+`\,`. Options can also contain `@`, since only the first
+`@` is used to separate regular expressions from options.
+
+**Example**:
+`--per_file_copt=//foo:.*\.cc,-//foo:file\.cc@-O0,-fprofile-arcs`
+adds the `-O0` and the `-fprofile-arcs` options to the command
+line of the C++ compiler for all `.cc` files in `//foo/` except `file.cc`.
+
+#### `--dynamic_mode={{ "<var>" }}mode{{ "</var>" }}` {:#dynamic-mode}
+
+Determines whether C++ binaries will be linked dynamically, interacting with
+the [linkstatic attribute](/reference/be/c-cpp#cc_binary.linkstatic) on build rules.
+
+Modes:
+
+* `default`: Allows bazel to choose whether to link dynamically.
+  See [linkstatic](/reference/be/c-cpp#cc_binary.linkstatic) for more
+  information.
+* `fully`: Links all targets dynamically. This will speed up
+  linking time, and reduce the size of the resulting binaries.
+* `off`: Links all targets in
+  [mostly static](/reference/be/c-cpp#cc_binary.linkstatic) mode.
+  If `-static` is set in linkopts, targets will change to fully static.
+
+#### `--fission (yes|no|[dbg][,opt][,fastbuild])` {:#fission}
+
+Enables [Fission](https://gcc.gnu.org/wiki/DebugFission){: .external},
+which writes C++ debug information to dedicated .dwo files instead of .o files, where it would
+otherwise go. This substantially reduces the input size to links and can reduce link times.
+
+When set to `[dbg][,opt][,fastbuild]` (example:
+`--fission=dbg,fastbuild`), Fission is enabled
+only for the specified set of compilation modes. This is useful for bazelrc
+settings. When set to `yes`, Fission is enabled
+universally. When set to `no`, Fission is disabled
+universally. Default is <code class='flag'>no</code>.
+
+#### `--force_ignore_dash_static` {:#force-ignore-dash-static}
+
+If this flag is set, any `-static` options in linkopts of
+`cc_*` rules BUILD files are ignored. This is only intended as a
+workaround for C++ hardening builds.
+
+#### `--[no]force_pic` {:#force-pic}
+
+If enabled, all C++ compilations produce position-independent code ("-fPIC"),
+links prefer PIC pre-built libraries over non-PIC libraries, and links produce
+position-independent executables ("-pie"). Default is disabled.
+
+Note: Dynamically linked binaries (for example `--dynamic_mode fully`)
+generate PIC code regardless of this flag's setting. So this flag is for cases
+where users want PIC code explicitly generated for static links.
+
+#### `--android_resource_shrinking` {:#flag--android_resource_shrinking}
+
+Selects whether to perform resource shrinking for android_binary rules. Sets the default for the
+[shrink_resources attribute](/reference/be/android#android_binary.shrink_resources) on
+android_binary rules; see the documentation for that rule for further details. Defaults to off.
+
+#### `--custom_malloc={{ "<var>" }}malloc-library-target{{ "</var>" }}` {:#custom-malloc}
+
+When specified, always use the given malloc implementation, overriding all
+`malloc="target"` attributes, including in those targets that use the
+default (by not specifying any `malloc`).
+
+#### `--crosstool_top={{ "<var>" }}label{{ "</var>" }}` {:#crosstool-top}
+
+This option specifies the location of the crosstool compiler suite
+to be used for all C++ compilation during a build. Bazel will look in that
+location for a CROSSTOOL file and uses that to automatically determine
+settings for `--compiler`.
+
+#### `--host_crosstool_top={{ "<var>" }}label{{ "</var>" }}` {:#host-crosstool-top}
+
+If not specified, Bazel uses the value of `--crosstool_top` to compile
+code in the exec configuration, such as tools run during the build. The main purpose of this flag
+is to enable cross-compilation.
+
+#### `--apple_crosstool_top={{ "<var>" }}label{{ "</var>" }}` {:#apple-crosstool-top}
+
+The crosstool to use for compiling C/C++ rules in the transitive `deps` of
+objc_*, ios__*, and apple_* rules. For those targets, this flag overwrites
+`--crosstool_top`.
+
+#### `--compiler={{ "<var>" }}version{{ "</var>" }}` {:#compiler}
+
+This option specifies the C/C++ compiler version (such as `gcc-4.1.0`)
+to be used for the compilation of binaries during the build. If you want to
+build with a custom crosstool, you should use a CROSSTOOL file instead of
+specifying this flag.
+
+Note: Only certain combinations of crosstool version, compiler version,
+and target CPU are allowed.
+
+#### `--android_sdk={{ "<var>" }}label{{ "</var>" }}` {:#android-sdk}
+
+Deprecated. This shouldn't be directly specified.
+
+This option specifies the Android SDK/platform toolchain
+and Android runtime library that will be used to build any Android-related
+rule.
+
+The Android SDK will be automatically selected if an `android_sdk_repository`
+rule is defined in the WORKSPACE file.
+
+#### `--java_toolchain={{ "<var>" }}label{{ "</var>" }}` {:#java-toolchain}
+
+No-op. Kept only for backwards compatibility.
+
+#### `--host_java_toolchain={{ "<var>" }}label{{ "</var>" }}` {:#host-java-toolchain}
+
+No-op. Kept only for backwards compatibility.
+
+#### `--javabase=({{ "<var>" }}label{{ "</var>" }})` {:#javabase}
+
+No-op. Kept only for backwards compatibility.
+
+#### `--host_javabase={{ "<var>" }}label{{ "</var>" }}` {:#host-javabase}
+
+No-op. Kept only for backwards compatibility.
+
+### Execution strategy {:#execution-strategy}
+
+These options affect how Bazel will execute the build.
+They should not have any significant effect on the output files
+generated by the build. Typically their main effect is on the
+speed of the build.
+
+#### `--spawn_strategy={{ "<var>" }}strategy{{ "</var>" }}` {:#spawn-strategy}
+
+This option controls where and how commands are executed.
+
+* `standalone` causes commands to be executed as local subprocesses. This value is
+  deprecated. Please use `local` instead.
+* `sandboxed` causes commands to be executed inside a sandbox on the local machine.
+  This requires that all input files, data dependencies and tools are listed as direct
+  dependencies in the `srcs`, `data` and `tools` attributes.
+  Bazel enables local sandboxing by default, on systems that support sandboxed execution.
+* `local` causes commands to be executed as local subprocesses.
+* `worker` causes commands to be executed using a persistent worker, if available.
+* `docker` causes commands to be executed inside a docker sandbox on the local machine.
+  This requires that docker is installed.
+* `remote` causes commands to be executed remotely; this is only available if a
+  remote executor has been configured separately.
+
+#### `--strategy {{ "<var>" }}mnemonic{{ "</var>" }}={{ "<var>" }}strategy{{ "</var>" }}` {:#strategy}
+
+This option controls where and how commands are executed, overriding the
+[--spawn_strategy](#spawn-strategy) (and
+[--genrule_strategy](#genrule-strategy) with mnemonic
+Genrule) on a per-mnemonic basis. See
+[--spawn_strategy](#spawn-strategy) for the supported
+strategies and their effects.
+
+#### `--strategy_regexp={{ "<var>" }}<filter,filter,...>=<strategy>{{ "</var>" }}` {:#strategy-regexp}
+
+This option specifies which strategy should be used to execute commands that have descriptions
+matching a certain `regex_filter`. See
+[--per_file_copt](#per-file-copt) for details on
+regex_filter matching. See
+[--spawn_strategy](#spawn-strategy) for the supported
+strategies and their effects.
+
+The last `regex_filter` that matches the description is used. This option overrides
+other flags for specifying strategy.
+
+* Example: `--strategy_regexp=//foo.*\\.cc,-//foo/bar=local` means to run actions using
+  `local` strategy if their descriptions match //foo.*.cc but not //foo/bar.
+* Example:
+  `--strategy_regexp='Compiling.*/bar=local' --strategy_regexp=Compiling=sandboxed`
+  runs 'Compiling //foo/bar/baz' with the `sandboxed` strategy, but reversing
+  the order runs it with `local`.
+* Example: `--strategy_regexp='Compiling.*/bar=local,sandboxed'` runs
+  'Compiling //foo/bar/baz' with the `local` strategy and falls back to
+  `sandboxed` if it fails.
+
+#### `--genrule_strategy={{ "<var>" }}strategy{{ "</var>" }}` {:#genrule-strategy}
+
+This is a deprecated short-hand for `--strategy=Genrule={{ "<var>" }}strategy{{ "</var>" }}`.
+
+#### `--jobs={{ "<var>" }}n{{ "</var>" }}` (-j) {:#jobs}
+
+This option, which takes an integer argument, specifies a limit on
+the number of jobs that should be executed concurrently during the
+execution phase of the build.
+
+Note : The number of concurrent jobs that Bazel will run
+is determined not only by the `--jobs` setting, but also
+by Bazel's scheduler, which tries to avoid running concurrent jobs
+that will use up more resources (RAM or CPU) than are available,
+based on some (very crude) estimates of the resource consumption
+of each job. The behavior of the scheduler can be controlled by
+the `--local_ram_resources` option.
+
+#### `--progress_report_interval={{ "<var>" }}n{{ "</var>" }}` {:progress-report-interval}
+
+Bazel periodically prints a progress report on jobs that are not
+finished yet (such as long running tests). This option sets the
+reporting frequency, progress will be printed every `n`
+seconds.
+
+The default is 0, that means an incremental algorithm: the first
+report will be printed after 10 seconds, then 30 seconds and after
+that progress is reported once every minute.
+
+When bazel is using cursor control, as specified by
+[`--curses`](#curses), progress is reported every second.
+
+#### `--local_{ram,cpu}_resources {{ "<var>" }}resources or resource expression{{ "</var>" }}` {:#local-resources}
+
+These options specify the amount of local resources (RAM in MB and number of CPU logical cores)
+that Bazel can take into consideration when scheduling build and test activities to run locally. They take
+an integer, or a keyword (HOST_RAM or HOST_CPUS) optionally followed by `[-|*`float`]`
+(for example, `--local_cpu_resources=2`, `--local_ram_resources=HOST_RAM*.5`,
+`--local_cpu_resources=HOST_CPUS-1`).
+The flags are independent; one or both may be set. By default, Bazel estimates
+the amount of RAM and number of CPU cores directly from the local system's configuration.
+
+#### `--[no]build_runfile_links` {:#build-runfile-links}
+
+This option, which is enabled by default, specifies whether the runfiles
+symlinks for tests and binaries should be built in the output directory.
+Using `--nobuild_runfile_links` can be useful
+to validate if all targets compile without incurring the overhead
+for building the runfiles trees.
+
+When tests (or applications) are executed, their run-time data
+dependencies are gathered together in one place. Within Bazel's
+output tree, this "runfiles" tree is typically rooted as a sibling of
+the corresponding binary or test.
+During test execution, runfiles may be accessed using paths of the form
+`$TEST_SRCDIR/{{ "<var>" }}canonical_repo_name{{ "</var>" }}/{{ "<var>" }}packagename{{ "</var>" }}/{{ "<var>" }}filename{{ "</var>" }}`.
+The runfiles tree ensures that tests have access to all the files
+upon which they have a declared dependence, and nothing more. By
+default, the runfiles tree is implemented by constructing a set of
+symbolic links to the required files. As the set of links grows, so
+does the cost of this operation, and for some large builds it can
+contribute significantly to overall build time, particularly because
+each individual test (or application) requires its own runfiles tree.
+
+#### `--[no]build_runfile_manifests` {:#build-runfile-manifests}
+
+This option, which is enabled by default, specifies whether runfiles manifests
+should be written to the output tree.
+Disabling it implies `--nobuild_runfile_links`.
+
+It can be disabled when executing tests remotely, as runfiles trees will
+be created remotely from in-memory manifests.
+
+#### `--[no]discard_analysis_cache` {:#discard-analysis-cache}
+
+When this option is enabled, Bazel will discard the analysis cache
+right before execution starts, thus freeing up additional memory
+(around 10%) for the [execution phase](/run/build#execution).
+The drawback is that further incremental builds will be slower. See also
+[memory-saving mode](/configure/memory).
+
+#### `--[no]keep_going`  (-k) {:#keep-going}
+
+As in GNU Make, the execution phase of a build stops when the first
+error is encountered. Sometimes it is useful to try to build as
+much as possible even in the face of errors. This option enables
+that behavior, and when it is specified, the build will attempt to
+build every target whose prerequisites were successfully built, but
+will ignore errors.
+
+While this option is usually associated with the execution phase of
+a build, it also affects the analysis phase: if several targets are
+specified in a build command, but only some of them can be
+successfully analyzed, the build will stop with an error
+unless `--keep_going` is specified, in which case the
+build will proceed to the execution phase, but only for the targets
+that were successfully analyzed.
+
+#### `--[no]use_ijars` {:#use-ijars}
+
+This option changes the way `java_library` targets are
+compiled by Bazel. Instead of using the output of a
+`java_library` for compiling dependent
+`java_library` targets, Bazel will create interface jars
+that contain only the signatures of non-private members (public,
+protected, and default (package) access methods and fields) and use
+the interface jars to compile the dependent targets. This makes it
+possible to avoid recompilation when changes are only made to
+method bodies or private members of a class.
+
+Note: Using `--use_ijars` might give you a different
+error message when you are accidentally referring to a non visible
+member of another class: Instead of getting an error that the member
+is not visible you will get an error that the member does not exist.
+Changing the `--use_ijars` setting will force a recompilation of all affected
+classes.
+
+#### `--[no]interface_shared_objects` {:#interface-shared-objects}
+
+This option enables _interface shared objects_, which makes binaries and
+other shared libraries depend on the _interface_ of a shared object,
+rather than its implementation. When only the implementation changes, Bazel
+can avoid rebuilding targets that depend on the changed shared library
+unnecessarily.
+
+### Output selection {:#output-selection}
+
+These options determine what to build or test.
+
+#### `--[no]build` {:#build}
+
+This option causes the execution phase of the build to occur; it is
+on by default. When it is switched off, the execution phase is
+skipped, and only the first two phases, loading and analysis, occur.
+
+This option can be useful for validating BUILD files and detecting
+errors in the inputs, without actually building anything.
+
+#### `--[no]build_tests_only` {:#build-tests-only}
+
+If specified, Bazel will build only what is necessary to run the `*_test`
+and `test_suite` rules that were not filtered due to their
+[size](#test-size-filters),
+[timeout](#test-timeout-filters),
+[tag](#test-tag-filters), or
+[language](#test-lang-filters).
+If specified, Bazel will ignore other targets specified on the command line.
+By default, this option is disabled and Bazel will build everything
+requested, including `*_test` and `test_suite` rules that are filtered out from
+testing. This is useful because running
+`bazel test --build_tests_only foo/...` may not detect all build
+breakages in the `foo` tree.
+
+#### `--[no]check_up_to_date` {:#check-up-to-date}
+
+This option causes Bazel not to perform a build, but merely check
+whether all specified targets are up-to-date. If so, the build
+completes successfully, as usual. However, if any files are out of
+date, instead of being built, an error is reported and the build
+fails. This option may be useful to determine whether a build has
+been performed more recently than a source edit (for example, for pre-submit
+checks) without incurring the cost of a build.
+
+See also [`--check_tests_up_to_date`](#check-tests-up-to-date).
+
+#### `--[no]compile_one_dependency` {:#compile-one-dependency}
+
+Compile a single dependency of the argument files. This is useful for
+syntax checking source files in IDEs, for example, by rebuilding a single
+target that depends on the source file to detect errors as early as
+possible in the edit/build/test cycle. This argument affects the way all
+non-flag arguments are interpreted: each argument must be a
+file target label or a plain filename relative to the current working
+directory, and one rule that depends on each source filename is built. For
+C++ and Java
+sources, rules in the same language space are preferentially chosen. For
+multiple rules with the same preference, the one that appears first in the
+BUILD file is chosen. An explicitly named target pattern which does not
+reference a source file results in an error.
+
+#### `--save_temps` {:#save-temps}
+
+The `--save_temps` option causes temporary outputs from the compiler to be
+saved. These include .s files (assembler code), .i (preprocessed C) and .ii
+(preprocessed C++) files. These outputs are often useful for debugging. Temps will only be
+generated for the set of targets specified on the command line.
+
+Note: The implementation of `--save_temps` does not use the compiler's
+`-save-temps` flag. Instead, there are two passes, one with `-S`
+and one with `-E`. A consequence of this is that if your build fails,
+Bazel may not yet have produced the ".i" or ".ii" and ".s" files.
+If you're trying to use `--save_temps` to debug a failed compilation,
+you may need to also use `--keep_going` so that Bazel will still try to
+produce the preprocessed files after the compilation fails.
+
+The `--save_temps` flag currently works only for cc_* rules.
+
+To ensure that Bazel prints the location of the additional output files, check that
+your [`--show_result {{ "<var>" }}n{{ "</var>" }}`](#show-result)
+setting is high enough.
+
+#### `--build_tag_filters={{ "<var>" }}tag[,tag]*{{ "</var>" }}` {:#build-tag-filters}
+
+If specified, Bazel will build only targets that have at least one required tag
+(if any of them are specified) and does not have any excluded tags. Build tag
+filter is specified as comma delimited list of tag keywords, optionally
+preceded with '-' sign used to denote excluded tags. Required tags may also
+have a preceding '+' sign.
+
+When running tests, Bazel ignores `--build_tag_filters` for test targets,
+which are built and run even if they do not match this filter. To avoid building them, filter
+test targets using `--test_tag_filters` or by explicitly excluding them.
+
+#### `--test_size_filters={{ "<var>" }}size[,size]*{{ "</var>" }}` {:#test-size-filters}
+
+If specified, Bazel will test (or build if `--build_tests_only`
+is also specified) only test targets with the given size. Test size filter
+is specified as comma delimited list of allowed test size values (small,
+medium, large or enormous), optionally preceded with '-' sign used to denote
+excluded test sizes. For example,
+
+<pre>
+  % bazel test --test_size_filters=small,medium //foo:all
+</pre>
+
+and
+
+<pre>
+  % bazel test --test_size_filters=-large,-enormous //foo:all
+</pre>
+
+will test only small and medium tests inside //foo.
+
+By default, test size filtering is not applied.
+
+#### `--test_timeout_filters={{ "<var>" }}timeout[,timeout]*{{ "</var>" }}` {:#test-timeout-filters}
+
+If specified, Bazel will test (or build if `--build_tests_only`
+is also specified) only test targets with the given timeout. Test timeout filter
+is specified as comma delimited list of allowed test timeout values (short,
+moderate, long or eternal), optionally preceded with '-' sign used to denote
+excluded test timeouts. See [--test_size_filters](#test-size-filters)
+for example syntax.
+
+By default, test timeout filtering is not applied.
+
+#### `--test_tag_filters={{ "<var>" }}tag[,tag]*{{ "</var>" }}` {:#test-tag-filters}
+
+If specified, Bazel will test (or build if `--build_tests_only`
+is also specified) only test targets that have at least one required tag
+(if any of them are specified) and does not have any excluded tags. Test tag
+filter is specified as comma delimited list of tag keywords, optionally
+preceded with '-' sign used to denote excluded tags. Required tags may also
+have a preceding '+' sign.
+
+For example,
+
+<pre>
+  % bazel test --test_tag_filters=performance,stress,-flaky //myproject:all
+</pre>
+
+will test targets that are tagged with either `performance` or
+`stress` tag but are **not** tagged with the `flaky` tag.
+
+By default, test tag filtering is not applied. Note that you can also filter
+on test's `size` and `local` tags in
+this manner.
+
+#### `--test_lang_filters={{ "<var>" }}string[,string]*{{ "</var>" }}` {:#test-lang-filters}
+
+Specifies a comma-separated list of strings referring to names of test rule
+classes. To refer to the rule class `foo_test`, use the string "foo". Bazel will
+test (or build if `--build_tests_only` is also specified) only
+targets of the referenced rule classes. To instead exclude those targets, use
+the string "-foo". For example,
+
+</p>
+<pre>
+  % bazel test --test_lang_filters=foo,bar //baz/...
+</pre>
+<p>
+  will test only targets that are instances of `foo_test` or `bar_test` in
+  `//baz/...`, while
+</p>
+<pre>
+  % bazel test --test_lang_filters=-foo,-bar //baz/...
+</pre>
+<p>
+  will test all the targets in `//baz/...` except for the `foo_test` and
+  `bar_test` instances.
+</p>
+
+Tip: You can use `bazel query --output=label_kind "//p:t"` to
+learn the rule class name of the target `//p:t`. And you can
+look at the pair of instantiation stacks in the output of
+`bazel query --output=build "//p:t"` to learn why that target
+is an instance of that rule class.
+
+Warning: The option name "--test_lang_filter" is vestigal and is therefore
+unfortunately misleading; don't make assumptions about the semantics based on
+the name.
+
+#### `--test_filter={{ "<var>" }}filter-expression{{ "</var>" }}` {:#test-filter}
+
+Specifies a filter that the test runner may use to pick a subset of tests for
+running. All targets specified in the invocation are built, but depending on
+the expression only some of them may be executed; in some cases, only certain
+test methods are run.
+
+The particular interpretation of {{ "<var>" }}filter-expression{{ "</var>" }} is up to
+the test framework responsible for running the test. It may be a glob,
+substring, or regexp. `--test_filter` is a convenience
+over passing different `--test_arg` filter arguments,
+but not all frameworks support it.
+
+### Verbosity {:#verbosity}
+
+These options control the verbosity of Bazel's output,
+either to the terminal, or to additional log files.
+
+#### `--explain={{ "<var>" }}logfile{{ "</var>" }}` {:#explain}
+
+This option, which requires a filename argument, causes the
+dependency checker in `bazel build`'s execution phase to
+explain, for each build step, either why it is being executed, or
+that it is up-to-date. The explanation is written
+to _logfile_.
+
+If you are encountering unexpected rebuilds, this option can help to
+understand the reason. Add it to your `.bazelrc` so that
+logging occurs for all subsequent builds, and then inspect the log
+when you see an execution step executed unexpectedly. This option
+may carry a small performance penalty, so you might want to remove
+it when it is no longer needed.
+
+#### `--verbose_explanations` {:#verbose-explanations}
+
+This option increases the verbosity of the explanations generated
+when the [--explain](#explain) option is enabled.
+
+In particular, if verbose explanations are enabled,
+and an output file is rebuilt because the command used to
+build it has changed, then the output in the explanation file will
+include the full details of the new command (at least for most
+commands).
+
+Using this option may significantly increase the length of the
+generated explanation file and the performance penalty of using
+`--explain`.
+
+If `--explain` is not enabled, then
+`--verbose_explanations` has no effect.
+
+#### `--profile={{ "<var>" }}file{{ "</var>" }}` {:#profile}
+
+This option, which takes a filename argument, causes Bazel to write
+profiling data into a file. The data then can be analyzed or parsed using the
+`bazel analyze-profile` command. The Build profile can be useful in
+understanding where Bazel's `build` command is spending its time.
+
+#### `--[no]show_loading_progress` {:#show-loading-progress}
+
+This option causes Bazel to output package-loading progress
+messages. If it is disabled, the messages won't be shown.
+
+#### `--[no]show_progress` {:#show-progress}
+
+This option causes progress messages to be displayed; it is on by
+default. When disabled, progress messages are suppressed.
+
+#### `--show_progress_rate_limit={{ "<var>" }}n{{ "</var>" }}` {:#show-progress-rate}
+
+This option causes bazel to display at most one progress message per `n` seconds,
+where {{ "<var>" }}n{{ "</var>" }} is a real number.
+The default value for this option is 0.02, meaning bazel will limit the progress
+messages to one per every 0.02 seconds.
+
+#### `--show_result={{ "<var>" }}n{{ "</var>" }}` {:#show-result}
+
+This option controls the printing of result information at the end
+of a `bazel build` command. By default, if a single
+build target was specified, Bazel prints a message stating whether
+or not the target was successfully brought up-to-date, and if so,
+the list of output files that the target created. If multiple
+targets were specified, result information is not displayed.
+
+While the result information may be useful for builds of a single
+target or a few targets, for large builds (such as an entire top-level
+project tree), this information can be overwhelming and distracting;
+this option allows it to be controlled. `--show_result`
+takes an integer argument, which is the maximum number of targets
+for which full result information should be printed. By default,
+the value is 1. Above this threshold, no result information is
+shown for individual targets. Thus zero causes the result
+information to be suppressed always, and a very large value causes
+the result to be printed always.
+
+Users may wish to choose a value in-between if they regularly
+alternate between building a small group of targets (for example,
+during the compile-edit-test cycle) and a large group of targets
+(for example, when establishing a new workspace or running
+regression tests). In the former case, the result information is
+very useful whereas in the latter case it is less so. As with all
+options, this can be specified implicitly via
+the [`.bazelrc`](/run/bazelrc) file.
+
+The files are printed so as to make it easy to copy and paste the
+filename to the shell, to run built executables. The "up-to-date"
+or "failed" messages for each target can be easily parsed by scripts
+which drive a build.
+
+#### `--sandbox_debug` {:#sandbox-debug}
+
+This option causes Bazel to print extra debugging information when using sandboxing for action
+execution. This option also preserves sandbox directories, so that the files visible to actions
+during execution can be examined.
+
+#### `--subcommands` (`-s`) {:#subcommands}
+
+This option causes Bazel's execution phase to print the full command line
+for each command prior to executing it.
+
+<pre>
+  &gt;&gt;&gt;&gt;&gt; # //examples/cpp:hello-world [action 'Linking examples/cpp/hello-world']
+  (cd /home/johndoe/.cache/bazel/_bazel_johndoe/4c084335afceb392cfbe7c31afee3a9f/bazel && \
+    exec env - \
+    /usr/bin/gcc -o bazel-out/local-fastbuild/bin/examples/cpp/hello-world -B/usr/bin/ -Wl,-z,relro,-z,now -no-canonical-prefixes -pass-exit-codes -Wl,-S -Wl,@bazel-out/local_linux-fastbuild/bin/examples/cpp/hello-world-2.params)
+</pre>
+
+Where possible, commands are printed in a Bourne shell compatible syntax,
+so that they can be easily copied and pasted to a shell command prompt.
+(The surrounding parentheses are provided to protect your shell from the
+`cd` and `exec` calls; be sure to copy them!)
+However some commands are implemented internally within Bazel, such as
+creating symlink trees. For these there's no command line to display.
+
+`--subcommands=pretty_print` may be passed to print
+the arguments of the command as a list rather than as a single line. This may
+help make long command lines more readable.
+
+See also [--verbose_failures](#verbose-failures), below.
+
+For logging subcommands to a file in a tool-friendly format, see
+[--execution_log_json_file](/reference/command-line-reference#flag--execution_log_json_file)
+and
+[--execution_log_binary_file](/reference/command-line-reference#flag--execution_log_binary_file).
+
+#### `--verbose_failures` {:#verbose-failures}
+
+This option causes Bazel's execution phase to print the full command line
+for commands that failed. This can be invaluable for debugging a
+failing build.
+
+Failing commands are printed in a Bourne shell compatible syntax, suitable
+for copying and pasting to a shell prompt.
+
+### Workspace status {:#workspace-status}
+
+Use these options to "stamp" Bazel-built binaries: to embed additional information into the
+binaries, such as the source control revision or other workspace-related information. You can use
+this mechanism with rules that support the `stamp` attribute, such as
+`genrule`, `cc_binary`, and more.
+
+#### `--workspace_status_command={{ "<var>" }}program{{ "</var>" }}` {:#workspace-status-command}
+
+This flag lets you specify a binary that Bazel runs before each build. The program can report
+information about the status of the workspace, such as the current source control revision.
+
+The flag's value must be a path to a native program. On Linux/macOS this may be any executable.
+On Windows this must be a native binary, typically an ".exe", ".bat", or a ".cmd" file.
+
+The program should print zero or more key/value pairs to standard output, one entry on each line,
+then exit with zero (otherwise the build fails). The key names can be anything but they may only
+use upper case letters and underscores. The first space after the key name separates it from the
+value. The value is the rest of the line (including additional whitespaces). Neither the key nor
+the value may span multiple lines. Keys must not be duplicated.
+
+Bazel partitions the keys into two buckets: "stable" and "volatile". (The names "stable" and
+"volatile" are a bit counter-intuitive, so don't think much about them.)
+
+Bazel then writes the key-value pairs into two files:
+
+*   `bazel-out/stable-status.txt`
+    contains all keys and values where the key's name starts with `STABLE_`
+*   `bazel-out/volatile-status.txt`
+    contains the rest of the keys and their values
+
+The contract is:
+
+*   "stable" keys' values should change rarely, if possible. If the contents of
+    `bazel-out/stable-status.txt`
+      change, Bazel invalidates the actions that depend on them. In
+      other words, if a stable key's value changes, Bazel will rerun stamped actions.
+      Therefore the stable status should not contain things like timestamps, because they change all
+      the time, and would make Bazel rerun stamped actions with each build.
+
+    Bazel always outputs the following stable keys:
+    *   `BUILD_EMBED_LABEL`: value of `--embed_label`
+    *   `BUILD_HOST`: the name of the host machine that Bazel is running on
+    *   `BUILD_USER`: the name of the user that Bazel is running as
+*   "volatile" keys' values may change often. Bazel expects them to change all the time, like
+      timestamps do, and duly updates the
+    `bazel-out/volatile-status.txt`
+      file. In order to avoid
+      rerunning stamped actions all the time though, **Bazel pretends that the volatile file never
+      changes**. In other words, if the volatile status file is the only file whose contents has
+      changed, Bazel will not invalidate actions that depend on it. If other inputs of the actions
+      have changed, then Bazel reruns that action, and the action will see the updated volatile
+      status, but just the volatile status changing alone will not invalidate the action.
+
+    Bazel always outputs the following volatile keys:
+      *   `BUILD_TIMESTAMP`: time of the build in seconds since the Unix Epoch (the value
+        of `System.currentTimeMillis()` divided by a thousand)
+      *   `FORMATTED_DATE`: time of the build Formatted as
+        `yyyy MMM d HH mm ss EEE`(for example 2023 Jun 2 01 44 29 Fri) in UTC.
+
+On Linux/macOS you can pass `--workspace_status_command=/bin/true` to
+disable retrieving workspace status, because `true` does nothing, successfully (exits
+with zero) and prints no output. On Windows you can pass the path of MSYS's `true.exe`
+for the same effect.
+
+If the workspace status command fails (exits non-zero) for any reason, the build will fail.
+
+Example program on Linux using Git:
+
+<pre>
+#!/bin/bash
+echo "CURRENT_TIME $(date +%s)"
+echo "RANDOM_HASH $(cat /proc/sys/kernel/random/uuid)"
+echo "STABLE_GIT_COMMIT $(git rev-parse HEAD)"
+echo "STABLE_USER_NAME $USER"
+</pre>
+
+Pass this program's path with `--workspace_status_command`, and the stable status file
+will include the STABLE lines and the volatile status file will include the rest of the lines.
+
+#### `--[no]stamp` {:#stamp}
+
+This option, in conjunction with the `stamp` rule attribute, controls whether to
+embed build information in binaries.
+
+Stamping can be enabled or disabled explicitly on a per-rule basis using the
+`stamp` attribute. Please refer to the Build Encyclopedia for details. When
+a rule sets `stamp = -1` (the default for `*_binary` rules), this option
+determines whether stamping is enabled.
+
+Bazel never stamps binaries that are built for the exec configuration,
+regardless of this option or the `stamp` attribute. For rules that set `stamp =
+0` (the default for `*_test` rules), stamping is disabled regardless of
+`--[no]stamp`. Specifying `--stamp` does not force targets to be rebuilt if
+their dependencies have not changed.
+
+Setting `--nostamp` is generally desireable for build performance, as it
+reduces input volatility and maximizes build caching.
+
+### Platform {:#platform}
+
+Use these options to control the host and target platforms that configure how builds work, and to
+control what execution platforms and toolchains are available to Bazel rules.
+
+Please see background information on [Platforms](/extending/platforms) and [Toolchains](/extending/toolchains).
+
+#### `--platforms={{ "<var>" }}labels{{ "</var>" }}` {:#platforms}
+
+The labels of the platform rules describing the target platforms for the
+current command.
+
+#### `--host_platform={{ "<var>" }}label{{ "</var>" }}` {:#host-platform}
+
+The label of a platform rule that describes the host system.
+
+#### `--extra_execution_platforms={{ "<var>" }}labels{{ "</var>" }}` {:#extra-execution-platforms}
+
+The platforms that are available as execution platforms to run actions.
+Platforms can be specified by exact target, or as a target pattern. These
+platforms will be considered before those declared in MODULE.bazel files by
+[register_execution_platforms()](/rules/lib/globals/module#register_execution_platforms).
+This option accepts a comma-separated list of platforms in order of priority.
+If the flag is passed multiple times, the most recent overrides.
+
+#### `--extra_toolchains={{ "<var>" }}labels{{ "</var>" }}` {:#extra-toolchains}
+
+The toolchain rules to be considered during toolchain resolution. Toolchains
+can be specified by exact target, or as a target pattern. These toolchains will
+be considered before those declared in MODULE.bazel files by
+[register_toolchains()](/rules/lib/globals/module#register_toolchains).
+
+#### `--toolchain_resolution_debug={{ "<var>" }}regex{{ "</var>" }}` {:#toolchain-resolution-debug}
+
+Print debug information while finding toolchains if the toolchain type matches
+the regex. Multiple regexes can be separated by commas. The regex can be
+negated by using a `-` at the beginning. This might help developers
+of Bazel or Starlark rules with debugging failures due to missing toolchains.
+
+### Miscellaneous {:#miscellaneous}
+
+#### `--flag_alias={{ "<var>" }}alias_name=target_path{{ "</var>" }}` {:#flag-alias}
+
+A convenience flag used to bind longer Starlark build settings to a shorter name. For more
+details, see the
+[Starlark Configurations](/extending/config#using-build-setting-aliases).
+
+#### `--symlink_prefix={{ "<var>" }}string{{ "</var>" }}` {:#symlink-prefix}
+
+Changes the prefix of the generated convenience symlinks. The
+default value for the symlink prefix is `bazel-` which
+will create the symlinks `bazel-bin`, `bazel-testlogs`, and
+`bazel-genfiles`.
+
+If the symbolic links cannot be created for any reason, a warning is
+issued but the build is still considered a success. In particular,
+this allows you to build in a read-only directory or one that you have no
+permission to write into. Any paths printed in informational
+messages at the conclusion of a build will only use the
+symlink-relative short form if the symlinks point to the expected
+location; in other words, you can rely on the correctness of those
+paths, even if you cannot rely on the symlinks being created.
+
+Some common values of this option:
+
+*   **Suppress symlink creation:**
+      `--symlink_prefix=/` will cause Bazel to not
+      create or update any symlinks, including the `bazel-out` and
+      `bazel-<workspace>`
+      symlinks. Use this option to suppress symlink creation entirely.
+
+*   **Reduce clutter:**
+      `--symlink_prefix=.bazel/` will cause Bazel to create
+      symlinks called `bin` (etc) inside a hidden directory `.bazel`.
+
+#### `--platform_suffix={{ "<var>" }}string{{ "</var>" }}` {:#platform-suffix}
+
+Adds a suffix to the configuration short name, which is used to determine the
+output directory. Setting this option to different values puts the files into
+different directories, for example to improve cache hit rates for builds that
+otherwise clobber each others output files, or to keep the output files around
+for comparisons.
+
+#### `--default_visibility={{ "<var>" }}(private|public){{ "</var>" }}` {:#default-visibility}
+
+Temporary flag for testing bazel default visibility changes. Not intended for general use
+but documented for completeness' sake.
+
+#### `--starlark_cpu_profile=_file_` {:#starlark-cpu-profile}
+
+This flag, whose value is the name of a file, causes Bazel to gather
+statistics about CPU usage by all Starlark threads,
+and write the profile, in [pprof](https://github.com/google/pprof){: .external} format,
+to the named file.
+
+Use this option to help identify Starlark functions that
+make loading and analysis slow due to excessive computation. For example:
+
+<pre>
+$ bazel build --nobuild --starlark_cpu_profile=/tmp/pprof.gz my/project/...
+$ pprof /tmp/pprof.gz
+(pprof) top
+Type: CPU
+Time: Feb 6, 2020 at 12:06pm (PST)
+Duration: 5.26s, Total samples = 3.34s (63.55%)
+Showing nodes accounting for 3.34s, 100% of 3.34s total
+      flat  flat%   sum%        cum   cum%
+     1.86s 55.69% 55.69%      1.86s 55.69%  sort_source_files
+     1.02s 30.54% 86.23%      1.02s 30.54%  expand_all_combinations
+     0.44s 13.17% 99.40%      0.44s 13.17%  range
+     0.02s   0.6%   100%      3.34s   100%  sorted
+         0     0%   100%      1.38s 41.32%  my/project/main/BUILD
+         0     0%   100%      1.96s 58.68%  my/project/library.bzl
+         0     0%   100%      3.34s   100%  main
+</pre>
+
+For different views of the same data, try the `pprof` commands `svg`,
+`web`, and `list`.
+
+## Using Bazel for releases {:#bazel-for-releases}
+
+Bazel is used both by software engineers during the development
+cycle, and by release engineers when preparing binaries for deployment
+to production. This section provides a list of tips for release
+engineers using Bazel.
+
+### Significant options {:#significant-options}
+
+When using Bazel for release builds, the same issues arise as for other scripts
+that perform a build. For more details, see
+[Call Bazel from scripts](/run/scripts). In particular, the following options
+are strongly recommended:
+
+*   [`--bazelrc=/dev/null`](/run/bazelrc)
+*   [`--nokeep_state_after_build`](/reference/command-line-reference#flag--keep_state_after_build)
+
+These options are also important:
+
+*   [`--package_path`](#package-path)
+*   [`--symlink_prefix`](#symlink-prefix):
+    for managing builds for multiple configurations,
+    it may be convenient to distinguish each build
+    with a distinct identifier, such as "64bit" vs. "32bit". This option
+    differentiates the `bazel-bin` (etc.) symlinks.
+
+## Running tests {:#running-tests}
+
+To build and run tests with bazel, type `bazel test` followed by
+the name of the test targets.
+
+By default, this command performs simultaneous build and test
+activity, building all specified targets (including any non-test
+targets specified on the command line) and testing
+`*_test` and `test_suite` targets as soon as
+their prerequisites are built, meaning that test execution is
+interleaved with building. Doing so usually results in significant
+speed gains.
+
+### Options for `bazel test` {:#bazel-test-options}
+
+#### `--cache_test_results=(yes|no|auto)` (`-t`) {:#cache-test-results}
+
+If this option is set to 'auto' (the default) then Bazel will only rerun a test if any of the
+following conditions applies:
+
+*   Bazel detects changes in the test or its dependencies
+*   the test is marked as `external`
+*   multiple test runs were requested with `--runs_per_test`
+*   the test failed.
+
+If 'no', all tests will be executed unconditionally.
+
+If 'yes', the caching behavior will be the same as auto
+except that it may cache test failures and test runs with
+`--runs_per_test`.
+
+Note: Test results are _always_ saved in Bazel's output tree,
+regardless of whether this option is enabled, so
+you needn't have used `--cache_test_results` on the
+prior run(s) of `bazel test` in order to get cache hits.
+The option only affects whether Bazel will _use_ previously
+saved results, not whether it will save results of the current run.
+
+Users who have enabled this option by default in
+their `.bazelrc` file may find the
+abbreviations `-t` (on) or `-t-` (off)
+convenient for overriding the default on a particular run.
+
+#### `--check_tests_up_to_date` {:#check-tests-up-to-date}
+
+This option tells Bazel not to run the tests, but to merely check and report
+the cached test results. If there are any tests which have not been
+previously built and run, or whose tests results are out-of-date (for example, because
+the source code or the build options have changed), then Bazel will report
+an error message ("test result is not up-to-date"), will record the test's
+status as "NO STATUS" (in red, if color output is enabled), and will return
+a non-zero exit code.
+
+This option also implies
+[`--check_up_to_date`](#check-up-to-date) behavior.
+
+This option may be useful for pre-submit checks.
+
+#### `--test_verbose_timeout_warnings` {:#test-verbose-timeout-warnings}
+
+This option tells Bazel to explicitly warn the user if a test's timeout is
+significantly longer than the test's actual execution time. While a test's
+timeout should be set such that it is not flaky, a test that has a highly
+over-generous timeout can hide real problems that crop up unexpectedly.
+
+For instance, a test that normally executes in a minute or two should not have
+a timeout of ETERNAL or LONG as these are much, much too generous.
+
+This option is useful to help users decide on a good timeout value or
+sanity check existing timeout values.
+
+Note: Each test shard is allotted the timeout of the entire
+`XX_test` target. Using this option does not affect a test's timeout
+value, merely warns if Bazel thinks the timeout could be restricted further.
+
+#### `--[no]test_keep_going` {:#test-keep-going}
+
+By default, all tests are run to completion. If this flag is disabled,
+however, the build is aborted on any non-passing test. Subsequent build steps
+and test invocations are not run, and in-flight invocations are canceled.
+Do not specify both `--notest_keep_going` and `--keep_going`.
+
+#### `--flaky_test_attempts={{ "<var>" }}attempts{{ "</var>" }}` {:#flaky-test-attempts}
+
+This option specifies the maximum number of times a test should be attempted
+if it fails for any reason. A test that initially fails but eventually
+succeeds is reported as `FLAKY` on the test summary. It is,
+however, considered to be passed when it comes to identifying Bazel exit code
+or total number of passed tests. Tests that fail all allowed attempts are
+considered to be failed.
+
+By default (when this option is not specified, or when it is set to
+default), only a single attempt is allowed for regular tests, and
+3 for test rules with the `flaky` attribute set. You can specify
+an integer value to override the maximum limit of test attempts. Bazel allows
+a maximum of 10 test attempts in order to prevent abuse of the system.
+
+#### `--runs_per_test={{ "<var>" }}[regex@]number{{ "</var>" }}` {:#runs-per-test}
+
+This option specifies the number of times each test should be executed. All
+test executions are treated as separate tests (fallback functionality
+will apply to each of them independently).
+
+The status of a target with failing runs depends on the value of the
+`--runs_per_test_detects_flakes` flag:
+
+*  If absent, any failing run causes the entire test to fail.
+*  If present and two runs from the same shard return PASS and FAIL, the test
+   will receive a status of flaky (unless other failing runs cause it to
+   fail).
+
+If a single number is specified, all tests will run that many times.
+Alternatively, a regular expression may be specified using the syntax
+regex@number. This constrains the effect of `--runs_per_test` to targets
+which match the regex (`--runs_per_test=^//pizza:.*@4` runs all tests
+under `//pizza/` 4 times).
+This form of `--runs_per_test` may be specified more than once.
+
+#### `--[no]runs_per_test_detects_flakes` {:#run-per-test-detects-flakes}
+
+If this option is specified (by default it is not), Bazel will detect flaky
+test shards through `--runs_per_test`. If one or more runs for a single shard
+fail and one or more runs for the same shard pass, the target will be
+considered flaky with the flag. If unspecified, the target will report a
+failing status.
+
+#### `--test_summary={{ "<var>" }}output_style{{ "</var>" }}` {:#test-summary}
+
+Specifies how the test result summary should be displayed.
+
+*   `short` prints the results of each test along with the name of
+    the file containing the test output if the test failed. This is the default
+    value.
+*   `terse` like `short`, but even shorter: only print
+    information about tests which did not pass.
+*   `detailed` prints each individual test case that failed, not
+    only each test. The names of test output files are omitted.
+*   `none` does not print test summary.
+
+#### `--test_output={{ "<var>" }}output_style{{ "</var>" }}` {:#test-output}
+
+Specifies how test output should be displayed:
+
+*   `summary` shows a summary of whether each test passed or
+    failed. Also shows the output log file name for failed tests. The summary
+    will be printed at the end of the build (during the build, one would see
+    just simple progress messages when tests start, pass or fail).
+    This is the default behavior.
+*   `errors` sends combined stdout/stderr output from failed tests
+    only into the stdout immediately after test is completed, ensuring that
+    test output from simultaneous tests is not interleaved with each other.
+    Prints a summary at the build as per summary output above.
+*   `all` is similar to `errors` but prints output for
+    all tests, including those which passed.
+*   `streamed` streams stdout/stderr output from each test in
+    real-time.
+
+#### `--java_debug` {:#java-debug}
+
+This option causes the Java virtual machine of a java test to wait for a connection from a
+JDWP-compliant debugger before starting the test. This option implies `--test_output=streamed`.
+
+#### `--[no]verbose_test_summary` {:#verbose-test-summary}
+
+By default this option is enabled, causing test times and other additional
+information (such as test attempts) to be printed to the test summary. If
+`--noverbose_test_summary` is specified, test summary will
+include only test name, test status and cached test indicator and will
+be formatted to stay within 80 characters when possible.
+
+#### `--test_tmpdir={{ "<var>" }}path{{ "</var>" }}` {:#test-tmpdir}
+
+Specifies temporary directory for tests executed locally. Each test will be
+executed in a separate subdirectory inside this directory. The directory will
+be cleaned at the beginning of the each `bazel test` command.
+By default, bazel will place this directory under Bazel output base directory.
+
+Note: This is a directory for running tests, not storing test results
+(those are always stored under the `bazel-out` directory).
+
+#### `--test_timeout={{ "<var>" }}seconds{{ "</var>" }}` OR `--test_timeout={{ "<var>" }}seconds{{ "</var>" }},{{ "<var>" }}seconds{{ "</var>" }},{{ "<var>" }}seconds{{ "</var>" }},{{ "<var>" }}seconds{{ "</var>" }}` {:#test-timeout}
+
+Overrides the timeout value for all tests by using specified number of
+seconds as a new timeout value. If only one value is provided, then it will
+be used for all test timeout categories.
+
+Alternatively, four comma-separated values may be provided, specifying
+individual timeouts for short, moderate, long and eternal tests (in that
+order).
+In either form, zero or a negative value for any of the test sizes will
+be substituted by the default timeout for the given timeout categories as
+defined by the page [Writing Tests](/reference/test-encyclopedia).
+By default, Bazel will use these timeouts for all tests by
+inferring the timeout limit from the test's size whether the size is
+implicitly or explicitly set.
+
+Tests which explicitly state their timeout category as distinct from their
+size will receive the same value as if that timeout had been implicitly set by
+the size tag. So a test of size 'small' which declares a 'long' timeout will
+have the same effective timeout that a 'large' tests has with no explicit
+timeout.
+
+#### `--test_arg={{ "<var>" }}arg{{ "</var>" }}` {:#test-arg}
+
+Passes command-line options/flags/arguments to each test process. This
+option can be used multiple times to pass several arguments. For example,
+`--test_arg=--logtostderr --test_arg=--v=3`.
+
+Note that, unlike the `bazel run` command, you can't pass test arguments
+directly as in `bazel test -- target --logtostderr --v=3`. That's because
+extraneous arguments passed to `bazel test` are interpreted as additional test
+targets. That is, `--logtostderr` and `--v=3` would each be interpreted as a
+test target. This ambiguity doesn't exist for a `bazel run` command, which only
+accepts one target.
+
+`--test_arg` can be passed to a `bazel run` command, but it's ignored unless the
+target being run is a test target. (As with any other flag, if it's passed in a
+`bazel run` command after a `--` token, it's not processed by Bazel but
+forwarded verbatim to the executed target.)
+
+#### `--test_env={{ "<var>" }}variable{{ "</var>" }}=_value_` OR `--test_env={{ "<var>" }}variable{{ "</var>" }}` {:#test-env}
+
+Specifies additional variables that must be injected into the test
+environment for each test. If {{ "<var>" }}value{{ "</var>" }} is not specified it will be
+inherited from the shell environment used to start the `bazel test`
+command.
+
+The environment can be accessed from within a test by using
+`System.getenv("var")` (Java), `getenv("var")` (C or C++),
+
+#### `--run_under={{ "<var>" }}command-prefix{{ "</var>" }}` {:#test-run-under}
+
+This specifies a prefix that the test runner will insert in front
+of the test command before running it. The
+{{ "<var>" }}command-prefix{{ "</var>" }} is split into words using Bourne shell
+tokenization rules, and then the list of words is prepended to the
+command that will be executed.
+
+If the first word is a fully-qualified label (starts with
+`//`) it is built. Then the label is substituted by the
+corresponding executable location that is prepended to the command
+that will be executed along with the other words.
+
+Some caveats apply:
+
+*   The PATH used for running tests may be different than the PATH in your environment,
+    so you may need to use an **absolute path** for the `--run_under`
+    command (the first word in {{ "<var>" }}command-prefix{{ "</var>" }}).
+*   **`stdin` is not connected**, so `--run_under`
+    can't be used for interactive commands.
+
+Examples:
+
+<pre>
+        --run_under=/usr/bin/strace
+        --run_under='/usr/bin/strace -c'
+        --run_under=/usr/bin/valgrind
+        --run_under='/usr/bin/valgrind --quiet --num-callers=20'
+</pre>
+
+#### Test selection {:#test-selection}
+
+As documented under [Output selection options](#output-selection),
+you can filter tests by [size](#test-size-filters),
+[timeout](#test-timeout-filters),
+[tag](#test-tag-filters), or
+[language](#test-lang-filters). A convenience
+[general name filter](#test-filter) can forward particular
+filter args to the test runner.
+
+#### Other options for `bazel test` {:#bazel-test-other-options}
+
+The syntax and the remaining options are exactly like
+[`bazel build`](/run/build).
+
+## Running executables {:#running-executables}
+
+The `bazel run` command is similar to `bazel build`, except
+it is used to build _and run_ a single target. Here is a typical session
+(`//java/myapp:myapp` says hello and prints out its args):
+
+<pre>
+  % bazel run java/myapp:myapp -- --arg1 --arg2
+  INFO: Analyzed target //java/myapp:myapp (13 packages loaded, 27 targets configured).
+  INFO: Found 1 target...
+  Target //java/myapp:myapp up-to-date:
+    bazel-bin/java/myapp/myapp
+  INFO: Elapsed time: 14.290s, Critical Path: 5.54s, ...
+  INFO: Build completed successfully, 4 total actions
+  INFO: Running command line: bazel-bin/java/myapp/myapp &lt;args omitted&gt;
+  Hello there
+  $EXEC_ROOT/java/myapp/myapp
+  --arg1
+  --arg2
+</pre>
+
+Note: `--` is needed so that Bazel
+does not interpret `--arg1` and `--arg2` as
+Bazel options, but rather as part of the command line for running the binary.
+Additionally, Bazel will avoid logging these arguments to the console in case
+they contain sensitive information.
+
+`bazel run` is similar, but not identical, to directly invoking
+the binary built by Bazel and its behavior is different depending on whether the
+binary to be invoked is a test or not.
+
+When the binary is not a test, the current working directory will be the
+runfiles tree of the binary.
+
+When the binary is a test, the current working directory will be the exec root
+and a good-faith attempt is made to replicate the environment tests are usually
+run in. The emulation is not perfect, though, and tests that have multiple
+shards cannot be run this way (the
+`--test_sharding_strategy=disabled` command line option can be used
+to work around this)
+
+The following extra environment variables are also available to the binary:
+
+*   `BUILD_WORKSPACE_DIRECTORY`: the root of the workspace where the
+    build was run.
+*   `BUILD_WORKING_DIRECTORY`: the current working directory where
+    Bazel was run from.
+*   `BUILD_ID`: the build ID of the `bazel run` invocation. This is usually
+    unique, except if Bazel was run with `--script_path` and the resulting
+    script is re-used.
+*   `BUILD_EXECROOT`: the execution root of the `bazel run` invocation.
+
+These can be used, for example, to interpret file names on the command line in
+a user-friendly way.
+
+### Options for `bazel run` {:#bazel-run-options}
+
+#### `--run_under={{ "<var>" }}command-prefix{{ "</var>" }}` {:#run-run-under}
+
+This has the same effect as the `--run_under` option for
+`bazel test` ([see above](#test-run-under)),
+except that it applies to the command being run by `bazel
+run` rather than to the tests being run by `bazel test`
+and cannot run under label.
+
+#### Filtering logging outputs from Bazel
+
+When invoking a binary with `bazel run`, Bazel prints logging output from Bazel
+itself and the binary under invocation. To make the logs less noisy, you can
+suppress the outputs from Bazel itself with the `--ui_event_filters` and
+`--noshow_progress` flags.
+
+For example:
+`bazel run --ui_event_filters=-info,-stdout,-stderr --noshow_progress //java/myapp:myapp`
+
+### Executing tests {:#executing-tests}
+
+`bazel run` can also execute test binaries, which has the effect of
+running the test in a close approximation of the environment described at
+[Writing Tests](/reference/test-encyclopedia). Note that none of the
+`--test_*` arguments have an effect when running a test in this manner except
+`--test_arg` .
+
+## Cleaning build outputs {:#cleaning-build-outputs}
+
+### The `clean` command {:#clean}
+
+Bazel has a `clean` command, analogous to that of Make.
+It deletes the output directories for all build configurations performed
+by this Bazel instance, or the entire working tree created by this
+Bazel instance, and resets internal caches. If executed without any
+command-line options, then the output directory for all configurations
+will be cleaned.
+
+Recall that each Bazel instance is associated with a single workspace, thus the
+`clean` command will delete all outputs from all builds you've done
+with that Bazel instance in that workspace.
+
+To completely remove the entire working tree created by a Bazel
+instance,  you can specify the `--expunge` option. When
+executed with `--expunge`, the clean command simply
+removes the entire output base tree which, in addition to the build
+output, contains all temp files created by Bazel. It also
+stops the Bazel server after the clean, equivalent to the [`shutdown`](#shutdown) command. For example, to
+clean up all disk and memory traces of a Bazel instance, you could
+specify:
+
+<pre>
+  % bazel clean --expunge
+</pre>
+
+Alternatively, you can expunge in the background by using
+`--expunge_async`. It is safe to invoke a Bazel command
+in the same client while the asynchronous expunge continues to run.
+
+Note: This may introduce IO contention.
+
+The `clean` command is provided primarily as a means of
+reclaiming disk space for workspaces that are no longer needed.
+Bazel's incremental rebuilds may not be
+perfect so `clean` can be used to recover a consistent
+state when problems arise.
+
+Bazel's design is such that these problems are fixable and
+these bugs are a high priority to be fixed. If you
+ever find an incorrect incremental build, file a bug report, and report bugs in the tools
+rather than using `clean`.
+
+## Querying the dependency graph {:#querying-dependency-graph}
+
+Bazel includes a query language for asking questions about the
+dependency graph used during the build. The query language is used
+by two commands: query and cquery. The major difference between the
+two commands is that query runs after the [loading phase](/run/build#loading)
+and cquery runs after the [analysis phase](/run/build#analysis). These tools are an
+invaluable aid to many software engineering tasks.
+
+The query language is based on the idea of
+algebraic operations over graphs; it is documented in detail in
+
+[Bazel Query Reference](/query/language).
+Please refer to that document for reference, for
+examples, and for query-specific command-line options.
+
+The query tool accepts several command-line
+option. `--output` selects the output format.
+`--[no]keep_going` (disabled by default) causes the query
+tool to continue to make progress upon errors; this behavior may be
+disabled if an incomplete result is not acceptable in case of errors.
+
+The `--[no]tool_deps` option,
+enabled by default, causes dependencies in non-target configurations to be included in the
+dependency graph over which the query operates.
+
+The `--[no]implicit_deps` option, enabled by default, causes
+implicit dependencies to be included in the dependency graph over which the query operates. An
+implicit dependency is one that is not explicitly specified in the BUILD file
+but added by bazel.
+
+Example: "Show the locations of the definitions (in BUILD files) of
+all genrules required to build all the tests in the PEBL tree."
+
+<pre>
+  bazel query --output location 'kind(genrule, deps(kind(".*_test rule", foo/bar/pebl/...)))'
+</pre>
+
+## Querying the action graph {:#aquery}
+
+Caution: The aquery command is still experimental and its API will change.
+
+The `aquery` command allows you to query for actions in your build graph.
+It operates on the post-analysis configured target graph and exposes
+information about actions, artifacts and their relationships.
+
+The tool accepts several command-line options.
+`--output` selects the output format. The default output format
+(`text`) is human-readable, use `proto` or `textproto` for
+machine-readable format.
+Notably, the aquery command runs on top of a regular Bazel build and inherits
+the set of options available during a build.
+
+It supports the same set of functions that is also available to traditional
+`query` but `siblings`, `buildfiles` and
+`tests`.
+
+For more details, see [Action Graph Query](/query/aquery).
+
+## Miscellaneous commands and options {:#misc-commands-options}
+
+### `help` {:#help}
+
+The `help` command provides on-line help. By default, it
+shows a summary of available commands and help topics, as shown in
+[Building with Bazel](/run/build#quickstart).
+Specifying an argument displays detailed help for a particular
+topic. Most topics are Bazel commands, such as `build`
+or `query`, but there are some additional help topics
+that do not correspond to commands.
+
+#### `--[no]long` (`-l`) {:#long}
+
+By default, `bazel help [{{ "<var>" }}topic{{ "</var>" }}]` prints only a
+summary of the relevant options for a topic. If
+the `--long` option is specified, the type, default value
+and full description of each option is also printed.
+
+### `shutdown` {:#shutdown}
+
+Bazel server processes may be stopped by using the `shutdown`
+command. This command causes the Bazel server to exit as soon as it
+becomes idle (for example, after the completion of any builds or other
+commands that are currently in progress). For more details, see
+[Client/server implementation](/run/client-server).
+
+Bazel servers stop themselves after an idle timeout, so this command
+is rarely necessary; however, it can be useful in scripts when it is
+known that no further builds will occur in a given workspace.
+
+`shutdown` accepts one
+option, `--iff_heap_size_greater_than _n_`, which
+requires an integer argument (in MB). If specified, this makes the shutdown
+conditional on the amount of memory already consumed. This is
+useful for scripts that initiate a lot of builds, as any memory
+leaks in the Bazel server could cause it to crash spuriously on
+occasion; performing a conditional restart preempts this condition.
+
+### `info` {:#info}
+
+The `info` command prints various values associated with
+the Bazel server instance, or with a specific build configuration.
+(These may be used by scripts that drive a build.)
+
+The `info` command also permits a single (optional)
+argument, which is the name of one of the keys in the list below.
+In this case, `bazel info {{ "<var>" }}key{{ "</var>" }}` will print only
+the value for that one key. (This is especially convenient when
+scripting Bazel, as it avoids the need to pipe the result
+through `sed -ne /key:/s/key://p`:
+
+#### Configuration-independent data {:#configuration-independent-data}
+
+*   `release`: the release label for this Bazel
+    instance, or "development version" if this is not a released
+    binary.
+*   `workspace` the absolute path to the base workspace
+    directory.
+*   `install_base`: the absolute path to the installation
+    directory used by this Bazel instance for the current user. Bazel
+    installs its internally required executables below this directory.
+
+*   `output_base`: the absolute path to the base output
+    directory used by this Bazel instance for the current user and
+    workspace combination. Bazel puts all of its scratch and build
+    output below this directory.
+*   `execution_root`: the absolute path to the execution
+    root directory under output_base. This directory is the root for all files
+    accessible to commands executed during the build, and is the working
+    directory for those commands. If the workspace directory is writable, a
+    symlink named `bazel-<workspace>`
+    is placed there pointing to this directory.
+*   `output_path`: the absolute path to the output
+    directory beneath the execution root used for all files actually
+    generated as a result of build commands. If the workspace directory is
+    writable, a symlink named `bazel-out` is placed there pointing
+    to this directory.
+*   `server_pid`: the process ID of the Bazel server
+     process.
+*   `server_log`: the absolute path to the Bazel server's debug log file.
+    This file contains debugging information for all commands over the lifetime of the
+    Bazel server, and is intended for human consumption by Bazel developers and power users.
+*   `command_log`: the absolute path to the command log file;
+    this contains the interleaved stdout and stderr streams of the most recent
+    Bazel command. Note that running `bazel info` will overwrite the
+    contents of this file, since it then becomes the most recent Bazel command.
+    However, the location of the command log file will not change unless you
+    change the setting of the `--output_base` or
+    `--output_user_root` options.
+*   `used-heap-size`,
+      `committed-heap-size`,
+      `max-heap-size`: reports various JVM heap size
+    parameters. Respectively: memory currently used, memory currently
+    guaranteed to be available to the JVM from the system, maximum
+    possible allocation.
+*   `gc-count`, `gc-time`: The cumulative count of
+    garbage collections since the start of this Bazel server and the time spent
+    to perform them. Note that these values are not reset at the start of every
+    build.
+*   `package_path`: A colon-separated list of paths which would be
+    searched for packages by bazel. Has the same format as the
+    `--package_path` build command line argument.
+
+Example: the process ID of the Bazel server.
+
+<pre>% bazel info server_pid
+1285
+</pre>
+
+#### Configuration-specific data {:#configuration-specific-data}
+
+These data may be affected by the configuration options passed
+to `bazel info`, for
+example `--cpu`, `--compilation_mode`,
+etc. The `info` command accepts all
+the options that control dependency
+analysis, since some of these determine the location of the
+output directory of a build, the choice of compiler, etc.
+
+*   `bazel-bin`, `bazel-testlogs`,
+    `bazel-genfiles`: reports the absolute path to
+    the `bazel-*` directories in which programs generated by the
+    build are located. This is usually, though not always, the same as
+    the `bazel-*` symlinks created in the base workspace directory after a
+    successful build. However, if the workspace directory is read-only,
+    no `bazel-*` symlinks can be created. Scripts that use
+    the value reported by `bazel info`, instead of assuming the
+    existence of the symlink, will be more robust.
+*   The complete
+    ["Make" environment](/reference/be/make-variables). If the `--show_make_env` flag is
+    specified, all variables in the current configuration's "Make" environment
+    are also displayed (such as `CC`, `GLIBC_VERSION`, etc).
+    These are the variables accessed using the `$(CC)`
+    or `varref("CC")` syntax inside BUILD files.
+
+Example: the C++ compiler for the current configuration.
+This is the `$(CC)` variable in the "Make" environment,
+so the `--show_make_env` flag is needed.
+
+<pre>
+  % bazel info --show_make_env -c opt COMPILATION_MODE
+  opt
+</pre>
+
+Example: the `bazel-bin` output directory for the current
+configuration. This is guaranteed to be correct even in cases where
+the `bazel-bin` symlink cannot be created for some reason
+(such as if you are building from a read-only directory).
+
+<pre>% bazel info --cpu=piii bazel-bin
+/var/tmp/_bazel_johndoe/fbd0e8a34f61ce5d491e3da69d959fe6/execroot/io_bazel/bazel-out/piii-opt/bin
+% bazel info --cpu=k8 bazel-bin
+/var/tmp/_bazel_johndoe/fbd0e8a34f61ce5d491e3da69d959fe6/execroot/io_bazel/bazel-out/k8-opt/bin
+</pre>
+
+### `version` and `--version` {:#version}
+
+The version command prints version details about the built Bazel
+binary, including the changelist at which it was built and the date.
+These are particularly useful in determining if you have the latest
+Bazel, or if you are reporting bugs. Some of the interesting values
+are:
+
+*   `changelist`: the changelist at which this version of
+    Bazel was released.
+*   `label`: the release label for this Bazel
+    instance, or "development version" if this is not a released
+    binary. Very useful when reporting bugs.
+
+`bazel --version`, with no other args, will emit the same output as
+`bazel version --gnu_format`, except without the side-effect of potentially starting
+a Bazel server or unpacking the server archive. `bazel --version` can be run from
+anywhere - it does not require a workspace directory.
+
+### `mobile-install` {:#mobile-install}
+
+The `mobile-install` command installs apps to mobile devices.
+Currently only Android devices running ART are supported.
+
+See [bazel mobile-install](/docs/mobile-install) for more information.
+
+Note: This command does not install the same thing that
+`bazel build` produces: Bazel tweaks the app so that it can be
+built, installed and re-installed quickly. This should, however, be mostly
+transparent to the app.
+
+The following options are supported:
+
+#### `--incremental` {:#incremental}
+
+If set, Bazel tries to install the app incrementally, that is, only those
+parts that have changed since the last build. This cannot update resources
+referenced from `AndroidManifest.xml`, native code or Java
+resources (such as those referenced by `Class.getResource()`). If these
+things change, this option must be omitted. Contrary to the spirit of Bazel
+and due to limitations of the Android platform, it is the
+**responsibility of the user** to know when this command is good enough and
+when a full install is needed.
+
+If you are using a device with Marshmallow or later, consider the
+[`--split_apks`](#split-apks) flag.
+
+#### `--split_apks` {:#split-apks}
+
+Whether to use split apks to install and update the application on the device.
+Works only with devices with Marshmallow or later. Note that the
+[`--incremental`](#incremental) flag
+is not necessary when using `--split_apks`.
+
+#### `--start_app` {:#start-app}
+
+Starts the app in a clean state after installing. Equivalent to `--start=COLD`.
+
+#### `--debug_app` {:#debug-app}
+
+Waits for debugger to be attached before starting the app in a clean state after installing.
+Equivalent to `--start=DEBUG`.
+
+#### `--start=_start_type_` {:#start}
+
+How the app should be started after installing it. Supported _start_type_s are:
+
+*   `NO` Does not start the app. This is the default.
+*   `COLD` Starts the app from a clean state after install.
+*   `WARM` Preserves and restores the application state on incremental installs.
+*   `DEBUG` Waits for the debugger before starting the app in a clean state after
+    install.
+
+Note: If more than one of `--start=_start_type_`, `--start_app` or
+`--debug_app` is set, the last value is used.
+
+#### `--adb={{ "<var>" }}path{{ "</var>" }}` {:#adb}
+
+Indicates the `adb` binary to be used.
+
+The default is to use the adb in the Android SDK specified by
+[`--android_sdk`](#android-sdk).
+
+#### `--adb_arg={{ "<var>" }}serial{{ "</var>" }}` {:#adb-arg}
+
+Extra arguments to `adb`. These come before the subcommand in the
+command line and are typically used to specify which device to install to.
+For example, to select the Android device or emulator to use:
+
+<pre>% bazel mobile-install --adb_arg=-s --adb_arg=deadbeef
+</pre>
+
+invokes `adb` as
+
+<pre>
+adb -s deadbeef install ...
+</pre>
+
+#### `--incremental_install_verbosity={{ "<var>" }}number{{ "</var>" }}` {:#incremental-install-verbosity}
+
+The verbosity for incremental install. Set to 1 for debug logging to be
+printed to the console.
+
+### `dump` {:#dump}
+
+The `dump` command prints to stdout a dump of the
+internal state of the Bazel server. This command is intended
+primarily for use by Bazel developers, so the output of this command
+is not specified, and is subject to change.
+
+By default, command will just print help message outlining possible
+options to dump specific areas of the Bazel state. In order to dump
+internal state, at least one of the options must be specified.
+
+Following options are supported:
+
+*   `--action_cache` dumps action cache content.
+*   `--packages` dumps package cache content.
+*   `--skyframe` dumps state of internal Bazel dependency graph.
+*   `--rules` dumps rule summary for each rule and aspect class,
+    including counts and action counts. This includes both native and Starlark rules.
+    If memory tracking is enabled, then the rules' memory consumption is also printed.
+*   `--skylark_memory` dumps a
+    [pprof](https://github.com/google/pprof) compatible .gz file to the specified path.
+    You must enable memory tracking for this to work.
+
+#### Memory tracking {:#memory-tracking}
+
+Some `dump` commands require memory tracking. To turn this on, you have to pass
+startup flags to Bazel:
+
+*   `--host_jvm_args=-javaagent:$BAZEL/third_party/allocation_instrumenter/java-allocation-instrumenter-3.3.4.jar`
+*   `--host_jvm_args=-DRULE_MEMORY_TRACKER=1`
+
+The java-agent is checked into Bazel at
+`third_party/allocation_instrumenter/java-allocation-instrumenter-3.3.4.jar`, so
+make sure you adjust `$BAZEL` for where you keep your Bazel repository.
+
+Do not forget to keep passing these options to Bazel for every command or the server will
+restart.
+
+Example:
+
+<pre>
+    % bazel --host_jvm_args=-javaagent:$BAZEL/third_party/allocation_instrumenter/java-allocation-instrumenter-3.3.4.jar \
+    --host_jvm_args=-DRULE_MEMORY_TRACKER=1 \
+    build --nobuild &lt;targets&gt;
+
+    # Dump rules
+    % bazel --host_jvm_args=-javaagent:$BAZEL/third_party/allocation_instrumenter/java-allocation-instrumenter-3.3.4.jar \
+    --host_jvm_args=-DRULE_MEMORY_TRACKER=1 \
+    dump --rules
+
+    # Dump Starlark heap and analyze it with pprof
+    % bazel --host_jvm_args=-javaagent:$BAZEL/third_party/allocation_instrumenter/java-allocation-instrumenter-3.3.4.jar \
+    --host_jvm_args=-DRULE_MEMORY_TRACKER=1 \
+    dump --skylark_memory=$HOME/prof.gz
+    % pprof -flame $HOME/prof.gz
+</pre>
+
+### `analyze-profile` {:#analyze-profile}
+
+The `analyze-profile` command analyzes a
+[JSON trace profile](/advanced/performance/json-trace-profile) previously
+gathered during a Bazel invocation.
+
+### `canonicalize-flags` {:#canonicalize-flags}
+
+The [`canonicalize-flags`](/reference/command-line-reference#canonicalize-flags-options)
+command, which takes a list of options for a Bazel command and returns a list of
+options that has the same effect. The new list of options is canonical. For example,
+two lists of options with the same effect are canonicalized to the same new list.
+
+The `--for_command` option can be used to select between different
+commands. At this time, only `build` and `test` are
+supported. Options that the given command does not support cause an error.
+
+Note: A small number of options cannot be reordered, because Bazel cannot
+ensure that the effect is identical. Also note that this command
+_does not_ expand flags from `--config`.
+
+As an example:
+
+<pre>
+  % bazel canonicalize-flags -- --config=any_name --test_tag_filters="-lint"
+  --config=any_name
+  --test_tag_filters=-lint
+</pre>
+
+### Startup options {:#startup-options}
+
+The options described in this section affect the startup of the Java
+virtual machine used by Bazel server process, and they apply to all
+subsequent commands handled by that server. If there is an already
+running Bazel server and the startup options do not match, it will
+be restarted.
+
+All of the options described in this section must be specified using the
+`--key=value` or `--key value`
+syntax. Also, these options must appear _before_ the name of the Bazel
+command. Use `startup --key=value` to list these in a `.bazelrc` file.
+
+#### `--output_base={{ "<var>" }}dir{{ "</var>" }}` {:#output-base}
+
+This option requires a path argument, which must specify a
+writable directory. Bazel will use this location to write all its
+output. The output base is also the key by which the client locates
+the Bazel server. By changing the output base, you change the server
+which will handle the command.
+
+By default, the output base is derived from the user's login name,
+and the name of the workspace directory (actually, its MD5 digest),
+so a typical value looks like:
+`/var/tmp/google/_bazel_johndoe/d41d8cd98f00b204e9800998ecf8427e`.
+
+Note: The client uses the output base to find the Bazel server
+instance, so if you specify a different output base in a Bazel
+command, a different server will be found (or started) to handle the
+request. It's possible to perform two concurrent builds in the same
+workspace directory by varying the output base.
+
+For example:
+
+<pre>
+ OUTPUT_BASE=/var/tmp/google/_bazel_johndoe/custom_output_base
+% bazel --output_base ${OUTPUT_BASE}1 build //foo  &amp;  bazel --output_base ${OUTPUT_BASE}2 build //bar
+</pre>
+
+In this command, the two Bazel commands run concurrently (because of
+the shell `&amp;` operator), each using a different Bazel
+server instance (because of the different output bases).
+In contrast, if the default output base was used in both commands,
+then both requests would be sent to the same server, which would
+handle them sequentially: building `//foo` first, followed
+by an incremental build of `//bar`.
+
+Note: We recommend you do not use an NFS or similar networked file system for the root
+directory, as the higher access latency will cause noticeably slower builds.
+
+#### `--output_user_root={{ "<var>" }}dir{{ "</var>" }}` {:#output-user-root}
+
+Points to the root directory where output and install bases are created. The directory
+must either not exist or be owned by the calling user. In the past,
+this was allowed to point to a directory shared among various users
+but it's not allowed any longer. This may be allowed once
+[issue #11100](https://github.com/bazelbuild/bazel/issues/11100){: .external} is addressed.
+
+If the `--output_base` option is specified, it overrides
+using `--output_user_root` to calculate the output base.
+
+The install base location is calculated based on
+`--output_user_root`, plus the MD5 identity of the Bazel embedded
+binaries.
+
+You can use the `--output_user_root` option to choose an
+alternate base location for all of Bazel's output (install base and output
+base) if there is a better location in your filesystem layout.
+
+Note: We recommend you do not use an NFS or similar networked file system for the root
+directory, as the higher access latency will cause noticeably slower builds.
+
+#### `--server_javabase={{ "<var>" }}dir{{ "</var>" }}` {:#server-javabase}
+
+Specifies the Java virtual machine in which _Bazel itself_ runs. The value must be a path to
+the directory containing a JDK or JRE. It should not be a label.
+This option should appear before any Bazel command, for example:
+
+<pre>
+  % bazel --server_javabase=/usr/local/buildtools/java/jdk build //foo
+</pre>
+
+This flag does _not_ affect the JVMs used by Bazel subprocesses such as applications, tests,
+tools, and so on. Use build options [--javabase](#javabase) or
+[--host_javabase](#host-javabase) instead.
+
+This flag was previously named `--host_javabase` (sometimes referred to as the
+'left-hand side' `--host_javabase`), but was renamed to avoid confusion with the
+build flag [--host_javabase](#host-javabase) (sometimes referred to as the
+'right-hand side' `--host_javabase`).
+
+#### `--host_jvm_args={{ "<var>" }}string{{ "</var>" }}` {:#host-jvm-args}
+
+Specifies a startup option to be passed to the Java virtual machine in which _Bazel itself_
+runs. This can be used to set the stack size, for example:
+
+<pre>
+  % bazel --host_jvm_args="-Xss256K" build //foo
+</pre>
+
+This option can be used multiple times with individual arguments. Note that
+setting this flag should rarely be needed. You can also pass a space-separated list of strings,
+each of which will be interpreted as a separate JVM argument, but this feature will soon be
+deprecated.
+
+That this does _not_ affect any JVMs used by
+subprocesses of Bazel: applications, tests, tools, and so on. To pass
+JVM options to executable Java programs, whether run by `bazel
+run` or on the command-line, you should use
+the `--jvm_flags` argument which
+all `java_binary` and `java_test` programs
+support. Alternatively for tests, use `bazel test --test_arg=--jvm_flags=foo ...`.
+
+#### `--host_jvm_debug` {:#host-java-debug}
+
+This option causes the Java virtual machine to wait for a connection
+from a JDWP-compliant debugger before
+calling the main method of _Bazel itself_. This is primarily
+intended for use by Bazel developers.
+
+Note: This does _not_ affect any JVMs used by subprocesses of Bazel:
+applications, tests, tools, etc.
+
+#### `--autodetect_server_javabase` {:#autodetect-server-javabase}
+
+This option causes Bazel to automatically search for an installed JDK on startup,
+and to fall back to the installed JRE if the embedded JRE isn't available.
+`--explicit_server_javabase` can be used to pick an explicit JRE to
+run Bazel with.
+
+#### `--batch` {:#batch}
+
+Batch mode causes Bazel to not use the
+[standard client/server mode](/run/client-server), but instead runs a bazel
+java process for a single command, which has been used for more predictable
+semantics with respect to signal handling, job control, and environment
+variable inheritance, and is necessary for running bazel in a chroot jail.
+
+Batch mode retains proper queueing semantics within the same output_base.
+That is, simultaneous invocations will be processed in order, without overlap.
+If a batch mode Bazel is run on a client with a running server, it first
+kills the server before processing the command.
+
+Bazel will run slower in batch mode, or with the alternatives described above.
+This is because, among other things, the build file cache is memory-resident, so it is not
+preserved between sequential batch invocations.
+Therefore, using batch mode often makes more sense in cases where performance
+is less critical, such as continuous builds.
+
+Warning: `--batch` is sufficiently slower than standard
+client/server mode. Additionally it might not support all of the features and optimizations which
+are made possible by a persistent Bazel server. If you're using `--batch`
+for the purpose of build isolation, you should use the command option
+`--nokeep_state_after_build`, which guarantees that no incremental
+in-memory state is kept between builds. In order to restart the Bazel server and JVM after a
+build, please explicitly do so using the "shutdown" command.
+
+#### `--max_idle_secs={{ "<var>" }}n{{ "</var>" }}` {:#max-idle-secs}
+
+This option specifies how long, in seconds, the Bazel server process
+should wait after the last client request, before it exits. The
+default value is 10800 (3 hours). `--max_idle_secs=0` will cause the
+Bazel server process to persist indefinitely.
+
+Note: this flag is only read if Bazel needs
+to start a new server. Changing this option will not cause the server to restart.
+
+Note: system sleep time where a build is not running is counted as idle time.
+
+This option may be used by scripts that invoke Bazel to ensure that
+they do not leave Bazel server processes on a user's machine when they
+would not be running otherwise.
+For example, a presubmit script might wish to
+invoke `bazel query` to ensure that a user's pending
+change does not introduce unwanted dependencies. However, if the
+user has not done a recent build in that workspace, it would be
+undesirable for the presubmit script to start a Bazel server just
+for it to remain idle for the rest of the day.
+By specifying a small value of `--max_idle_secs` in the
+query request, the script can ensure that _if_ it caused a new
+server to start, that server will exit promptly, but if instead
+there was already a server running, that server will continue to run
+until it has been idle for the usual time. Of course, the existing
+server's idle timer will be reset.
+
+#### `--[no]shutdown_on_low_sys_mem` {:#shutdown-on-low-sys-mem}
+
+If enabled and `--max_idle_secs` is set to a positive duration,
+after the build server has been idle for a while, shut down the server when the system is
+low on memory. Linux only.
+
+In addition to running an idle check corresponding to max_idle_secs, the build server will
+starts monitoring available system memory after the server has been idle for some time.
+If the available system memory becomes critically low, the server will exit.
+
+#### `--[no]block_for_lock` {:#block-for-lock}
+
+If enabled, Bazel will wait for other Bazel commands holding the
+server lock to complete before progressing. If disabled, Bazel will
+exit in error if it cannot immediately acquire the lock and
+proceed.
+
+Developers might use this in presubmit checks to avoid long waits caused
+by another Bazel command in the same client.
+
+#### `--io_nice_level={{ "<var>" }}n{{ "</var>" }}` {:#io-nice-level}
+
+Sets a level from 0-7 for best-effort IO scheduling. 0 is highest priority,
+7 is lowest. The anticipatory scheduler may only honor up to priority 4.
+Negative values are ignored.
+
+#### `--batch_cpu_scheduling` {:#batch-cpu-scheduling}
+
+Use `batch` CPU scheduling for Bazel. This policy is useful for
+workloads that are non-interactive, but do not want to lower their nice value.
+See 'man 2 sched_setscheduler'. This policy may provide for better system
+interactivity at the expense of Bazel throughput.
+
+### Miscellaneous options {:#misc-options}
+
+#### `--[no]announce_rc` {:#announce-rc}
+
+Controls whether Bazel announces startup options and command options read from
+the bazelrc files when starting up.
+
+#### `--color (yes|no|auto)` {:#color}
+
+This option determines whether Bazel will use colors to highlight
+its output on the screen.
+
+If this option is set to `yes`, color output is enabled.
+If this option is set to `auto`, Bazel will use color output only if
+the output is being sent to a terminal and the TERM environment variable
+is set to a value other than `dumb`, `emacs`, or `xterm-mono`.
+If this option is set to `no`, color output is disabled,
+regardless of whether the output is going to a terminal and regardless
+of the setting of the TERM environment variable.
+
+#### `--config={{ "<var>" }}name{{ "</var>" }}` {:#config}
+
+Selects additional config section from
+[the rc files](/run/bazelrc#bazelrc-file-locations); for the current `command`,
+it also pulls in the options from `command:name` if such a section exists. Can be
+specified multiple times to add flags from several config sections. Expansions can refer to other
+definitions (for example, expansions can be chained).
+
+#### `--curses (yes|no|auto)` {:#curses}
+
+This option determines whether Bazel will use cursor controls
+in its screen output. This results in less scrolling data, and a more
+compact, easy-to-read stream of output from Bazel. This works well with
+`--color`.
+
+If this option is set to `yes`, use of cursor controls is enabled.
+If this option is set to `no`, use of cursor controls is disabled.
+If this option is set to `auto`, use of cursor controls will be
+enabled under the same conditions as for `--color=auto`.
+
+#### `--[no]show_timestamps` {:#show-timestamps}
+
+If specified, a timestamp is added to each message generated by
+Bazel specifying the time at which the message was displayed.
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# Sandboxing
+
+{% include "_buttons.html" %}
+
+This article covers sandboxing in Bazel and debugging your sandboxing
+environment.
+
+*Sandboxing* is a permission restricting strategy that isolates processes from
+each other or from resources in a system. For Bazel, this means restricting file
+system access.
+
+Bazel's file system sandbox runs processes in a working directory that only
+contains known inputs, such that compilers and other tools don't see source
+files they should not access, unless they know the absolute paths to them.
+
+Sandboxing doesn't hide the host environment in any way. Processes can freely
+access all files on the file system. However, on platforms that support user
+namespaces, processes can't modify any files outside their working directory.
+This ensures that the build graph doesn't have hidden dependencies that could
+affect the reproducibility of the build.
+
+More specifically, Bazel constructs an `execroot/` directory for each action,
+which acts as the action's work directory at execution time. `execroot/`
+contains all input files to the action and serves as the container for any
+generated outputs. Bazel then uses an operating-system-provided technique,
+containers on Linux and `sandbox-exec` on macOS, to constrain the action within
+`execroot/`.
+
+## Reasons for sandboxing {:#sandboxing-reasons}
+
+-   Without action sandboxing, Bazel doesn't know if a tool uses undeclared
+    input files (files that are not explicitly listed in the dependencies of an
+    action). When one of the undeclared input files changes, Bazel still
+    believes that the build is up-to-date and won’t rebuild the action. This can
+    result in an incorrect incremental build.
+
+-   Incorrect reuse of cache entries creates problems during remote caching. A
+    bad cache entry in a shared cache affects every developer on the project,
+    and wiping the entire remote cache is not a feasible solution.
+
+-   Sandboxing mimics the behavior of remote execution — if a build works well
+    with sandboxing, it will likely also work with remote execution. By making
+    remote execution upload all necessary files (including local tools), you can
+    significantly reduce maintenance costs for compile clusters compared to
+    having to install the tools on every machine in the cluster every time you
+    want to try out a new compiler or make a change to an existing tool.
+
+## What sandbox strategy to use {:#sandboxing-strategies}
+
+You can choose which kind of sandboxing to use, if any, with the
+[strategy flags](user-manual.html#strategy-options). Using the `sandboxed`
+strategy makes Bazel pick one of the sandbox implementations listed below,
+preferring an OS-specific sandbox to the less hermetic generic one.
+[Persistent workers](/remote/persistent) run in a generic sandbox if you pass
+the `--worker_sandboxing` flag.
+
+The `local` (a.k.a. `standalone`) strategy does not do any kind of sandboxing.
+It simply executes the action's command line with the working directory set to
+the execroot of your workspace.
+
+`processwrapper-sandbox` is a sandboxing strategy that does not require any
+"advanced" features - it should work on any POSIX system out of the box. It
+builds a sandbox directory consisting of symlinks that point to the original
+source files, executes the action's command line with the working directory set
+to this directory instead of the execroot, then moves the known output artifacts
+out of the sandbox into the execroot and deletes the sandbox. This prevents the
+action from accidentally using any input files that are not declared and from
+littering the execroot with unknown output files.
+
+`linux-sandbox` goes one step further and builds on top of the
+`processwrapper-sandbox`. Similar to what Docker does under the hood, it uses
+Linux Namespaces (User, Mount, PID, Network and IPC namespaces) to isolate the
+action from the host. That is, it makes the entire filesystem read-only except
+for the sandbox directory, so the action cannot accidentally modify anything on
+the host filesystem. This prevents situations like a buggy test accidentally rm
+-rf'ing your $HOME directory. Optionally, you can also prevent the action from
+accessing the network. `linux-sandbox` uses PID namespaces to prevent the action
+from seeing any other processes and to reliably kill all processes (even daemons
+spawned by the action) at the end.
+
+`darwin-sandbox` is similar, but for macOS. It uses Apple's `sandbox-exec` tool
+to achieve roughly the same as the Linux sandbox.
+
+Both the `linux-sandbox` and the `darwin-sandbox` do not work in a "nested"
+scenario due to restrictions in the mechanisms provided by the operating
+systems. Because Docker also uses Linux namespaces for its container magic, you
+cannot easily run `linux-sandbox` inside a Docker container, unless you use
+`docker run --privileged`. On macOS, you cannot run `sandbox-exec` inside a
+process that's already being sandboxed. Thus, in these cases, Bazel
+automatically falls back to using `processwrapper-sandbox`.
+
+If you would rather get a build error — such as to not accidentally build with a
+less strict execution strategy — explicitly modify the list of execution
+strategies that Bazel tries to use (for example, `bazel build
+--spawn_strategy=worker,linux-sandbox`).
+
+Dynamic execution usually requires sandboxing for local execution. To opt out,
+pass the `--experimental_local_lockfree_output` flag. Dynamic execution silently
+sandboxes [persistent workers](/remote/persistent).
+
+## Downsides to sandboxing {:#sandboxing_downsides}
+
+-   Sandboxing incurs extra setup and teardown cost. How big this cost is
+    depends on many factors, including the shape of the build and the
+    performance of the host OS. For Linux, sandboxed builds are rarely more than
+    a few percent slower. Setting `--reuse_sandbox_directories` can
+    mitigate the setup and teardown cost.
+
+-   Sandboxing effectively disables any cache the tool may have. You can
+    mitigate this by using [persistent workers](/remote/persistent), at
+    the cost of weaker sandbox guarantees.
+
+-   [Multiplex workers](/remote/multiplex) require explicit worker support
+    to be sandboxed. Workers that do not support multiplex sandboxing run as
+    singleplex workers under dynamic execution, which can cost extra memory.
+
+## Debugging {:#debugging}
+
+Follow the strategies below to debug issues with sandboxing.
+
+### Deactivated namespaces {:#deactivated-namespaces}
+
+On some platforms, such as
+[Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine/){: .external}
+cluster nodes or Debian, user namespaces are deactivated by default due to
+security concerns. If the `/proc/sys/kernel/unprivileged_userns_clone` file
+exists and contains a 0, you can activate user namespaces by running:
+
+```posix-terminal
+   sudo sysctl kernel.unprivileged_userns_clone=1
+```
+
+### Rule execution failures {:#rule-failures}
+
+The sandbox may fail to execute rules because of the system setup. If you see a
+message like `namespace-sandbox.c:633: execvp(argv[0], argv): No such file or
+directory`, try to deactivate the sandbox with `--strategy=Genrule=local` for
+genrules, and `--spawn_strategy=local` for other rules.
+
+### Detailed debugging for build failures {:#debugging-build-failures}
+
+If your build failed, use `--verbose_failures` and `--sandbox_debug` to make
+Bazel show the exact command it ran when your build failed, including the part
+that sets up the sandbox.
+
+Example error message:
+
+```
+ERROR: path/to/your/project/BUILD:1:1: compilation of rule
+'//path/to/your/project:all' failed:
+
+Sandboxed execution failed, which may be legitimate (such as a compiler error),
+or due to missing dependencies. To enter the sandbox environment for easier
+debugging, run the following command in parentheses. On command failure, a bash
+shell running inside the sandbox will then automatically be spawned
+
+namespace-sandbox failed: error executing command
+  (cd /some/path && \
+  exec env - \
+    LANG=en_US \
+    PATH=/some/path/bin:/bin:/usr/bin \
+    PYTHONPATH=/usr/local/some/path \
+  /some/path/namespace-sandbox @/sandbox/root/path/this-sandbox-name.params --
+  /some/path/to/your/some-compiler --some-params some-target)
+```
+
+You can now inspect the generated sandbox directory and see which files Bazel
+created and run the command again to see how it behaves.
+
+Note that Bazel does not delete the sandbox directory when you use
+`--sandbox_debug`. Unless you are actively debugging, you should disable
+`--sandbox_debug` because it fills up your disk over time.
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# Apple Apps and Bazel
+
+{% include "_buttons.html" %}
+
+This page contains resources that help you use Bazel to build macOS and iOS
+projects. It links to a tutorial, build rules, and other information specific to
+using Bazel to build and test for those platforms.
+
+## Working with Bazel {:#working-with-bazel}
+
+The following resources will help you work with Bazel on macOS and iOS projects:
+
+*  [Tutorial: Building an iOS app](/start/ios-app)
+*  [Objective-C build rules](/reference/be/objective-c)
+*  [General Apple rules](https://github.com/bazelbuild/rules_apple){: .external}
+*  [Integration with Xcode](/install/ide)
+
+## Migrating to Bazel {:#migrating-to-bazel}
+
+If you currently build your macOS and iOS projects with Xcode, follow the steps
+in the migration guide to start building them with Bazel:
+
+*  [Migrating from Xcode to Bazel](/migrate/xcode)
+
+## Apple apps and new rules {:#apple-apps-new-rules}
+
+**Note**: Creating new rules is for advanced build and test scenarios.
+You do not need it when getting started with Bazel.
+
+The following modules, configuration fragments, and providers will help you
+[extend Bazel's capabilities](/extending/concepts)
+when building your macOS and iOS projects:
+
+*  Modules:
+
+   *  [`apple_bitcode_mode`](/rules/lib/builtins/apple_bitcode_mode)
+   *  [`apple_common`](/rules/lib/toplevel/apple_common)
+   *  [`apple_platform`](/rules/lib/builtins/apple_platform)
+   *  [`apple_platform_type`](/rules/lib/builtins/apple_platform_type)
+   *  [`apple_toolchain`](/rules/lib/builtins/apple_toolchain)
+
+*  Configuration fragments:
+
+   *  [`apple`](/rules/lib/fragments/apple)
+
+*  Providers:
+
+   *  [`ObjcProvider`](/rules/lib/providers/ObjcProvider)
+   *  [`XcodeVersionConfig`](/rules/lib/providers/XcodeVersionConfig)
+
+## Xcode selection {:#xcode-selection}
+
+If your build requires Xcode, Bazel will select an appropriate version based on
+the `--xcode_config` and `--xcode_version` flags. The `--xcode_config` consumes
+the set of available Xcode versions and sets a default version if
+`--xcode_version` is not passed. This default is overridden by the
+`--xcode_version` flag, as long as it is set to an Xcode version that is
+represented in the `--xcode_config` target.
+
+If you do not pass `--xcode_config`, Bazel will use the autogenerated
+[`XcodeVersionConfig`](/rules/lib/providers/XcodeVersionConfig) that represents the
+Xcode versions available on your host machine. The default version is
+the newest available Xcode version. This is appropriate for local execution.
+
+If you are performing remote builds, you should set `--xcode_config` to an
+[`xcode_config`](/reference/be/objective-c#xcode_config)
+target whose `versions` attribute is a list of remotely available
+[`xcode_version`](/reference/be/objective-c#xcode_version)
+targets, and whose `default` attribute is one of these
+[`xcode_versions`](/reference/be/objective-c#xcode_version).
+
+If you are using dynamic execution, you should set `--xcode_config` to an
+[`xcode_config`](/reference/be/objective-c#xcode_config)
+target whose `remote_versions` attribute is an
+[`available_xcodes`](/reference/be/workspace#available_xcodes)
+target containing the remotely available Xcode versions, and whose
+`local_versions` attribute is an
+[`available_xcodes`](/reference/be/workspace#available_xcodes)
+target containing the locally available Xcode versions. For `local_versions`,
+you probably want to use the autogenerated
+`@local_config_xcode//:host_available_xcodes`. The default Xcode version is the
+newest mutually available version, if there is one, otherwise the default of the
+`local_versions` target. If you prefer to use the `local_versions` default
+as the default, you can pass `--experimental_prefer_mutual_default=false`.
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# Java and Bazel
+
+{% include "_buttons.html" %}
+
+This page contains resources that help you use Bazel with Java projects. It
+links to a tutorial, build rules, and other information specific to building
+Java projects with Bazel.
+
+## Working with Bazel {:#working-with-bazel}
+
+The following resources will help you work with Bazel on Java projects:
+
+*   [Tutorial: Building a Java Project](/start/java)
+*   [Java rules](/reference/be/java)
+
+## Migrating to Bazel {:#migrating-to-bazel}
+
+If you currently build your Java projects with Maven, follow the steps in the
+migration guide to start building your Maven projects with Bazel:
+
+*   [Migrating from Maven to Bazel](/migrate/maven)
+
+## Java versions {:#java-versions}
+
+There are two relevant versions of Java that are set with configuration flags:
+
+*   the version of the source files in the repository
+*   the version of the Java runtime that is used to execute the code and to test
+    it
+
+### Configuring the version of the source code in your repository {:#config-source-code}
+
+Without an additional configuration, Bazel assumes all Java source files in the
+repository are written in a single Java version. To specify the version of the
+sources in the repository add `build --java_language_version={ver}` to
+`.bazelrc` file, where `{ver}` is for example `11`. Bazel repository owners
+should set this flag so that Bazel and its users can reference the source code's
+Java version number. For more details, see
+[Java language version flag](/docs/user-manual#java-language-version).
+
+### Configuring the JVM used to execute and test the code {:#config-jvm}
+
+Bazel uses one JDK for compilation and another JVM to execute and test the code.
+
+By default Bazel compiles the code using a JDK it downloads and it executes and
+tests the code with the JVM installed on the local machine. Bazel searches for
+the JVM using `JAVA_HOME` or path.
+
+The resulting binaries are compatible with locally installed JVM in system
+libraries, which means the resulting binaries depend on what is installed on the
+machine.
+
+To configure the JVM used for execution and testing use `--java_runtime_version`
+flag. The default value is `local_jdk`.
+
+### Hermetic testing and compilation {:#hermetic-testing}
+
+To create a hermetic compile, you can use command line flag
+`--java_runtime_version=remotejdk_11`. The code is compiled for, executed, and
+tested on the JVM downloaded from a remote repository. For more details, see
+[Java runtime version flag](/docs/user-manual#java_runtime_version).
+
+### Configuring compilation and execution of build tools in Java {:#config-build-tools-java}
+
+There is a second pair of JDK and JVM used to build and execute tools, which are
+used in the build process, but are not in the build results. That JDK and JVM
+are controlled using `--tool_java_language_version` and
+`--tool_java_runtime_version`. Default values are `11` and `remotejdk_11`,
+respectively.
+
+#### Compiling using locally installed JDK {:#compile-using-jdk}
+
+Bazel by default compiles using remote JDK, because it is overriding JDK's
+internals. The compilation toolchains using locally installed JDK are configured,
+however not used.
+
+To compile using locally installed JDK, that is use the compilation toolchains
+for local JDK, use additional flag `--extra_toolchains=@local_jdk//:all`,
+however, mind that this may not work on JDK of arbitrary vendors.
+
+For more details, see
+[configuring Java toolchains](#config-java-toolchains).
+
+## Best practices {:#best-practices}
+
+In addition to [general Bazel best practices](/configure/best-practices), below are
+best practices specific to Java projects.
+
+### Directory structure {:#directory-structure}
+
+Prefer Maven's standard directory layout (sources under `src/main/java`, tests
+under `src/test/java`).
+
+### BUILD files {:#build-files}
+
+Follow these guidelines when creating your `BUILD` files:
+
+*   Use one `BUILD` file per directory containing Java sources, because this
+    improves build performance.
+
+*   Every `BUILD` file should contain one `java_library` rule that looks like
+    this:
+
+    ```python
+    java_library(
+        name = "directory-name",
+        srcs = glob(["*.java"]),
+        deps = [...],
+    )
+    ```
+
+*   The name of the library should be the name of the directory containing the
+    `BUILD` file. This makes the label of the library shorter, that is use
+    `"//package"` instead of `"//package:package"`.
+
+*   The sources should be a non-recursive [`glob`](/reference/be/functions#glob) of
+    all Java files in the directory.
+
+*   Tests should be in a matching directory under `src/test` and depend on this
+    library.
+
+## Creating new rules for advanced Java builds {:#rules-advanced-java-builds}
+
+**Note**: Creating new rules is for advanced build and test scenarios. You do
+not need it when getting started with Bazel.
+
+The following modules, configuration fragments, and providers will help you
+[extend Bazel's capabilities](/extending/concepts) when building your Java
+projects:
+
+*   Main Java module: [`java_common`](/rules/lib/toplevel/java_common)
+*   Main Java provider: [`JavaInfo`](/rules/lib/providers/JavaInfo)
+*   Configuration fragment: [`java`](/rules/lib/fragments/java)
+*   Other modules:
+
+    *   [`java_annotation_processing`](/rules/lib/builtins/java_annotation_processing)
+    *   [`java_compilation_info`](/rules/lib/providers/java_compilation_info)
+    *   [`java_output_jars`](/rules/lib/providers/java_output_jars)
+    *   [`JavaRuntimeInfo`](/rules/lib/providers/JavaRuntimeInfo)
+    *   [`JavaToolchainInfo`](/rules/lib/providers/JavaToolchainInfo)
+
+## Configuring the Java toolchains {:#config-java-toolchains}
+
+Bazel uses two types of Java toolchains:
+- execution, used to execute and test Java binaries, controlled with
+  `--java_runtime_version` flag
+- compilation, used to compile Java sources, controlled with
+  `--java_language_version` flag
+
+### Configuring additional execution toolchains {:#config-execution-toolchains}
+
+Execution toolchain is the JVM, either local or from a repository, with some
+additional information about its version, operating system, and CPU
+architecture.
+
+Java execution toolchains may added using the `local_java_repository` or
+`remote_java_repository` repo rules in a module extension. Adding the rule makes
+the JVM available using a flag. When multiple definitions for the same operating
+system and CPU architecture are given, the first one is used.
+
+Example configuration of local JVM:
+
+```python
+load("@rules_java//toolchains:local_java_repository.bzl", "local_java_repository")
+
+local_java_repository(
+  name = "additionaljdk",          # Can be used with --java_runtime_version=additionaljdk, --java_runtime_version=11 or --java_runtime_version=additionaljdk_11
+  version = 11,                    # Optional, if not set it is autodetected
+  java_home = "/usr/lib/jdk-15/",  # Path to directory containing bin/java
+)
+```
+
+Example configuration of remote JVM:
+
+```python
+load("@rules_java//toolchains:remote_java_repository.bzl", "remote_java_repository")
+
+remote_java_repository(
+  name = "openjdk_canary_linux_arm",
+  prefix = "openjdk_canary", # Can be used with --java_runtime_version=openjdk_canary_11
+  version = "11",            # or --java_runtime_version=11
+  target_compatible_with = [ # Specifies constraints this JVM is compatible with
+    "@platforms//cpu:arm",
+    "@platforms//os:linux",
+  ],
+  urls = ...,               # Other parameters are from http_repository rule.
+  sha256 = ...,
+  strip_prefix = ...
+)
+```
+
+### Configuring additional compilation toolchains {:#config-compilation-toolchains}
+
+Compilation toolchain is composed of JDK and multiple tools that Bazel uses
+during the compilation and that provides additional features, such as: Error
+Prone, strict Java dependencies, header compilation, Android desugaring,
+coverage instrumentation, and genclass handling for IDEs.
+
+JavaBuilder is a Bazel-bundled tool that executes compilation, and provides the
+aforementioned features. Actual compilation is executed using the internal
+compiler by the JDK. The JDK used for compilation is specified by `java_runtime`
+attribute of the toolchain.
+
+Bazel overrides some JDK internals. In case of JDK version > 9,
+`java.compiler` and `jdk.compiler` modules are patched using JDK's flag
+`--patch_module`. In case of JDK version 8, the Java compiler is patched using
+`-Xbootclasspath` flag.
+
+VanillaJavaBuilder is a second implementation of JavaBuilder,
+which does not modify JDK's internal compiler and does not have any of the
+additional features. VanillaJavaBuilder is not used by any of the built-in
+toolchains.
+
+In addition to JavaBuilder, Bazel uses several other tools during compilation.
+
+The `ijar` tool processes `jar` files to remove everything except call
+signatures. Resulting jars are called header jars. They are used to improve the
+compilation incrementality by only recompiling downstream dependents when the
+body of a function changes.
+
+The `singlejar` tool packs together multiple `jar` files into a single one.
+
+The `genclass` tool post-processes the output of a Java compilation, and produces
+a `jar` containing only the class files for sources that were generated by
+annotation processors.
+
+The `JacocoRunner` tool runs Jacoco over instrumented files and outputs results in
+LCOV format.
+
+The `TestRunner` tool executes JUnit 4 tests in a controlled environment.
+
+You can reconfigure the compilation by adding `default_java_toolchain` macro to
+a `BUILD` file and registering it either by adding `register_toolchains` rule to
+the `MODULE.bazel` file or by using
+[`--extra_toolchains`](/docs/user-manual#extra-toolchains) flag.
+
+The toolchain is only used when the `source_version` attribute matches the
+value specified by `--java_language_version` flag.
+
+Example toolchain configuration:
+
+```python
+load(
+  "@rules_java//toolchains:default_java_toolchain.bzl",
+  "default_java_toolchain", "DEFAULT_TOOLCHAIN_CONFIGURATION", "BASE_JDK9_JVM_OPTS", "DEFAULT_JAVACOPTS"
+)
+
+default_java_toolchain(
+  name = "repository_default_toolchain",
+  configuration = DEFAULT_TOOLCHAIN_CONFIGURATION,        # One of predefined configurations
+                                                          # Other parameters are from java_toolchain rule:
+  java_runtime = "@rules_java//toolchains:remote_jdk11", # JDK to use for compilation and toolchain's tools execution
+  jvm_opts = BASE_JDK9_JVM_OPTS + ["--enable_preview"],   # Additional JDK options
+  javacopts = DEFAULT_JAVACOPTS + ["--enable_preview"],   # Additional javac options
+  source_version = "9",
+)
+```
+
+which can be used using `--extra_toolchains=//:repository_default_toolchain_definition`
+or by adding `register_toolchains("//:repository_default_toolchain_definition")`
+to the workpace.
+
+Predefined configurations:
+
+-   `DEFAULT_TOOLCHAIN_CONFIGURATION`: all features, supports JDK versions >= 9
+-   `VANILLA_TOOLCHAIN_CONFIGURATION`: no additional features, supports JDKs of
+    arbitrary vendors.
+-   `PREBUILT_TOOLCHAIN_CONFIGURATION`: same as default, but only use prebuilt
+    tools (`ijar`, `singlejar`)
+-   `NONPREBUILT_TOOLCHAIN_CONFIGURATION`: same as default, but all tools are
+    built from sources (this may be useful on operating system with different
+    libc)
+
+#### Configuring JVM and Java compiler flags {:#config-jvm}
+
+You may configure JVM and javac flags either with flags or with
+ `default_java_toolchain` attributes.
+
+The relevant flags are `--jvmopt`, `--host_jvmopt`, `--javacopt`,  and
+`--host_javacopt`.
+
+The relevant `default_java_toolchain` attributes are `javacopts`, `jvm_opts`,
+`javabuilder_jvm_opts`, and `turbine_jvm_opts`.
+
+#### Package specific Java compiler flags configuration {:#package-java-compiler-flags}
+
+You can configure different Java compiler flags for specific source
+files using `package_configuration` attribute of `default_java_toolchain`.
+Please refer to the example below.
+
+```python
+load("@rules_java//toolchains:default_java_toolchain.bzl", "default_java_toolchain")
+
+# This is a convenience macro that inherits values from Bazel's default java_toolchain
+default_java_toolchain(
+    name = "toolchain",
+    package_configuration = [
+        ":error_prone",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+# This associates a set of javac flags with a set of packages
+java_package_configuration(
+    name = "error_prone",
+    javacopts = [
+        "-Xep:MissingOverride:ERROR",
+    ],
+    packages = ["error_prone_packages"],
+)
+
+# This is a regular package_group, which is used to specify a set of packages to apply flags to
+package_group(
+    name = "error_prone_packages",
+    packages = [
+        "//foo/...",
+        "-//foo/bar/...", # this is an exclusion
+    ],
+)
+```
+
+#### Multiple versions of Java source code in a single repository {:#java-source-single-repo}
+
+Bazel only supports compiling a single version of Java sources in a build.
+build. This means that when building a Java test or an application, all
+ dependencies are built against the same Java version.
+
+However, separate builds may be executed using different flags.
+
+To make the task of using different flags easier, sets of flags for a specific
+version may be grouped with `.bazelrc` configs":
+
+```python
+build:java8 --java_language_version=8
+build:java8 --java_runtime_version=local_jdk_8
+build:java11 --java_language_version=11
+build:java11 --java_runtime_version=remotejdk_11
+```
+
+These configs can be used with the `--config` flag, for example
+`bazel test --config=java11 //:java11_test`.
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# Android Instrumentation Tests
+
+{% include "_buttons.html" %}
+
+_If you're new to Bazel, start with the [Building Android with
+Bazel](/start/android-app ) tutorial._
+
+![Running Android instrumentation tests in parallel](/docs/images/android_test.gif "Android instrumentation test")
+
+**Figure 1.** Running parallel Android instrumentation tests.
+
+[`android_instrumentation_test`](/reference/be/android#android_instrumentation_test)
+allows developers to test their apps on Android emulators and devices.
+It utilizes real Android framework APIs and the Android Test Library.
+
+For hermeticity and reproducibility, Bazel creates and launches Android
+emulators in a sandbox, ensuring that tests always run from a clean state. Each
+test gets an isolated emulator instance, allowing tests to run in parallel
+without passing states between them.
+
+For more information on Android instrumentation tests, check out the [Android
+developer
+documentation](https://developer.android.com/training/testing/unit-testing/instrumented-unit-tests.html){: .external}.
+
+Please file issues in the [GitHub issue tracker](https://github.com/bazelbuild/bazel/issues){: .external}.
+
+## How it works {:#how-it-works}
+
+When you run `bazel test` on an `android_instrumentation_test` target for the
+first time, Bazel performs the following steps:
+
+1. Builds the test APK, APK under test, and their transitive dependencies
+2. Creates, boots, and caches clean emulator states
+3. Starts the emulator
+4. Installs the APKs
+5. Runs tests utilizing the [Android Test Orchestrator](https://developer.android.com/training/testing/junit-runner.html#using-android-test-orchestrator){: .external}
+6. Shuts down the emulator
+7. Reports the results
+
+In subsequent test runs, Bazel boots the emulator from the clean, cached state
+created in step 2, so there are no leftover states from previous runs. Caching
+emulator state also speeds up test runs.
+
+## Prerequisites {:#prerequisites}
+
+Ensure your environment satisfies the following prerequisites:
+
+- **Linux**. Tested on Ubuntu 16.04, and 18.04.
+
+- **Bazel 0.12.0** or later. Verify the version by running `bazel info release`.
+
+```posix-terminal
+bazel info release
+```
+This results in output similar to the following:
+
+```none {:.devsite-disable-click-to-copy}
+release 4.1.0
+```
+
+- **KVM**. Bazel requires emulators to have [hardware
+  acceleration](https://developer.android.com/studio/run/emulator-acceleration.html#accel-check){: .external}
+  with KVM on Linux. You can follow these
+  [installation instructions](https://help.ubuntu.com/community/KVM/Installation){: .external}
+  for Ubuntu.
+
+To verify that KVM has the correct configuration, run:
+
+```posix-terminal
+apt-get install cpu-checker && kvm-ok
+```
+
+If it prints the following message, you have the correct configuration:
+
+```none {:.devsite-disable-click-to-copy}
+INFO: /dev/kvm exists
+KVM acceleration can be used
+```
+
+- **Xvfb**. To run headless tests (for example, on CI servers), Bazel requires
+  the [X virtual framebuffer](https://www.x.org/archive/X11R7.6/doc/man/man1/Xvfb.1.xhtml).
+
+To install it, run:
+
+```posix-terminal
+apt-get install xvfb
+```
+Verify that `Xvfb` is installed correctly and is installed at `/usr/bin/Xvfb`
+by running:
+
+```posix-terminal
+which Xvfb
+```
+The output is the following:
+
+```{:.devsite-disable-click-to-copy}
+/usr/bin/Xvfb
+```
+
+- **32-bit Libraries**. Some of the binaries used by the test infrastructure are
+  32-bit, so on 64-bit machines, ensure that 32-bit binaries can be run. For
+  Ubuntu, install these 32-bit libraries:
+
+```posix-terminal
+sudo apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386 lib32z1 libbz2-1.0:i386
+```
+
+## Getting started {:#getting-started}
+
+Here is a typical target dependency graph of an `android_instrumentation_test`:
+
+![The target dependency graph on an Android instrumentation test](/docs/images/android_instrumentation_test.png "Target dependency graph")
+
+**Figure 2.** Target dependency graph of an `android_instrumentation_test`.
+
+
+### BUILD file {:#build-file}
+
+The graph translates into a `BUILD` file like this:
+
+```python
+android_instrumentation_test(
+    name = "my_test",
+    test_app = ":my_test_app",
+    target_device = "@android_test_support//tools/android/emulated_devices/generic_phone:android_23_x86",
+)
+
+# Test app and library
+android_binary(
+    name = "my_test_app",
+    instruments = ":my_app",
+    manifest = "AndroidTestManifest.xml",
+    deps = [":my_test_lib"],
+    # ...
+)
+
+android_library(
+    name = "my_test_lib",
+    srcs = glob(["javatest/**/*.java"]),
+    deps = [
+        ":my_app_lib",
+        "@maven//:androidx_test_core",
+        "@maven//:androidx_test_runner",
+        "@maven//:androidx_test_espresso_espresso_core",
+    ],
+    # ...
+)
+
+# Target app and library under test
+android_binary(
+    name = "my_app",
+    manifest = "AndroidManifest.xml",
+    deps = [":my_app_lib"],
+    # ...
+)
+
+android_library(
+    name = "my_app_lib",
+    srcs = glob(["java/**/*.java"]),
+    deps = [
+        "@maven//:androidx_appcompat_appcompat",
+        "@maven//:androidx_annotation_annotation",
+    ]
+    # ...
+)
+```
+
+The main attributes of the rule `android_instrumentation_test` are:
+
+- `test_app`: An `android_binary` target. This target contains test code and
+  dependencies like Espresso and UIAutomator. The selected `android_binary`
+  target is required to specify an `instruments` attribute pointing to another
+  `android_binary`, which is the app under test.
+
+- `target_device`: An `android_device` target. This target describes the
+  specifications of the Android emulator which Bazel uses to create, launch and
+  run the tests. See the [section on choosing an Android
+  device](#android-device-target) for more information.
+
+The test app's `AndroidManifest.xml` must include [an `<instrumentation>`
+tag](https://developer.android.com/studio/test/#configure_instrumentation_manifest_settings){: .external}.
+This tag must specify the attributes for the **package of the target app** and
+the **fully qualified class name of the instrumentation test runner**,
+`androidx.test.runner.AndroidJUnitRunner`.
+
+Here is an example `AndroidTestManifest.xml` for the test app:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
+          package="com.example.android.app.test"
+    android:versionCode="1"
+    android:versionName="1.0">
+
+    <instrumentation
+        android:name="androidx.test.runner.AndroidJUnitRunner"
+        android:targetPackage="com.example.android.app" />
+
+    <uses-sdk
+        android:minSdkVersion="16"
+        android:targetSdkVersion="27" />
+
+    <application >
+       <!-- ... -->
+    </application>
+</manifest>
+```
+
+### WORKSPACE dependencies {:#workspace-dependencies}
+
+In order to use this rule, your project needs to depend on these external
+repositories:
+
+- `@androidsdk`: The Android SDK. Download this through Android Studio.
+
+- `@android_test_support`: Hosts the test runner, emulator launcher, and
+  `android_device` targets. You can find the [latest release
+  here](https://github.com/android/android-test/releases){: .external}.
+
+Enable these dependencies by adding the following lines to your `WORKSPACE`
+file:
+
+```python
+# Android SDK
+android_sdk_repository(
+    name = "androidsdk",
+    path = "/path/to/sdk", # or set ANDROID_HOME
+)
+
+# Android Test Support
+ATS_COMMIT = "$COMMIT_HASH"
+http_archive(
+    name = "android_test_support",
+    strip_prefix = "android-test-%s" % ATS_COMMIT,
+    urls = ["https://github.com/android/android-test/archive/%s.tar.gz" % ATS_COMMIT],
+)
+load("@android_test_support//:repo.bzl", "android_test_repositories")
+android_test_repositories()
+```
+
+## Maven dependencies {:#maven-dependencies}
+
+For managing dependencies on Maven artifacts from repositories, such as [Google
+Maven](https://maven.google.com){: .external} or [Maven Central](https://central.maven.org){: .external},
+you should use a Maven resolver, such as
+[`rules_jvm_external`](https://github.com/bazelbuild/rules_jvm_external){: .external}.
+
+The rest of this page shows how to use `rules_jvm_external` to
+resolve and fetch dependencies from Maven repositories.
+
+## Choosing an android_device target {:#android-device-target}
+
+`android_instrumentation_test.target_device` specifies which Android device to
+run the tests on. These `android_device` targets are defined in
+[`@android_test_support`](https://github.com/google/android-testing-support-library/tree/master/tools/android/emulated_devices){: .external}.
+
+For example, you can query for the sources for a particular target by running:
+
+```posix-terminal
+bazel query --output=build @android_test_support//tools/android/emulated_devices/generic_phone:android_23_x86
+```
+Which results in output that looks similar to:
+
+```python
+# .../external/android_test_support/tools/android/emulated_devices/generic_phone/BUILD:43:1
+android_device(
+  name = "android_23_x86",
+  visibility = ["//visibility:public"],
+  tags = ["requires-kvm"],
+  generator_name = "generic_phone",
+  generator_function = "make_device",
+  generator_location = "tools/android/emulated_devices/generic_phone/BUILD:43",
+  vertical_resolution = 800,
+  horizontal_resolution = 480,
+  ram = 2048,
+  screen_density = 240,
+  cache = 32,
+  vm_heap = 256,
+  system_image = "@android_test_support//tools/android/emulated_devices/generic_phone:android_23_x86_images",
+  default_properties = "@android_test_support//tools/android/emulated_devices/generic_phone:_android_23_x86_props",
+)
+```
+
+The device target names use this template:
+
+```
+@android_test_support//tools/android/emulated_devices/{{ "<var>" }}device_type{{ "</var>" }}:{{ "<var>" }}system{{ "</var>" }}_{{ "<var>" }}api_level{{ "</var>" }}_x86_qemu2
+```
+
+In order to launch an `android_device`, the `system_image` for the selected API
+level is required. To download the system image, use Android SDK's
+`tools/bin/sdkmanager`. For example, to download the system image for
+`generic_phone:android_23_x86`, run `$sdk/tools/bin/sdkmanager
+"system-images;android-23;default;x86"`.
+
+To see the full list of supported `android_device` targets in
+`@android_test_support`, run the following command:
+
+```posix-terminal
+bazel query 'filter("x86_qemu2$", kind(android_device, @android_test_support//tools/android/emulated_devices/...:*))'
+```
+
+Bazel currently supports x86-based emulators only. For better performance, use
+`QEMU2` `android_device` targets instead of `QEMU` ones.
+
+## Running tests {:#running-tests}
+
+To run tests, add these lines to your project's
+`{{ '<var>' }}project root{{ '</var>' }}:{{ '<var>' }}/.bazelrc` file.
+
+```
+# Configurations for testing with Bazel
+# Select a configuration by running
+# `bazel test //my:target --config={headless, gui, local_device}`
+
+# Headless instrumentation tests (No GUI)
+test:headless --test_arg=--enable_display=false
+
+# Graphical instrumentation tests. Ensure that $DISPLAY is set.
+test:gui --test_env=DISPLAY
+test:gui --test_arg=--enable_display=true
+
+# Testing with a local emulator or device. Ensure that `adb devices` lists the
+# device.
+# Run tests serially.
+test:local_device --test_strategy=exclusive
+# Use the local device broker type, as opposed to WRAPPED_EMULATOR.
+test:local_device --test_arg=--device_broker_type=LOCAL_ADB_SERVER
+# Uncomment and set $device_id if there is more than one connected device.
+# test:local_device --test_arg=--device_serial_number=$device_id
+```
+
+Then, use one of the configurations to run tests:
+
+- `bazel test //my/test:target --config=gui`
+- `bazel test //my/test:target --config=headless`
+- `bazel test //my/test:target --config=local_device`
+
+Use __only one configuration__ or tests will fail.
+
+### Headless testing {:#headless-testing}
+
+With `Xvfb`, it is possible to test with emulators without the graphical
+interface, also known as headless testing. To disable the graphical interface
+when running tests, pass the test argument `--enable_display=false` to Bazel:
+
+```posix-terminal
+bazel test //my/test:target --test_arg=--enable_display=false
+```
+
+### GUI testing {:#gui-testing}
+
+If the `$DISPLAY` environment variable is set, it's possible to enable the
+graphical interface of the emulator while the test is running. To do this, pass
+these test arguments to Bazel:
+
+```posix-terminal
+bazel test //my/test:target --test_arg=--enable_display=true --test_env=DISPLAY
+```
+
+### Testing with a local emulator or device {:#testing-local-emulator}
+
+Bazel also supports testing directly on a locally launched emulator or connected
+device. Pass the flags
+`--test_strategy=exclusive` and
+`--test_arg=--device_broker_type=LOCAL_ADB_SERVER` to enable local testing mode.
+If there is more than one connected device, pass the flag
+`--test_arg=--device_serial_number=$device_id` where `$device_id` is the id of
+the device/emulator listed in `adb devices`.
+
+## Sample projects {:#sample-projects}
+
+If you are looking for canonical project samples, see the [Android testing
+samples](https://github.com/googlesamples/android-testing#experimental-bazel-support){: .external}
+for projects using Espresso and UIAutomator.
+
+## Espresso setup {:#espresso-setup}
+
+If you write UI tests with [Espresso](https://developer.android.com/training/testing/espresso/){: .external}
+(`androidx.test.espresso`), you can use the following snippets to set up your
+Bazel workspace with the list of commonly used Espresso artifacts and their
+dependencies:
+
+```
+androidx.test.espresso:espresso-core
+androidx.test:rules
+androidx.test:runner
+javax.inject:javax.inject
+org.hamcrest:java-hamcrest
+junit:junit
+```
+
+One way to organize these dependencies is to create a `//:test_deps` shared
+library in your `{{ "<var>" }}project root{{ "</var>" }}/BUILD.bazel` file:
+
+```python
+java_library(
+    name = "test_deps",
+    visibility = ["//visibility:public"],
+    exports = [
+        "@maven//:androidx_test_espresso_espresso_core",
+        "@maven//:androidx_test_rules",
+        "@maven//:androidx_test_runner",
+        "@maven//:javax_inject_javax_inject"
+        "@maven//:org_hamcrest_java_hamcrest",
+        "@maven//:junit_junit",
+    ],
+)
+```
+
+Then, add the required dependencies in `{{ "<var>" }}project root{{ "</var>" }}/WORKSPACE`:
+
+```python
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+RULES_JVM_EXTERNAL_TAG = "2.8"
+RULES_JVM_EXTERNAL_SHA = "79c9850690d7614ecdb72d68394f994fef7534b292c4867ce5e7dec0aa7bdfad"
+
+http_archive(
+    name = "rules_jvm_external",
+    strip_prefix = "rules_jvm_external-%s" % RULES_JVM_EXTERNAL_TAG,
+    sha256 = RULES_JVM_EXTERNAL_SHA,
+    url = "https://github.com/bazelbuild/rules_jvm_external/archive/%s.zip" % RULES_JVM_EXTERNAL_TAG,
+)
+
+load("@rules_jvm_external//:defs.bzl", "maven_install")
+
+maven_install(
+    artifacts = [
+        "junit:junit:4.12",
+        "javax.inject:javax.inject:1",
+        "org.hamcrest:java-hamcrest:2.0.0.0"
+        "androidx.test.espresso:espresso-core:3.1.1",
+        "androidx.test:rules:aar:1.1.1",
+        "androidx.test:runner:aar:1.1.1",
+    ],
+    repositories = [
+        "https://maven.google.com",
+        "https://repo1.maven.org/maven2",
+    ],
+)
+```
+
+Finally, in your test `android_binary` target, add the `//:test_deps`
+dependency:
+
+```python
+android_binary(
+    name = "my_test_app",
+    instruments = "//path/to:app",
+    deps = [
+        "//:test_deps",
+        # ...
+    ],
+    # ...
+)
+```
+
+## Tips {:#tips}
+
+### Reading test logs {:#reading-test-logs}
+
+Use `--test_output=errors` to print logs for failing tests, or
+`--test_output=all` to print all test output. If you're looking for an
+individual test log, go to
+`$PROJECT_ROOT/bazel-testlogs/path/to/InstrumentationTestTargetName`.
+
+For example, the test logs for `BasicSample` canonical project are in
+`bazel-testlogs/ui/espresso/BasicSample/BasicSampleInstrumentationTest`, run:
+
+```posix-terminal
+tree bazel-testlogs/ui/espresso/BasicSample/BasicSampleInstrumentationTest
+```
+This results in the following output:
+
+```none
+
+$ tree bazel-testlogs/ui/espresso/BasicSample/BasicSampleInstrumentationTest
+.
+├── adb.409923.log
+├── broker_logs
+│   ├── aapt_binary.10.ok.txt
+│   ├── aapt_binary.11.ok.txt
+│   ├── adb.12.ok.txt
+│   ├── adb.13.ok.txt
+│   ├── adb.14.ok.txt
+│   ├── adb.15.fail.txt
+│   ├── adb.16.ok.txt
+│   ├── adb.17.fail.txt
+│   ├── adb.18.ok.txt
+│   ├── adb.19.fail.txt
+│   ├── adb.20.ok.txt
+│   ├── adb.21.ok.txt
+│   ├── adb.22.ok.txt
+│   ├── adb.23.ok.txt
+│   ├── adb.24.fail.txt
+│   ├── adb.25.ok.txt
+│   ├── adb.26.fail.txt
+│   ├── adb.27.ok.txt
+│   ├── adb.28.fail.txt
+│   ├── adb.29.ok.txt
+│   ├── adb.2.ok.txt
+│   ├── adb.30.ok.txt
+│   ├── adb.3.ok.txt
+│   ├── adb.4.ok.txt
+│   ├── adb.5.ok.txt
+│   ├── adb.6.ok.txt
+│   ├── adb.7.ok.txt
+│   ├── adb.8.ok.txt
+│   ├── adb.9.ok.txt
+│   ├── android_23_x86.1.ok.txt
+│   └── exec-1
+│       ├── adb-2.txt
+│       ├── emulator-2.txt
+│       └── mksdcard-1.txt
+├── device_logcat
+│   └── logcat1635880625641751077.txt
+├── emulator_itCqtc.log
+├── outputs.zip
+├── pipe.log.txt
+├── telnet_pipe.log.txt
+└── tmpuRh4cy
+    ├── watchdog.err
+    └── watchdog.out
+
+4 directories, 41 files
+```
+
+### Reading emulator logs {:#reading-emulator-logs}
+
+The emulator logs for `android_device` targets are stored in the `/tmp/`
+directory with the name `emulator_xxxxx.log`, where `xxxxx` is a
+randomly-generated sequence of characters.
+
+Use this command to find the latest emulator log:
+
+```posix-terminal
+ls -1t /tmp/emulator_*.log | head -n 1
+```
+
+### Testing against multiple API levels {:#testing-multiple-apis}
+
+If you would like to test against multiple API levels, you can use a list
+comprehension to create test targets for each API level. For example:
+
+```python
+API_LEVELS = [
+    "19",
+    "20",
+    "21",
+    "22",
+]
+
+[android_instrumentation_test(
+    name = "my_test_%s" % API_LEVEL,
+    test_app = ":my_test_app",
+    target_device = "@android_test_support//tools/android/emulated_devices/generic_phone:android_%s_x86_qemu2" % API_LEVEL,
+) for API_LEVEL in API_LEVELS]
+```
+
+## Known issues {:#known-issues}
+
+- [Forked adb server processes are not terminated after
+  tests](https://github.com/bazelbuild/bazel/issues/4853){: .external}
+- While APK building works on all platforms (Linux, macOS, Windows), testing
+  only works on Linux.
+- Even with `--config=local_adb`, users still need to specify
+  `android_instrumentation_test.target_device`.
+- If using a local device or emulator, Bazel does not uninstall the APKs after
+  the test. Clean the packages by running this command:
+
+```posix-terminal
+adb shell pm list
+packages com.example.android.testing | cut -d ':' -f 2 | tr -d '\r' | xargs
+-L1 -t adb uninstall
+```
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# C++ and Bazel
+
+{% include "_buttons.html" %}
+
+This page contains resources that help you use Bazel with C++ projects. It links
+to a tutorial, build rules, and other information specific to building C++
+projects with Bazel.
+
+## Working with Bazel {:#working-with-bazel}
+
+The following resources will help you work with Bazel on C++ projects:
+
+*  [Tutorial: Building a C++ project](/start/cpp)
+*  [C++ common use cases](/tutorials/cpp-use-cases)
+*  [C/C++ rules](/reference/be/c-cpp)
+*  Essential Libraries
+   -  [Abseil](https://abseil.io/docs/cpp/quickstart){: .external}
+   -  [Boost](https://github.com/nelhage/rules_boost){: .external}
+   -  [HTTPS Requests: CPR and libcurl](https://github.com/hedronvision/bazel-make-cc-https-easy){: .external}
+*  [C++ toolchain configuration](/docs/cc-toolchain-config-reference)
+*  [Tutorial: Configuring C++ toolchains](/tutorials/ccp-toolchain-config)
+*  [Integrating with C++ rules](/configure/integrate-cpp)
+
+## Best practices {:#best-practices}
+
+In addition to [general Bazel best practices](/configure/best-practices), below are
+best practices specific to C++ projects.
+
+### BUILD files {:#build-files}
+
+Follow the guidelines below when creating your BUILD files:
+
+*  Each `BUILD` file should contain one [`cc_library`](/reference/be/c-cpp#cc_library)
+   rule target per compilation unit in the directory.
+
+*  You should granularize your C++ libraries as much as
+   possible to maximize incrementality and parallelize the build.
+
+*  If there is a single source file in `srcs`, name the library the same as
+   that C++ file's name. This library should contain C++ file(s), any matching
+   header file(s), and the library's direct dependencies. For example:
+
+   ```python
+   cc_library(
+       name = "mylib",
+       srcs = ["mylib.cc"],
+       hdrs = ["mylib.h"],
+       deps = [":lower-level-lib"]
+   )
+   ```
+
+*  Use one `cc_test` rule target per `cc_library` target in the file. Name the
+   target `[library-name]_test` and the source file `[library-name]_test.cc`.
+   For example, a test target for the `mylib` library target shown above would
+   look like this:
+
+   ```python
+   cc_test(
+       name = "mylib_test",
+       srcs = ["mylib_test.cc"],
+       deps = [":mylib"]
+   )
+   ```
+
+### Include paths {:#include-paths}
+
+Follow these guidelines for include paths:
+
+*  Make all include paths relative to the workspace directory.
+
+*  Use quoted includes (`#include "foo/bar/baz.h"`) for non-system headers, not
+   angle-brackets (`#include <foo/bar/baz.h>`).
+
+*  Avoid using UNIX directory shortcuts, such as `.` (current directory) or `..`
+   (parent directory).
+
+*  For legacy or `third_party` code that requires includes pointing outside the
+   project repository, such as external repository includes requiring a prefix,
+   use the [`include_prefix`](/reference/be/c-cpp#cc_library.include_prefix) and
+   [`strip_include_prefix`](/reference/be/c-cpp#cc_library.strip_include_prefix)
+   arguments on the `cc_library` rule target.
+
+### Toolchain features {:#toolchain-features}
+
+The following optional [features](/docs/cc-toolchain-config-reference#features)
+can improve the hygiene of a C++ project. They can be enabled using the
+`--features` command-line flag or the `features` attribute of
+[`repo`](/external/overview#repo.bazel),
+[`package`](/reference/be/functions#package) or `cc_*` rules:
+
+* The `parse_headers` feature makes it so that the C++ compiler is used to parse
+  (but not compile) all header files in the built targets and their dependencies
+  when using the
+  [`--process_headers_in_dependencies`](/reference/command-line-reference#flag--process_headers_in_dependencies)
+  flag. This can help catch issues in header-only libraries and ensure that
+  headers are self-contained and independent of the order in which they are
+  included.
+* The `layering_check` feature enforces that targets only include headers
+  provided by their direct dependencies. The default toolchain supports this
+  feature on Linux with `clang` as the compiler.
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# Configurable Build Attributes
+
+{% include "_buttons.html" %}
+
+**_Configurable attributes_**, commonly known as [`select()`](
+/reference/be/functions#select), is a Bazel feature that lets users toggle the values
+of build rule attributes at the command line.
+
+This can be used, for example, for a multiplatform library that automatically
+chooses the appropriate implementation for the architecture, or for a
+feature-configurable binary that can be customized at build time.
+
+## Example {:#configurable-build-example}
+
+```python
+# myapp/BUILD
+
+cc_binary(
+    name = "mybinary",
+    srcs = ["main.cc"],
+    deps = select({
+        ":arm_build": [":arm_lib"],
+        ":x86_debug_build": [":x86_dev_lib"],
+        "//conditions:default": [":generic_lib"],
+    }),
+)
+
+config_setting(
+    name = "arm_build",
+    values = {"cpu": "arm"},
+)
+
+config_setting(
+    name = "x86_debug_build",
+    values = {
+        "cpu": "x86",
+        "compilation_mode": "dbg",
+    },
+)
+```
+
+This declares a `cc_binary` that "chooses" its deps based on the flags at the
+command line. Specifically, `deps` becomes:
+
+<table>
+  <tr style="background: #E9E9E9; font-weight: bold">
+    <td>Command</td>
+    <td>deps =</td>
+  </tr>
+  <tr>
+    <td><code>bazel build //myapp:mybinary --cpu=arm</code></td>
+    <td><code>[":arm_lib"]</code></td>
+  </tr>
+  <tr>
+    <td><code>bazel build //myapp:mybinary -c dbg --cpu=x86</code></td>
+    <td><code>[":x86_dev_lib"]</code></td>
+  </tr>
+  <tr>
+    <td><code>bazel build //myapp:mybinary --cpu=ppc</code></td>
+    <td><code>[":generic_lib"]</code></td>
+  </tr>
+  <tr>
+    <td><code>bazel build //myapp:mybinary -c dbg --cpu=ppc</code></td>
+    <td><code>[":generic_lib"]</code></td>
+  </tr>
+</table>
+
+`select()` serves as a placeholder for a value that will be chosen based on
+*configuration conditions*, which are labels referencing [`config_setting`](/reference/be/general#config_setting)
+targets. By using `select()` in a configurable attribute, the attribute
+effectively adopts different values when different conditions hold.
+
+Matches must be unambiguous: if multiple conditions match then either:
+
+*  They all resolve to the same value. For example, when running on linux x86, this is unambiguous
+   `{"@platforms//os:linux": "Hello", "@platforms//cpu:x86_64": "Hello"}` because both branches resolve to "hello".
+*  One's `values` is a strict superset of all others'. For example, `values = {"cpu": "x86", "compilation_mode": "dbg"}`
+   is an unambiguous specialization of `values = {"cpu": "x86"}`.
+
+The built-in condition [`//conditions:default`](#default-condition) automatically matches when
+nothing else does.
+
+While this example uses `deps`, `select()` works just as well on `srcs`,
+`resources`, `cmd`, and most other attributes. Only a small number of attributes
+are *non-configurable*, and these are clearly annotated. For example,
+`config_setting`'s own
+[`values`](/reference/be/general#config_setting.values) attribute is non-configurable.
+
+## `select()` and dependencies {:#select-and-dependencies}
+
+Certain attributes change the build parameters for all transitive dependencies
+under a target. For example, `genrule`'s `tools` changes `--cpu` to the CPU of
+the machine running Bazel (which, thanks to cross-compilation, may be different
+than the CPU the target is built for). This is known as a
+[configuration transition](/reference/glossary#transition).
+
+Given
+
+```python
+#myapp/BUILD
+
+config_setting(
+    name = "arm_cpu",
+    values = {"cpu": "arm"},
+)
+
+config_setting(
+    name = "x86_cpu",
+    values = {"cpu": "x86"},
+)
+
+genrule(
+    name = "my_genrule",
+    srcs = select({
+        ":arm_cpu": ["g_arm.src"],
+        ":x86_cpu": ["g_x86.src"],
+    }),
+    tools = select({
+        ":arm_cpu": [":tool1"],
+        ":x86_cpu": [":tool2"],
+    }),
+)
+
+cc_binary(
+    name = "tool1",
+    srcs = select({
+        ":arm_cpu": ["armtool.cc"],
+        ":x86_cpu": ["x86tool.cc"],
+    }),
+)
+```
+
+running
+
+```sh
+$ bazel build //myapp:my_genrule --cpu=arm
+```
+
+on an `x86` developer machine binds the build to `g_arm.src`, `tool1`, and
+`x86tool.cc`. Both of the `select`s attached to `my_genrule` use `my_genrule`'s
+build parameters, which include `--cpu=arm`. The `tools` attribute changes
+`--cpu` to `x86` for `tool1` and its transitive dependencies. The `select` on
+`tool1` uses `tool1`'s build parameters, which include `--cpu=x86`.
+
+## Configuration conditions {:#configuration-conditions}
+
+Each key in a configurable attribute is a label reference to a
+[`config_setting`](/reference/be/general#config_setting) or
+[`constraint_value`](/reference/be/platforms-and-toolchains#constraint_value).
+
+`config_setting` is just a collection of
+expected command line flag settings. By encapsulating these in a target, it's
+easy to maintain "standard" conditions users can reference from multiple places.
+
+`constraint_value` provides support for [multi-platform behavior](#platforms).
+
+### Built-in flags {:#built-in-flags}
+
+Flags like `--cpu` are built into Bazel: the build tool natively understands
+them for all builds in all projects. These are specified with
+[`config_setting`](/reference/be/general#config_setting)'s
+[`values`](/reference/be/general#config_setting.values) attribute:
+
+```python
+config_setting(
+    name = "meaningful_condition_name",
+    values = {
+        "flag1": "value1",
+        "flag2": "value2",
+        ...
+    },
+)
+```
+
+`flagN` is a flag name (without `--`, so `"cpu"` instead of `"--cpu"`). `valueN`
+is the expected value for that flag. `:meaningful_condition_name` matches if
+*every* entry in `values` matches. Order is irrelevant.
+
+`valueN` is parsed as if it was set on the command line. This means:
+
+*  `values = { "compilation_mode": "opt" }` matches `bazel build -c opt`
+*  `values = { "force_pic": "true" }` matches `bazel build --force_pic=1`
+*  `values = { "force_pic": "0" }` matches `bazel build --noforce_pic`
+
+`config_setting` only supports flags that affect target behavior. For example,
+[`--show_progress`](/docs/user-manual#show-progress) isn't allowed because
+it only affects how Bazel reports progress to the user. Targets can't use that
+flag to construct their results. The exact set of supported flags isn't
+documented. In practice, most flags that "make sense" work.
+
+### Custom flags {:#custom-flags}
+
+You can model your own project-specific flags with
+[Starlark build settings][BuildSettings]. Unlike built-in flags, these are
+defined as build targets, so Bazel references them with target labels.
+
+These are triggered with [`config_setting`](/reference/be/general#config_setting)'s
+[`flag_values`](/reference/be/general#config_setting.flag_values)
+attribute:
+
+```python
+config_setting(
+    name = "meaningful_condition_name",
+    flag_values = {
+        "//myflags:flag1": "value1",
+        "//myflags:flag2": "value2",
+        ...
+    },
+)
+```
+
+Behavior is the same as for [built-in flags](#built-in-flags). See [here](https://github.com/bazelbuild/examples/tree/HEAD/configurations/select_on_build_setting){: .external}
+for a working example.
+
+[`--define`](/reference/command-line-reference#flag--define)
+is an alternative legacy syntax for custom flags (for example
+`--define foo=bar`). This can be expressed either in the
+[values](/reference/be/general#config_setting.values) attribute
+(`values = {"define": "foo=bar"}`) or the
+[define_values](/reference/be/general#config_setting.define_values) attribute
+(`define_values = {"foo": "bar"}`). `--define` is only supported for backwards
+compatibility. Prefer Starlark build settings whenever possible.
+
+`values`, `flag_values`, and `define_values` evaluate independently. The
+`config_setting` matches if all values across all of them match.
+
+## The default condition {:#default-condition}
+
+The built-in condition `//conditions:default` matches when no other condition
+matches.
+
+Because of the "exactly one match" rule, a configurable attribute with no match
+and no default condition emits a `"no matching conditions"` error. This can
+protect against silent failures from unexpected settings:
+
+```python
+# myapp/BUILD
+
+config_setting(
+    name = "x86_cpu",
+    values = {"cpu": "x86"},
+)
+
+cc_library(
+    name = "x86_only_lib",
+    srcs = select({
+        ":x86_cpu": ["lib.cc"],
+    }),
+)
+```
+
+```sh
+$ bazel build //myapp:x86_only_lib --cpu=arm
+ERROR: Configurable attribute "srcs" doesn't match this configuration (would
+a default condition help?).
+Conditions checked:
+  //myapp:x86_cpu
+```
+
+For even clearer errors, you can set custom messages with `select()`'s
+[`no_match_error`](#custom-error-messages) attribute.
+
+## Platforms {:#platforms}
+
+While the ability to specify multiple flags on the command line provides
+flexibility, it can also be burdensome to individually set each one every time
+you want to build a target.
+   [Platforms](/extending/platforms)
+let you consolidate these into simple bundles.
+
+```python
+# myapp/BUILD
+
+sh_binary(
+    name = "my_rocks",
+    srcs = select({
+        ":basalt": ["pyroxene.sh"],
+        ":marble": ["calcite.sh"],
+        "//conditions:default": ["feldspar.sh"],
+    }),
+)
+
+config_setting(
+    name = "basalt",
+    constraint_values = [
+        ":black",
+        ":igneous",
+    ],
+)
+
+config_setting(
+    name = "marble",
+    constraint_values = [
+        ":white",
+        ":metamorphic",
+    ],
+)
+
+# constraint_setting acts as an enum type, and constraint_value as an enum value.
+constraint_setting(name = "color")
+constraint_value(name = "black", constraint_setting = "color")
+constraint_value(name = "white", constraint_setting = "color")
+constraint_setting(name = "texture")
+constraint_value(name = "smooth", constraint_setting = "texture")
+constraint_setting(name = "type")
+constraint_value(name = "igneous", constraint_setting = "type")
+constraint_value(name = "metamorphic", constraint_setting = "type")
+
+platform(
+    name = "basalt_platform",
+    constraint_values = [
+        ":black",
+        ":igneous",
+    ],
+)
+
+platform(
+    name = "marble_platform",
+    constraint_values = [
+        ":white",
+        ":smooth",
+        ":metamorphic",
+    ],
+)
+```
+
+The platform can be specified on the command line. It activates the
+`config_setting`s that contain a subset of the platform's `constraint_values`,
+allowing those `config_setting`s to match in `select()` expressions.
+
+For example, in order to set the `srcs` attribute of `my_rocks` to `calcite.sh`,
+you can simply run
+
+```sh
+bazel build //my_app:my_rocks --platforms=//myapp:marble_platform
+```
+
+Without platforms, this might look something like
+
+```sh
+bazel build //my_app:my_rocks --define color=white --define texture=smooth --define type=metamorphic
+```
+
+`select()` can also directly read `constraint_value`s:
+
+```python
+constraint_setting(name = "type")
+constraint_value(name = "igneous", constraint_setting = "type")
+constraint_value(name = "metamorphic", constraint_setting = "type")
+sh_binary(
+    name = "my_rocks",
+    srcs = select({
+        ":igneous": ["igneous.sh"],
+        ":metamorphic" ["metamorphic.sh"],
+    }),
+)
+```
+
+This saves the need for boilerplate `config_setting`s when you only need to
+check against single values.
+
+Platforms are still under development. See the
+[documentation](/concepts/platforms) for details.
+
+## Combining `select()`s {:#combining-selects}
+
+`select` can appear multiple times in the same attribute:
+
+```python
+sh_binary(
+    name = "my_target",
+    srcs = ["always_include.sh"] +
+           select({
+               ":armeabi_mode": ["armeabi_src.sh"],
+               ":x86_mode": ["x86_src.sh"],
+           }) +
+           select({
+               ":opt_mode": ["opt_extras.sh"],
+               ":dbg_mode": ["dbg_extras.sh"],
+           }),
+)
+```
+
+Note: Some restrictions apply on what can be combined in the `select`s values:
+ - Duplicate labels can appear in different paths of the same `select`.
+ - Duplicate labels can *not* appear within the same path of a `select`.
+ - Duplicate labels can *not* appear across multiple combined `select`s (no matter what path)
+
+`select` cannot appear inside another `select`. If you need to nest `selects`
+and your attribute takes other targets as values, use an intermediate target:
+
+```python
+sh_binary(
+    name = "my_target",
+    srcs = ["always_include.sh"],
+    deps = select({
+        ":armeabi_mode": [":armeabi_lib"],
+        ...
+    }),
+)
+
+sh_library(
+    name = "armeabi_lib",
+    srcs = select({
+        ":opt_mode": ["armeabi_with_opt.sh"],
+        ...
+    }),
+)
+```
+
+If you need a `select` to match when multiple conditions match, consider [AND
+chaining](#and-chaining).
+
+## OR chaining {:#or-chaining}
+
+Consider the following:
+
+```python
+sh_binary(
+    name = "my_target",
+    srcs = ["always_include.sh"],
+    deps = select({
+        ":config1": [":standard_lib"],
+        ":config2": [":standard_lib"],
+        ":config3": [":standard_lib"],
+        ":config4": [":special_lib"],
+    }),
+)
+```
+
+Most conditions evaluate to the same dep. But this syntax is hard to read and
+maintain. It would be nice to not have to repeat `[":standard_lib"]` multiple
+times.
+
+One option is to predefine the value as a BUILD variable:
+
+```python
+STANDARD_DEP = [":standard_lib"]
+
+sh_binary(
+    name = "my_target",
+    srcs = ["always_include.sh"],
+    deps = select({
+        ":config1": STANDARD_DEP,
+        ":config2": STANDARD_DEP,
+        ":config3": STANDARD_DEP,
+        ":config4": [":special_lib"],
+    }),
+)
+```
+
+This makes it easier to manage the dependency. But it still causes unnecessary
+duplication.
+
+For more direct support, use one of the following:
+
+### `selects.with_or` {:#selects-with-or}
+
+The
+[with_or](https://github.com/bazelbuild/bazel-skylib/blob/main/docs/selects_doc.md#selectswith_or){: .external}
+macro in [Skylib](https://github.com/bazelbuild/bazel-skylib){: .external}'s
+[`selects`](https://github.com/bazelbuild/bazel-skylib/blob/main/docs/selects_doc.md){: .external}
+module supports `OR`ing conditions directly inside a `select`:
+
+```python
+load("@bazel_skylib//lib:selects.bzl", "selects")
+```
+
+```python
+sh_binary(
+    name = "my_target",
+    srcs = ["always_include.sh"],
+    deps = selects.with_or({
+        (":config1", ":config2", ":config3"): [":standard_lib"],
+        ":config4": [":special_lib"],
+    }),
+)
+```
+
+### `selects.config_setting_group` {:#selects-config-setting-or-group}
+
+
+The
+[config_setting_group](https://github.com/bazelbuild/bazel-skylib/blob/main/docs/selects_doc.md#selectsconfig_setting_group){: .external}
+macro in [Skylib](https://github.com/bazelbuild/bazel-skylib){: .external}'s
+[`selects`](https://github.com/bazelbuild/bazel-skylib/blob/main/docs/selects_doc.md){: .external}
+module supports `OR`ing multiple `config_setting`s:
+
+```python
+load("@bazel_skylib//lib:selects.bzl", "selects")
+```
+
+
+```python
+config_setting(
+    name = "config1",
+    values = {"cpu": "arm"},
+)
+config_setting(
+    name = "config2",
+    values = {"compilation_mode": "dbg"},
+)
+selects.config_setting_group(
+    name = "config1_or_2",
+    match_any = [":config1", ":config2"],
+)
+sh_binary(
+    name = "my_target",
+    srcs = ["always_include.sh"],
+    deps = select({
+        ":config1_or_2": [":standard_lib"],
+        "//conditions:default": [":other_lib"],
+    }),
+)
+```
+
+Unlike `selects.with_or`, different targets can share `:config1_or_2` across
+different attributes.
+
+It's an error for multiple conditions to match unless one is an unambiguous
+"specialization" of the others or they all resolve to the same value. See [here](#configurable-build-example) for details.
+
+## AND chaining {:#and-chaining}
+
+If you need a `select` branch to match when multiple conditions match, use the
+[Skylib](https://github.com/bazelbuild/bazel-skylib){: .external} macro
+[config_setting_group](https://github.com/bazelbuild/bazel-skylib/blob/main/docs/selects_doc.md#selectsconfig_setting_group){: .external}:
+
+```python
+config_setting(
+    name = "config1",
+    values = {"cpu": "arm"},
+)
+config_setting(
+    name = "config2",
+    values = {"compilation_mode": "dbg"},
+)
+selects.config_setting_group(
+    name = "config1_and_2",
+    match_all = [":config1", ":config2"],
+)
+sh_binary(
+    name = "my_target",
+    srcs = ["always_include.sh"],
+    deps = select({
+        ":config1_and_2": [":standard_lib"],
+        "//conditions:default": [":other_lib"],
+    }),
+)
+```
+
+Unlike OR chaining, existing `config_setting`s can't be directly `AND`ed
+inside a `select`. You have to explicitly wrap them in a `config_setting_group`.
+
+## Custom error messages {:#custom-error-messages}
+
+By default, when no condition matches, the target the `select()` is attached to
+fails with the error:
+
+```sh
+ERROR: Configurable attribute "deps" doesn't match this configuration (would
+a default condition help?).
+Conditions checked:
+  //tools/cc_target_os:darwin
+  //tools/cc_target_os:android
+```
+
+This can be customized with the [`no_match_error`](/reference/be/functions#select)
+attribute:
+
+```python
+cc_library(
+    name = "my_lib",
+    deps = select(
+        {
+            "//tools/cc_target_os:android": [":android_deps"],
+            "//tools/cc_target_os:windows": [":windows_deps"],
+        },
+        no_match_error = "Please build with an Android or Windows toolchain",
+    ),
+)
+```
+
+```sh
+$ bazel build //myapp:my_lib
+ERROR: Configurable attribute "deps" doesn't match this configuration: Please
+build with an Android or Windows toolchain
+```
+
+## Rules compatibility {:#rules-compatibility}
+
+Rule implementations receive the *resolved values* of configurable
+attributes. For example, given:
+
+```python
+# myapp/BUILD
+
+some_rule(
+    name = "my_target",
+    some_attr = select({
+        ":foo_mode": [":foo"],
+        ":bar_mode": [":bar"],
+    }),
+)
+```
+
+```sh
+$ bazel build //myapp/my_target --define mode=foo
+```
+
+Rule implementation code sees `ctx.attr.some_attr` as `[":foo"]`.
+
+Macros can accept `select()` clauses and pass them through to native
+rules. But *they cannot directly manipulate them*. For example, there's no way
+for a macro to convert
+
+```python
+select({"foo": "val"}, ...)
+```
+
+to
+
+```python
+select({"foo": "val_with_suffix"}, ...)
+```
+
+This is for two reasons.
+
+First, macros that need to know which path a `select` will choose *cannot work*
+because macros are evaluated in Bazel's [loading phase](/run/build#loading),
+which occurs before flag values are known.
+This is a core Bazel design restriction that's unlikely to change any time soon.
+
+Second, macros that just need to iterate over *all* `select` paths, while
+technically feasible, lack a coherent UI. Further design is necessary to change
+this.
+
+## Bazel query and cquery {:#query-and-cquery}
+
+Bazel [`query`](/query/guide) operates over Bazel's
+[loading phase](/reference/glossary#loading-phase).
+This means it doesn't know what command line flags a target uses since those
+flags aren't evaluated until later in the build (in the
+[analysis phase](/reference/glossary#analysis-phase)).
+So it can't determine which `select()` branches are chosen.
+
+Bazel [`cquery`](/query/cquery) operates after Bazel's analysis phase, so it has
+all this information and can accurately resolve `select()`s.
+
+Consider:
+
+```python
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+```
+```python
+# myapp/BUILD
+
+string_flag(
+    name = "dog_type",
+    build_setting_default = "cat"
+)
+
+cc_library(
+    name = "my_lib",
+    deps = select({
+        ":long": [":foo_dep"],
+        ":short": [":bar_dep"],
+    }),
+)
+
+config_setting(
+    name = "long",
+    flag_values = {":dog_type": "dachshund"},
+)
+
+config_setting(
+    name = "short",
+    flag_values = {":dog_type": "pug"},
+)
+```
+
+`query` overapproximates `:my_lib`'s dependencies:
+
+```sh
+$ bazel query 'deps(//myapp:my_lib)'
+//myapp:my_lib
+//myapp:foo_dep
+//myapp:bar_dep
+```
+
+while `cquery` shows its exact dependencies:
+
+```sh
+$ bazel cquery 'deps(//myapp:my_lib)' --//myapp:dog_type=pug
+//myapp:my_lib
+//myapp:bar_dep
+```
+
+## FAQ {:#faq}
+
+### Why doesn't select() work in macros? {:#faq-select-macro}
+
+select() *does* work in rules! See [Rules compatibility](#rules-compatibility) for
+details.
+
+The key issue this question usually means is that select() doesn't work in
+*macros*. These are different than *rules*. See the
+documentation on [rules](/extending/rules) and [macros](/extending/macros)
+to understand the difference.
+Here's an end-to-end example:
+
+Define a rule and macro:
+
+```python
+# myapp/defs.bzl
+
+# Rule implementation: when an attribute is read, all select()s have already
+# been resolved. So it looks like a plain old attribute just like any other.
+def _impl(ctx):
+    name = ctx.attr.name
+    allcaps = ctx.attr.my_config_string.upper()  # This works fine on all values.
+    print("My name is " + name + " with custom message: " + allcaps)
+
+# Rule declaration:
+my_custom_bazel_rule = rule(
+    implementation = _impl,
+    attrs = {"my_config_string": attr.string()},
+)
+
+# Macro declaration:
+def my_custom_bazel_macro(name, my_config_string):
+    allcaps = my_config_string.upper()  # This line won't work with select(s).
+    print("My name is " + name + " with custom message: " + allcaps)
+```
+
+Instantiate the rule and macro:
+
+```python
+# myapp/BUILD
+
+load("//myapp:defs.bzl", "my_custom_bazel_rule")
+load("//myapp:defs.bzl", "my_custom_bazel_macro")
+
+my_custom_bazel_rule(
+    name = "happy_rule",
+    my_config_string = select({
+        "//third_party/bazel_platforms/cpu:x86_32": "first string",
+        "//third_party/bazel_platforms/cpu:ppc": "second string",
+    }),
+)
+
+my_custom_bazel_macro(
+    name = "happy_macro",
+    my_config_string = "fixed string",
+)
+
+my_custom_bazel_macro(
+    name = "sad_macro",
+    my_config_string = select({
+        "//third_party/bazel_platforms/cpu:x86_32": "first string",
+        "//third_party/bazel_platforms/cpu:ppc": "other string",
+    }),
+)
+```
+
+Building fails because `sad_macro` can't process the `select()`:
+
+```sh
+$ bazel build //myapp:all
+ERROR: /myworkspace/myapp/BUILD:17:1: Traceback
+  (most recent call last):
+File "/myworkspace/myapp/BUILD", line 17
+my_custom_bazel_macro(name = "sad_macro", my_config_stri..."}))
+File "/myworkspace/myapp/defs.bzl", line 4, in
+  my_custom_bazel_macro
+my_config_string.upper()
+type 'select' has no method upper().
+ERROR: error loading package 'myapp': Package 'myapp' contains errors.
+```
+
+Building succeeds when you comment out `sad_macro`:
+
+```sh
+# Comment out sad_macro so it doesn't mess up the build.
+$ bazel build //myapp:all
+DEBUG: /myworkspace/myapp/defs.bzl:5:3: My name is happy_macro with custom message: FIXED STRING.
+DEBUG: /myworkspace/myapp/hi.bzl:15:3: My name is happy_rule with custom message: FIRST STRING.
+```
+
+This is impossible to change because *by definition* macros are evaluated before
+Bazel reads the build's command line flags. That means there isn't enough
+information to evaluate select()s.
+
+Macros can, however, pass `select()`s as opaque blobs to rules:
+
+```python
+# myapp/defs.bzl
+
+def my_custom_bazel_macro(name, my_config_string):
+    print("Invoking macro " + name)
+    my_custom_bazel_rule(
+        name = name + "_as_target",
+        my_config_string = my_config_string,
+    )
+```
+
+```sh
+$ bazel build //myapp:sad_macro_less_sad
+DEBUG: /myworkspace/myapp/defs.bzl:23:3: Invoking macro sad_macro_less_sad.
+DEBUG: /myworkspace/myapp/defs.bzl:15:3: My name is sad_macro_less_sad with custom message: FIRST STRING.
+```
+
+### Why does select() always return true? {:#faq-boolean-select}
+
+Because *macros* (but not rules) by definition
+[can't evaluate `select()`s](#faq-select-macro), any attempt to do so
+usually produces an error:
+
+```sh
+ERROR: /myworkspace/myapp/BUILD:17:1: Traceback
+  (most recent call last):
+File "/myworkspace/myapp/BUILD", line 17
+my_custom_bazel_macro(name = "sad_macro", my_config_stri..."}))
+File "/myworkspace/myapp/defs.bzl", line 4, in
+  my_custom_bazel_macro
+my_config_string.upper()
+type 'select' has no method upper().
+```
+
+Booleans are a special case that fail silently, so you should be particularly
+vigilant with them:
+
+```sh
+$ cat myapp/defs.bzl
+def my_boolean_macro(boolval):
+  print("TRUE" if boolval else "FALSE")
+
+$ cat myapp/BUILD
+load("//myapp:defs.bzl", "my_boolean_macro")
+my_boolean_macro(
+    boolval = select({
+        "//third_party/bazel_platforms/cpu:x86_32": True,
+        "//third_party/bazel_platforms/cpu:ppc": False,
+    }),
+)
+
+$ bazel build //myapp:all --cpu=x86
+DEBUG: /myworkspace/myapp/defs.bzl:4:3: TRUE.
+$ bazel build //mypro:all --cpu=ppc
+DEBUG: /myworkspace/myapp/defs.bzl:4:3: TRUE.
+```
+
+This happens because macros don't understand the contents of `select()`.
+So what they're really evaluting is the `select()` object itself. According to
+[Pythonic](https://docs.python.org/release/2.5.2/lib/truth.html) design
+standards, all objects aside from a very small number of exceptions
+automatically return true.
+
+### Can I read select() like a dict? {:#faq-inspectable-select}
+
+Macros [can't](#faq-select-macro) evaluate select(s) because macros evaluate before
+Bazel knows what the build's command line parameters are. Can they at least read
+the `select()`'s dictionary to, for example, add a suffix to each value?
+
+Conceptually this is possible, but [it isn't yet a Bazel feature](https://github.com/bazelbuild/bazel/issues/8419).
+What you *can* do today is prepare a straight dictionary, then feed it into a
+`select()`:
+
+```sh
+$ cat myapp/defs.bzl
+def selecty_genrule(name, select_cmd):
+  for key in select_cmd.keys():
+    select_cmd[key] += " WITH SUFFIX"
+  native.genrule(
+      name = name,
+      outs = [name + ".out"],
+      srcs = [],
+      cmd = "echo " + select(select_cmd + {"//conditions:default": "default"})
+        + " > $@"
+  )
+
+$ cat myapp/BUILD
+selecty_genrule(
+    name = "selecty",
+    select_cmd = {
+        "//third_party/bazel_platforms/cpu:x86_32": "x86 mode",
+    },
+)
+
+$ bazel build //testapp:selecty --cpu=x86 && cat bazel-genfiles/testapp/selecty.out
+x86 mode WITH SUFFIX
+```
+
+If you'd like to support both `select()` and native types, you can do this:
+
+```sh
+$ cat myapp/defs.bzl
+def selecty_genrule(name, select_cmd):
+    cmd_suffix = ""
+    if type(select_cmd) == "string":
+        cmd_suffix = select_cmd + " WITH SUFFIX"
+    elif type(select_cmd) == "dict":
+        for key in select_cmd.keys():
+            select_cmd[key] += " WITH SUFFIX"
+        cmd_suffix = select(select_cmd + {"//conditions:default": "default"})
+
+    native.genrule(
+        name = name,
+        outs = [name + ".out"],
+        srcs = [],
+        cmd = "echo " + cmd_suffix + "> $@",
+    )
+```
+
+### Why doesn't select() work with bind()? {:#faq-select-bind}
+
+First of all, do not use `bind()`. It is deprecated in favor of `alias()`.
+
+The technical answer is that [`bind()`](/reference/be/workspace#bind) is a repo
+rule, not a BUILD rule.
+
+Repo rules do not have a specific configuration, and aren't evaluated in
+the same way as BUILD rules. Therefore, a `select()` in a `bind()` can't
+actually evaluate to any specific branch.
+
+Instead, you should use [`alias()`](/reference/be/general#alias), with a `select()` in
+the `actual` attribute, to perform this type of run-time determination. This
+works correctly, since `alias()` is a BUILD rule, and is evaluated with a
+specific configuration.
+
+You can even have a `bind()` target point to an `alias()`, if needed.
+
+```sh
+$ cat WORKSPACE
+workspace(name = "myapp")
+bind(name = "openssl", actual = "//:ssl")
+http_archive(name = "alternative", ...)
+http_archive(name = "boringssl", ...)
+
+$ cat BUILD
+config_setting(
+    name = "alt_ssl",
+    define_values = {
+        "ssl_library": "alternative",
+    },
+)
+
+alias(
+    name = "ssl",
+    actual = select({
+        "//:alt_ssl": "@alternative//:ssl",
+        "//conditions:default": "@boringssl//:ssl",
+    }),
+)
+```
+
+With this setup, you can pass `--define ssl_library=alternative`, and any target
+that depends on either `//:ssl` or `//external:ssl` will see the alternative
+located at `@alternative//:ssl`.
+
+But really, stop using `bind()`.
+
+### Why doesn't my select() choose what I expect? {:#faq-select-choose-condition}
+
+If `//myapp:foo` has a `select()` that doesn't choose the condition you expect,
+use [cquery](/query/cquery) and `bazel config` to debug:
+
+If `//myapp:foo` is the top-level target you're building, run:
+
+```sh
+$ bazel cquery //myapp:foo <desired build flags>
+//myapp:foo (12e23b9a2b534a)
+```
+
+If you're building some other target `//bar` that depends on
+//myapp:foo somewhere in its subgraph, run:
+
+```sh
+$ bazel cquery 'somepath(//bar, //myapp:foo)' <desired build flags>
+//bar:bar   (3ag3193fee94a2)
+//bar:intermediate_dep (12e23b9a2b534a)
+//myapp:foo (12e23b9a2b534a)
+```
+
+The `(12e23b9a2b534a)` next to `//myapp:foo` is a *hash* of the
+configuration that resolves `//myapp:foo`'s `select()`. You can inspect its
+values with `bazel config`:
+
+```sh
+$ bazel config 12e23b9a2b534a
+BuildConfigurationValue 12e23b9a2b534a
+Fragment com.google.devtools.build.lib.analysis.config.CoreOptions {
+  cpu: darwin
+  compilation_mode: fastbuild
+  ...
+}
+Fragment com.google.devtools.build.lib.rules.cpp.CppOptions {
+  linkopt: [-Dfoo=bar]
+  ...
+}
+...
+```
+
+Then compare this output against the settings expected by each `config_setting`.
+
+`//myapp:foo` may exist in different configurations in the same build. See the
+[cquery docs](/query/cquery) for guidance on using `somepath` to get the right
+one.
+
+Caution: To prevent restarting the Bazel server, invoke `bazel config` with the
+same command line flags as the `bazel cquery`. The `config` command relies on
+the configuration nodes from the still-running server of the previous command.
+
+### Why doesn't `select()` work with platforms? {:#faq-select-platforms}
+
+Bazel doesn't support configurable attributes checking whether a given platform
+is the target platform because the semantics are unclear.
+
+For example:
+
+```py
+platform(
+    name = "x86_linux_platform",
+    constraint_values = [
+        "@platforms//cpu:x86",
+        "@platforms//os:linux",
+    ],
+)
+
+cc_library(
+    name = "lib",
+    srcs = [...],
+    linkopts = select({
+        ":x86_linux_platform": ["--enable_x86_optimizations"],
+        "//conditions:default": [],
+    }),
+)
+```
+
+In this `BUILD` file, which `select()` should be used if the target platform has both the
+`@platforms//cpu:x86` and `@platforms//os:linux` constraints, but is **not** the
+`:x86_linux_platform` defined here? The author of the `BUILD` file and the user
+who defined the separate platform may have different ideas.
+
+#### What should I do instead?
+
+Instead, define a `config_setting` that matches **any** platform with
+these constraints:
+
+```py
+config_setting(
+    name = "is_x86_linux",
+    constraint_values = [
+        "@platforms//cpu:x86",
+        "@platforms//os:linux",
+    ],
+)
+
+cc_library(
+    name = "lib",
+    srcs = [...],
+    linkopts = select({
+        ":is_x86_linux": ["--enable_x86_optimizations"],
+        "//conditions:default": [],
+    }),
+)
+```
+
+This process defines specific semantics, making it clearer to users what
+platforms meet the desired conditions.
+
+#### What if I really, really want to `select` on the platform?
+
+If your build requirements specifically require checking the platform, you
+can flip the value of the `--platforms` flag in a `config_setting`:
+
+```py
+config_setting(
+    name = "is_specific_x86_linux_platform",
+    values = {
+        "platforms": ["//package:x86_linux_platform"],
+    },
+)
+
+cc_library(
+    name = "lib",
+    srcs = [...],
+    linkopts = select({
+        ":is_specific_x86_linux_platform": ["--enable_x86_optimizations"],
+        "//conditions:default": [],
+    }),
+)
+```
+
+The Bazel team doesn't endorse doing this; it overly constrains your build and
+confuses users when the expected condition does not match.
+
+[BuildSettings]: /extending/config#user-defined-build-settings
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# bazel mobile-install
+
+{% include "_buttons.html" %}
+
+<p class="lead">Fast iterative development for Android</p>
+
+This page describes how `bazel mobile-install` makes iterative development
+for Android much faster. It describes the benefits of this approach versus the
+challenges of the traditional app install method.
+
+## Summary {:#summary}
+
+To install small changes to an Android app very quickly, do the following:
+
+ 1. Find the `android_binary` rule of the app you want to install.
+ 2. Disable Proguard by removing the `proguard_specs` attribute.
+ 3. Set the `multidex` attribute to `native`.
+ 4. Set the `dex_shards` attribute to `10`.
+ 5. Connect your device running ART (not Dalvik) over USB and enable USB
+    debugging on it.
+ 6. Run `bazel mobile-install :your_target`. App startup will be a little
+    slower than usual.
+ 7. Edit the code or Android resources.
+ 8. Run `bazel mobile-install --incremental :your_target`.
+ 9. Enjoy not having to wait a lot.
+
+Some command line options to Bazel that may be useful:
+
+ - `--adb` tells Bazel which adb binary to use
+ - `--adb_arg` can be used to  add extra arguments to the command line of `adb`.
+   One useful application of this is to select which device you want to install
+   to if you have multiple devices connected to your workstation:
+   `bazel mobile-install --adb_arg=-s --adb_arg=<SERIAL> :your_target`
+ - `--start_app` automatically starts the app
+
+When in doubt, look at the
+[example](https://github.com/bazelbuild/bazel/tree/master/examples/android){: .external}
+or [contact us](https://groups.google.com/forum/#!forum/bazel-discuss){: .external}.
+
+## Introduction {:#introduction}
+
+One of the most important attributes of a developer's toolchain is speed: there
+is a world of difference between changing the code and seeing it run within a
+second and having to wait minutes, sometimes hours, before you get any feedback
+on whether your changes do what you expect them to.
+
+Unfortunately, the traditional Android toolchain for building an .apk entails
+many monolithic, sequential steps and all of these have to be done in order to
+build an Android app. At Google, waiting five minutes to build a single-line
+change was not unusual on larger projects like Google Maps.
+
+`bazel mobile-install` makes iterative development for Android much faster by
+using a combination of change pruning, work sharding, and clever manipulation of
+Android internals, all without changing any of your app's code.
+
+## Problems with traditional app installation {:#problems-app-install}
+
+Building an Android app has some issues, including:
+
+- Dexing. By default, "dx" is invoked exactly once in the build and it does not
+know how to reuse work from previous builds: it dexes every method again, even
+though only one method was changed.
+
+- Uploading data to the device. adb does not use the full bandwidth of a USB 2.0
+connection, and larger apps can take a lot of time to upload. The entire app is
+uploaded, even if only small parts have changed, for example, a resource or a
+single method, so this can be a major bottleneck.
+
+- Compilation to native code. Android L introduced ART, a new Android runtime,
+which compiles apps ahead-of-time rather than compiling them just-in-time like
+Dalvik. This makes apps much faster at the cost of longer installation
+time. This is a good tradeoff for users because they typically install an app
+once and use it many times, but results in slower development where an app is
+installed many times and each version is run at most a handful of times.
+
+## The approach of `bazel mobile-install` {:#approach-mobile-install}
+
+`bazel mobile-install `makes the following improvements:
+
+ - Sharded dexing. After building the app's Java code, Bazel shards the class
+   files into approximately equal-sized parts and invokes `dx` separately on
+   them. `dx` is not invoked on shards that did not change since the last build.
+
+ - Incremental file transfer. Android resources, .dex files, and native
+   libraries are removed from the main .apk and are stored in under a separate
+   mobile-install directory. This makes it possible to update code and Android
+   resources independently without reinstalling the whole app. Thus,
+   transferring the files takes less time and only the .dex files that have
+   changed are recompiled on-device.
+
+ - Loading parts of the app from outside the .apk. A tiny stub application is
+   put into the .apk that loads Android resources, Java code and native code
+   from the on-device mobile-install directory, then transfers control to the
+   actual app. This is all transparent to the app, except in a few corner cases
+   described below.
+
+### Sharded Dexing {:#sharded-dexing}
+
+Sharded dexing is reasonably straightforward: once the .jar files are built, a
+[tool](https://github.com/bazelbuild/bazel/blob/master/src/tools/android/java/com/google/devtools/build/android/ziputils/DexMapper.java){: .external}
+shards them into separate .jar files of approximately equal size, then invokes
+`dx` on those that were changed since the previous build. The logic that
+determines which shards to dex is not specific to Android: it just uses the
+general change pruning algorithm of Bazel.
+
+The first version of the sharding algorithm simply ordered the .class files
+alphabetically, then cut the list up into equal-sized parts, but this proved to
+be suboptimal: if a class was added or removed (even a nested or an anonymous
+one), it would cause all the classes alphabetically after it to shift by one,
+resulting in dexing those shards again. Thus, it was decided to shard Java
+packages rather than individual classes. Of course, this still results in
+dexing many shards if a new package is added or removed, but that is much less
+frequent than adding or removing a single class.
+
+The number of shards is controlled by the BUILD file (using the
+`android_binary.dex_shards` attribute). In an ideal world, Bazel would
+automatically determine how many shards are best, but Bazel currently must know
+the set of actions (for example, commands to be executed during the build) before
+executing any of them, so it cannot determine the optimal number of shards
+because it doesn't know how many Java classes there will eventually be in the
+app. Generally speaking, the more shards, the faster the build and the
+installation will be, but the slower app startup becomes, because the dynamic
+linker has to do more work. The sweet spot is usually between 10 and 50 shards.
+
+### Incremental file transfer {:#incremental-file-transfer}
+
+After building the app, the next step is to install it, preferably with the
+least effort possible. Installation consists of the following steps:
+
+ 1. Installing the .apk (typically using `adb install`)
+ 2. Uploading the .dex files, Android resources, and native libraries to the
+    mobile-install directory
+
+There is not much incrementality in the first step: the app is either installed
+or not. Bazel currently relies on the user to indicate if it should do this step
+through the `--incremental` command line option because it cannot determine in
+all cases if it is necessary.
+
+In the second step, the app's files from the build are compared to an on-device
+manifest file that lists which app files are on the device and their
+checksums. Any new files are uploaded to the device, any files that have changed
+are updated, and any files that have been removed are deleted from the
+device. If the manifest is not present, it is assumed that every file needs to
+be uploaded.
+
+Note that it is possible to fool the incremental installation algorithm by
+changing a file on the device, but not its checksum in the manifest. This could
+have been safeguarded against by computing the checksum of the files on the
+device, but this was deemed to be not worth the increase in installation time.
+
+### The Stub application {:#stub-app}
+
+The stub application is where the magic to load the dexes, native code and
+Android resources from the on-device `mobile-install` directory happens.
+
+The actual loading is implemented by subclassing `BaseDexClassLoader` and is a
+reasonably well-documented technique. This happens before any of the app's
+classes are loaded, so that any application classes that are in the apk can be
+placed in the on-device `mobile-install` directory so that they can be updated
+without `adb install`.
+
+This needs to happen before any of the
+classes of the app are loaded, so that no application class needs to be in the
+.apk which would mean that changes to those classes would require a full
+re-install.
+
+This is accomplished by replacing the `Application` class specified in
+`AndroidManifest.xml` with the
+[stub application](https://github.com/bazelbuild/bazel/blob/master/src/tools/android/java/com/google/devtools/build/android/incrementaldeployment/StubApplication.java){: .external}. This
+takes control when the app is started, and tweaks the class loader and the
+resource manager appropriately at the earliest moment (its constructor) using
+Java reflection on the internals of the Android framework.
+
+Another thing the stub application does is to copy the native libraries
+installed by mobile-install to another location. This is necessary because the
+dynamic linker needs the `X` bit to be set on the files, which is not possible to
+do for any location accessible by a non-root `adb`.
+
+Once all these things are done, the stub application then instantiates the
+actual `Application` class, changing all references to itself to the actual
+application within the Android framework.
+
+## Results {:#results}
+
+### Performance {:#performance}
+
+In general, `bazel mobile-install` results in a 4x to 10x speedup of building
+and installing large apps after a small change.
+
+The following numbers were computed for a few Google products:
+
+<img src="/docs/images/mobile-install-performance.svg"/>
+
+This, of course, depends on the nature of the change: recompilation after
+changing a base library takes more time.
+
+### Limitations {:#limitations}
+
+The tricks the stub application plays don't work in every case.
+The following cases highlight where it does not work as expected:
+
+ - When `Context` is cast to the `Application` class in
+   `ContentProvider#onCreate()`. This method is called during application
+   startup before we have a chance to replace the instance of the `Application`
+   class, therefore, `ContentProvider` will still reference the stub application
+   instead of the real one. Arguably, this is not a bug since you are not
+   supposed to downcast `Context` like this, but this seems to happen in a few
+   apps at Google.
+
+ - Resources installed by `bazel mobile-install` are only available from within
+   the app. If resources are accessed by other apps via
+   `PackageManager#getApplicationResources()`, these resources will be from the
+   last non-incremental install.
+
+ - Devices that aren't running ART. While the stub application works well on
+   Froyo and later, Dalvik has a bug that makes it think that the app is
+   incorrect if its code is distributed over multiple .dex files in certain
+   cases, for example, when Java annotations are used in a
+   [specific](https://code.google.com/p/android/issues/detail?id=78144){: .external}
+   way. As long as your app doesn't tickle these bugs, it should work with Dalvik,
+   too (note, however, that support for old Android versions isn't exactly our
+   focus)
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# Using the Android Native Development Kit with Bazel
+
+{% include "_buttons.html" %}
+
+_If you're new to Bazel, please start with the [Building Android with
+Bazel](/start/android-app ) tutorial._
+
+## Overview {:#overview}
+
+Bazel can run in many different build configurations, including several that use
+the Android Native Development Kit (NDK) toolchain. This means that normal
+`cc_library` and `cc_binary` rules can be compiled for Android directly within
+Bazel. Bazel accomplishes this by using the `android_ndk_repository` repository
+rule.
+
+## Prerequisites {:#prerequisites}
+
+Please ensure that you have installed the Android SDK and NDK.
+
+To set up the SDK and NDK, add the following snippet to your `WORKSPACE`:
+
+```python
+android_sdk_repository(
+    name = "androidsdk", # Required. Name *must* be "androidsdk".
+    path = "/path/to/sdk", # Optional. Can be omitted if `ANDROID_HOME` environment variable is set.
+)
+
+android_ndk_repository(
+    name = "androidndk", # Required. Name *must* be "androidndk".
+    path = "/path/to/ndk", # Optional. Can be omitted if `ANDROID_NDK_HOME` environment variable is set.
+)
+```
+
+For more information about the `android_ndk_repository` rule, see the [Build
+Encyclopedia entry](/reference/be/android#android_ndk_repository).
+
+If you're using a recent version of the Android NDK (r22 and beyond), use the
+Starlark implementation of `android_ndk_repository`.
+Follow the instructions in
+[its README](https://github.com/bazelbuild/rules_android_ndk).
+
+## Quick start {:#quick-start}
+
+To build C++ for Android, simply add `cc_library` dependencies to your
+`android_binary` or `android_library` rules.
+
+For example, given the following `BUILD` file for an Android app:
+
+```python
+# In <project>/app/src/main/BUILD.bazel
+
+cc_library(
+    name = "jni_lib",
+    srcs = ["cpp/native-lib.cpp"],
+)
+
+android_library(
+    name = "lib",
+    srcs = ["java/com/example/android/bazel/MainActivity.java"],
+    resource_files = glob(["res/**/*"]),
+    custom_package = "com.example.android.bazel",
+    manifest = "LibraryManifest.xml",
+    deps = [":jni_lib"],
+)
+
+android_binary(
+    name = "app",
+    deps = [":lib"],
+    manifest = "AndroidManifest.xml",
+)
+```
+
+This `BUILD` file results in the following target graph:
+
+![Example results](/docs/images/android_ndk.png "Build graph results")
+
+**Figure 1.** Build graph of Android project with cc_library dependencies.
+
+To build the app, simply run:
+
+```posix-terminal
+bazel build //app/src/main:app
+```
+
+The `bazel build` command compiles the Java files, Android resource files, and
+`cc_library` rules, and packages everything into an APK:
+
+```posix-terminal
+$ zipinfo -1 bazel-bin/app/src/main/app.apk
+nativedeps
+lib/armeabi-v7a/libapp.so
+classes.dex
+AndroidManifest.xml
+...
+res/...
+...
+META-INF/CERT.SF
+META-INF/CERT.RSA
+META-INF/MANIFEST.MF
+```
+
+Bazel compiles all of the cc_libraries into a single shared object (`.so`) file,
+targeted for the `armeabi-v7a` ABI by default. To change this or build for
+multiple ABIs at the same time, see the section on [configuring the target
+ABI](#configuring-target-abi).
+
+## Example setup {:#example-setup}
+
+This example is available in the [Bazel examples
+repository](https://github.com/bazelbuild/examples/tree/master/android/ndk){: .external}.
+
+In the `BUILD.bazel` file, three targets are defined with the `android_binary`,
+`android_library`, and `cc_library` rules.
+
+The `android_binary` top-level target builds the APK.
+
+The `cc_library` target contains a single C++ source file with a JNI function
+implementation:
+
+```c++
+#include <jni.h>
+#include <string>
+
+extern "C"
+JNIEXPORT jstring
+
+JNICALL
+Java_com_example_android_bazel_MainActivity_stringFromJNI(
+        JNIEnv *env,
+        jobject /* this */) {
+    std::string hello = "Hello from C++";
+    return env->NewStringUTF(hello.c_str());
+}
+```
+
+The `android_library` target specifies the Java sources, resource files, and the
+dependency on a `cc_library` target. For this example, `MainActivity.java` loads
+the shared object file `libapp.so`, and defines the method signature for the JNI
+function:
+
+```java
+public class MainActivity extends AppCompatActivity {
+
+    static {
+        System.loadLibrary("app");
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+       // ...
+    }
+
+    public native String stringFromJNI();
+
+}
+```
+
+Note: The name of the native library is derived from the name of the top
+level `android_binary` target. In this example, it is `app`.
+
+## Configuring the target ABI {:#configuring-target-abi}
+
+To configure the target ABI, use the `--android_platforms` flag as follows:
+
+```posix-terminal
+bazel build //:app --android_platforms={{ "<var>" }}comma-separated list of platforms{{ "</var>" }}
+```
+
+Just like the `--platforms` flag, the values passed to `--android_platforms` are
+the labels of [`platform`](https://bazel.build/reference/be/platforms-and-toolchains#platform)
+targets, using standard constraint values to describe your device.
+
+For example, for an Android device with a 64-bit ARM processor, you'd define
+your platform like this:
+
+```py
+platform(
+    name = "android_arm64",
+    constraint_values = [
+        "@platforms//os:android",
+        "@platforms//cpu:arm64",
+    ],
+)
+```
+
+Every Android `platform` should use the [`@platforms//os:android`](https://github.com/bazelbuild/platforms/blob/33a3b209f94856193266871b1545054afb90bb28/os/BUILD#L36)
+OS constraint. To migrate the CPU constraint, check this chart:
+
+CPU Value     | Platform
+------------- | ------------------------------------------
+`armeabi-v7a` | `@platforms//cpu:armv7`
+`arm64-v8a`   | `@platforms//cpu:arm64`
+`x86`         | `@platforms//cpu:x86_32`
+`x86_64`      | `@platforms//cpu:x86_64`
+
+And, of course, for a multi-architecture APK, you pass multiple labels, for
+example: `--android_platforms=//:arm64,//:x86_64` (assuming you defined those in
+your top-level `BUILD.bazel` file).
+
+Bazel is unable to select a default Android platform, so one must be defined and
+specified with `--android_platforms`.
+
+Depending on the NDK revision and Android API level, the following ABIs are
+available:
+
+| NDK revision | ABIs                                                        |
+|--------------|-------------------------------------------------------------|
+| 16 and lower | armeabi, armeabi-v7a, arm64-v8a, mips, mips64, x86, x86\_64 |
+| 17 and above | armeabi-v7a, arm64-v8a, x86, x86\_64                        |
+
+See [the NDK docs](https://developer.android.com/ndk/guides/abis.html){: .external}
+for more information on these ABIs.
+
+Multi-ABI Fat APKs are not recommended for release builds since they increase
+the size of the APK, but can be useful for development and QA builds.
+
+## Selecting a C++ standard {:#selecting-c-standard}
+
+Use the following flags to build according to a C++ standard:
+
+| C++ Standard | Flag                    |
+|--------------|-------------------------|
+| C++98        | Default, no flag needed |
+| C++11        | `--cxxopt=-std=c++11`   |
+| C++14        | `--cxxopt=-std=c++14`   |
+| C++17        | `--cxxopt=-std=c++17`   |
+
+For example:
+
+```posix-terminal
+bazel build //:app --cxxopt=-std=c++11
+```
+
+Read more about passing compiler and linker flags with `--cxxopt`, `--copt`, and
+`--linkopt` in the [User Manual](/docs/user-manual#cxxopt).
+
+Compiler and linker flags can also be specified as attributes in `cc_library`
+using `copts` and `linkopts`. For example:
+
+```python
+cc_library(
+    name = "jni_lib",
+    srcs = ["cpp/native-lib.cpp"],
+    copts = ["-std=c++11"],
+    linkopts = ["-ldl"], # link against libdl
+)
+```
+
+## Building a `cc_library` for Android without using `android_binary` {:#cclibrary-android}
+
+To build a standalone `cc_binary` or `cc_library` for Android without using an
+`android_binary`, use the `--platforms` flag.
+
+For example, assuming you have defined Android platforms in
+`my/platforms/BUILD`:
+
+```posix-terminal
+bazel build //my/cc/jni:target \
+      --platforms=//my/platforms:x86_64
+```
+
+With this approach, the entire build tree is affected.
+
+Note: All of the targets on the command line must be compatible with
+building for Android when specifying these flags, which may make it difficult to
+use [Bazel wild-cards](/run/build#specifying-build-targets) like
+`/...` and `:all`.
+
+These flags can be put into a `bazelrc` config (one for each ABI), in
+`{{ "<var>" }}project{{ "</var>" }}/.bazelrc`:
+
+```
+common:android_x86 --platforms=//my/platforms:x86
+
+common:android_armeabi-v7a --platforms=//my/platforms:armeabi-v7a
+
+# In general
+common:android_<abi> --platforms=//my/platforms:<abi>
+```
+
+Then, to build a `cc_library` for `x86` for example, run:
+
+```posix-terminal
+bazel build //my/cc/jni:target --config=android_x86
+```
+
+In general, use this method for low-level targets (like `cc_library`) or when
+you know exactly what you're building; rely on the automatic configuration
+transitions from `android_binary` for high-level targets where you're expecting
+to build a lot of targets you don't control.
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# Android and Bazel
+
+{% include "_buttons.html" %}
+
+This page contains resources that help you use Bazel with Android projects. It
+links to a tutorial, build rules, and other information specific to building
+Android projects with Bazel.
+
+## Getting started {:#getting-started}
+
+The following resources will help you work with Bazel on Android projects:
+
+*  [Tutorial: Building an Android app](/start/android-app ). This
+   tutorial is a good place to start learning about Bazel commands and concepts,
+   and how to build Android apps with Bazel.
+*  [Codelab: Building Android Apps with Bazel](https://developer.android.com/codelabs/bazel-android-intro#0){: .external}.
+   This codelab explains how to build Android apps with Bazel.
+
+## Features {:#features}
+
+Bazel has Android rules for building and testing Android apps, integrating with
+the SDK/NDK, and creating emulator images. There are also Bazel plugins for
+Android Studio and IntelliJ.
+
+*  [Android rules](/reference/be/android). The Build Encyclopedia describes the rules
+   for building and testing Android apps with Bazel.
+*  [Integration with Android Studio](/install/ide). Bazel is compatible with
+   Android Studio using the [Android Studio with Bazel](https://ij.bazel.build/)
+   plugin.
+*  [`mobile-install` for Android](/docs/mobile-install). Bazel's `mobile-install`
+   feature provides automated build-and-deploy functionality for building and
+   testing Android apps directly on Android devices and emulators.
+*  [Android instrumentation testing](/docs/android-instrumentation-test) on
+   emulators and devices.
+*  [Android NDK integration](/docs/android-ndk). Bazel supports compiling to
+   native code through direct NDK integration and the C++ rules.
+*  [Android build performance](/docs/android-build-performance). This page
+   provides information on optimizing build performance for Android apps.
+
+## Further reading {:#further-reading}
+
+*  Integrating with dependencies from Google Maven and Maven Central with [rules_jvm_external](https://github.com/bazelbuild/rules_jvm_external){: .external}.
+*  Learn [How Android Builds Work in Bazel](https://blog.bazel.build/2018/02/14/how-android-builds-work-in-bazel.html).
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# C++ Toolchain Configuration
+
+{% include "_buttons.html" %}
+
+## Overview {:#overview}
+
+To invoke the compiler with the right options, Bazel needs some knowledge about
+the compiler internals, such as include directories and important flags.
+In other words, Bazel needs a simplified model of the compiler to understand its
+workings.
+
+Bazel needs to know the following:
+
+* Whether the compiler supports thinLTO, modules, dynamic linking, or PIC
+  (position independent code).
+* Paths to the required tools such as gcc, ld, ar, objcopy, and so on.
+* The built-in system include directories. Bazel needs these to validate that
+  all headers that were included in the source file were properly declared in
+  the `BUILD` file.
+* The default sysroot.
+* Which flags to use for compilation, linking, archiving.
+* Which flags to use for the supported compilation modes (opt, dbg, fastbuild).
+* Make variables specifically required by the compiler.
+
+If the compiler has support for multiple architectures, Bazel needs to configure
+them separately.
+
+[`CcToolchainConfigInfo`](/rules/lib/providers/CcToolchainConfigInfo) is a provider that provides the necessary level of
+granularity for configuring the behavior of Bazel's C++ rules. By default,
+Bazel automatically configures `CcToolchainConfigInfo` for your build, but you
+have the option to configure it manually. For that, you need a Starlark rule
+that provides the `CcToolchainConfigInfo` and you need to point the
+[`toolchain_config`](/reference/be/c-cpp#cc_toolchain.toolchain_config) attribute of the
+[`cc_toolchain`](/reference/be/c-cpp#cc_toolchain) to your rule.
+You can create the `CcToolchainConfigInfo` by calling
+[`cc_common.create_cc_toolchain_config_info()`](/rules/lib/toplevel/cc_common#create_cc_toolchain_config_info).
+You can find Starlark constructors for all structs you'll need in the process in
+[`@rules_cc//cc:cc_toolchain_config_lib.bzl`](https://github.com/bazelbuild/rules_cc/blob/master/cc/cc_toolchain_config_lib.bzl){: .external}.
+
+
+When a C++ target enters the analysis phase, Bazel selects the appropriate
+`cc_toolchain` target based on the `BUILD` file, and obtains the
+`CcToolchainConfigInfo` provider from the target specified in the
+`cc_toolchain.toolchain_config` attribute. The `cc_toolchain` target
+passes this information to the C++ target through a `CcToolchainProvider`.
+
+For example, a compile or link action, instantiated by a rule such as
+`cc_binary` or `cc_library`, needs the following information:
+
+*   The compiler or linker to use
+*   Command-line flags for the compiler/linker
+*   Configuration flags passed through the `--copt/--linkopt` options
+*   Environment variables
+*   Artifacts needed in the sandbox in which the action executes
+
+All of the above information except the artifacts required in the sandbox is
+specified in the Starlark target that the `cc_toolchain` points to.
+
+The artifacts to be shipped to the sandbox are declared in the `cc_toolchain`
+target. For example, with the `cc_toolchain.linker_files` attribute you can
+specify the linker binary and toolchain libraries to ship into the sandbox.
+
+## Toolchain selection {:#toolchain-selection}
+
+The toolchain selection logic operates as follows:
+
+1.  User specifies a `cc_toolchain_suite` target in the `BUILD` file and points
+    Bazel to the target using the
+    [`--crosstool_top` option](/docs/user-manual#flag--crosstool_top).
+
+2.  The `cc_toolchain_suite` target references multiple toolchains. The
+    values of the `--cpu` and `--compiler` flags determine which of those
+    toolchains is selected, either based only on the `--cpu` flag value, or
+    based on a joint `--cpu | --compiler` value. The selection process is as
+    follows:
+
+  * If the `--compiler` option is specified, Bazel selects the
+        corresponding entry from the `cc_toolchain_suite.toolchains`
+        attribute with `--cpu | --compiler`. If Bazel does not find
+        a corresponding entry, it throws an error.
+
+  * If the `--compiler` option is not specified, Bazel selects
+    the corresponding entry from the `cc_toolchain_suite.toolchains`
+    attribute with just `--cpu`.
+
+  * If no flags are specified, Bazel inspects the host system and selects a
+    `--cpu` value based on its findings. See the
+    [inspection mechanism code](https://source.bazel.build/bazel/+/1b73bc37e184e71651eb631223dcce321ba16211:src/main/java/com/google/devtools/build/lib/analysis/config/AutoCpuConverter.java).
+
+Once a toolchain has been selected, corresponding `feature` and `action_config`
+objects in the Starlark rule govern the configuration of the build (that is,
+items described later). These messages allow the implementation of
+fully fledged C++ features in Bazel without modifying the
+Bazel binary. C++ rules support multiple unique actions documented in detail
+[in the Bazel source code](https://source.bazel.build/bazel/+/4f547a7ea86df80e4c76145ffdbb0c8b75ba3afa:tools/build_defs/cc/action_names.bzl).
+
+## Features {:#features}
+
+A feature is an entity that requires command-line flags, actions,
+constraints on the execution environment, or dependency alterations. A feature
+can be something as simple as allowing `BUILD` files to select configurations of
+flags, such as `treat_warnings_as_errors`, or interact with the C++ rules and
+include new compile actions and inputs to the compilation, such as
+`header_modules` or `thin_lto`.
+
+Ideally, `CcToolchainConfigInfo` contains a list of features, where each
+feature consists of one or more flag groups, each defining a list of flags
+that apply to specific Bazel actions.
+
+A feature is specified by name, which allows full decoupling of the Starlark
+rule configuration from Bazel releases. In other words, a Bazel release does not
+affect the behavior of `CcToolchainConfigInfo` configurations as long as those
+configurations do not require the use of new features.
+
+A feature is enabled in one of the following ways:
+
+*  The feature's `enabled` field is set to `true`.
+*  Bazel or the rule owner explicitly enable it.
+*  The user enables it through the `--feature` Bazel option or `features` rule
+   attribute.
+
+Features can have interdependencies, depend on command line flags, `BUILD` file
+settings, and other variables.
+
+### Feature relationships {:#feature-relationships}
+
+Dependencies are typically managed directly with Bazel, which simply enforces
+the requirements and manages conflicts intrinsic to the nature of the features
+defined in the build. The toolchain specification allows for more granular
+constraints for use directly within the Starlark rule that govern feature
+support and expansion. These are:
+
+<table>
+  <col width="300">
+  <col width="600">
+  <tr>
+   <td><strong>Constraint</strong>
+   </td>
+   <td><strong>Description</strong>
+   </td>
+  </tr>
+  <tr>
+   <td><pre>requires = [
+   feature_set (features = [
+       'feature-name-1',
+       'feature-name-2'
+   ]),
+]</pre>
+   </td>
+   <td>Feature-level. The feature is supported only if the specified required
+       features are enabled. For example, when a feature is only supported in
+       certain build modes (<code>opt</code>, <code>dbg</code>, or
+       <code>fastbuild</code>). If `requires` contains multiple `feature_set`s
+       the feature is supported if any of the `feature_set`s is satisfied
+       (when all specified features are enabled).
+   </td>
+  </tr>
+  <tr>
+   <td><pre>implies = ['feature']</pre>
+   </td>
+   <td><p>Feature-level. This feature implies the specified feature(s).
+       Enabling a feature also implicitly enables all features implied by it
+       (that is, it functions recursively).</p>
+       <p>Also provides the ability to factor common subsets of functionality out of
+       a set of features, such as the common parts of sanitizers. Implied
+       features cannot be disabled.</p>
+   </td>
+  </tr>
+  <tr>
+   <td><pre>provides = ['feature']</pre>
+   </td>
+   <td><p>Feature-level. Indicates that this feature is one of several mutually
+       exclusive alternate features. For example, all of the sanitizers could
+       specify <code>provides = ["sanitizer"]</code>.</p>
+       <p>This improves error handling by listing the alternatives if the user asks
+       for two or more mutually exclusive features at once.</p>
+   </td>
+  </tr>
+  <tr>
+   <td><pre>with_features = [
+  with_feature_set(
+    features = ['feature-1'],
+    not_features = ['feature-2'],
+  ),
+]</pre>
+   </td>
+   <td>Flag set-level. A feature can specify multiple flag sets with multiple.
+     When <code>with_features</code> is specified, the flag set will only expand
+     to the build command if there is at least one <code>with_feature_set</code>
+     for which all of the features in the specified <code>features</code> set
+     are enabled, and all the features specified in <code>not_features</code>
+     set are disabled.
+     If <code>with_features</code> is not specified, the flag set will be
+     applied unconditionally for every action specified.
+   </td>
+  </tr>
+</table>
+
+## Actions {:#actions}
+
+Actions provide the flexibility to modify the circumstances under
+which an action executes without assuming how the action will be run. An
+`action_config` specifies the tool binary that an action invokes, while a
+`feature` specifies the configuration (flags) that determine how that tool
+behaves when the action is invoked.
+
+[Features](#features) reference actions to signal which Bazel actions
+they affect since actions can modify the Bazel action graph. The
+`CcToolchainConfigInfo` provider contains actions that have flags and tools
+associated with them, such as `c++-compile`. Flags are assigned to each action
+by associating them with a feature.
+
+Each action name represents a single type of action performed by Bazel, such as
+compiling or linking. There is, however, a many-to-one relationship between
+actions and Bazel action types, where a Bazel action type refers to a Java class
+that implements an action (such as `CppCompileAction`). In particular, the
+"assembler actions" and "compiler actions" in the table below are
+`CppCompileAction`, while the link actions are `CppLinkAction`.
+
+### Assembler actions {:#assembler-actions}
+
+<table>
+  <col width="300">
+  <col width="600">
+  <tr>
+   <td><strong>Action</strong>
+   </td>
+   <td><strong>Description</strong>
+   </td>
+  </tr>
+  <tr>
+   <td><code>preprocess-assemble</code>
+   </td>
+   <td>Assemble with preprocessing. Typically for <code>.S</code> files.
+   </td>
+  </tr>
+  <tr>
+   <td><code>assemble</code>
+   </td>
+   <td>Assemble without preprocessing. Typically for <code>.s</code> files.
+   </td>
+  </tr>
+</table>
+
+### Compiler actions {:#compiler-actions}
+
+<table>
+  <col width="300">
+  <col width="600">
+  <tr>
+   <td><strong>Action</strong>
+   </td>
+   <td><strong>Description</strong>
+   </td>
+  </tr>
+  <tr>
+   <td><code>cc-flags-make-variable</code>
+   </td>
+   <td>Propagates <code>CC_FLAGS</code> to genrules.
+   </td>
+  </tr>
+  <tr>
+   <td><code>c-compile</code>
+   </td>
+   <td>Compile as C.
+   </td>
+  </tr>
+  <tr>
+   <td><code>c++-compile</code>
+   </td>
+   <td>Compile as C++.
+   </td>
+  </tr>
+  <tr>
+   <td><code>c++-header-parsing</code>
+   </td>
+   <td>Run the compiler's parser on a header file to ensure that the header is
+     self-contained, as it will otherwise produce compilation errors. Applies
+     only to toolchains that support modules.
+   </td>
+  </tr>
+</table>
+
+### Link actions {:#link-actions}
+
+<table>
+  <col width="300">
+  <col width="600">
+  <tr>
+   <td><strong>Action</strong>
+   </td>
+   <td><strong>Description</strong>
+   </td>
+  </tr>
+  <tr>
+   <td><code>c++-link-dynamic-library</code>
+   </td>
+   <td>Link a shared library containing all of its dependencies.
+   </td>
+  </tr>
+  <tr>
+   <td><code>c++-link-nodeps-dynamic-library</code>
+   </td>
+   <td>Link a shared library only containing <code>cc_library</code> sources.
+   </td>
+  </tr>
+  <tr>
+   <td><code>c++-link-executable</code>
+   </td>
+   <td>Link a final ready-to-run library.
+   </td>
+  </tr>
+</table>
+
+### AR actions {:#ar-actions}
+
+AR actions assemble object files into archive libraries (`.a` files) via `ar`
+and encode some semantics into the name.
+
+<table>
+  <col width="300">
+  <col width="600">
+  <tr>
+   <td><strong>Action</strong>
+   </td>
+   <td><strong>Description</strong>
+   </td>
+  </tr>
+  <tr>
+   <td><code>c++-link-static-library</code>
+   </td>
+   <td>Create a static library (archive).
+   </td>
+  </tr>
+</table>
+
+### LTO actions {:#lto-actions}
+
+<table>
+  <col width="300">
+  <col width="600">
+  <tr>
+   <td><strong>Action</strong>
+   </td>
+   <td><strong>Description</strong>
+   </td>
+  </tr>
+  <tr>
+   <td><code>lto-backend</code>
+   </td>
+   <td>ThinLTO action compiling bitcodes into native objects.
+   </td>
+  </tr>
+  <tr>
+   <td><code>lto-index</code>
+   </td>
+   <td>ThinLTO action generating global index.
+   </td>
+  </tr>
+</table>
+
+## Using action_config {:#using-action-config}
+
+The `action_config` is a Starlark struct that describes a Bazel
+action by specifying the tool (binary) to invoke during the action and sets of
+flags, defined by features. These flags apply constraints to the action's
+execution.
+
+The `action_config()` constructor has the following parameters:
+
+<table>
+  <col width="300">
+  <col width="600">
+  <tr>
+   <td><strong>Attribute</strong>
+   </td>
+   <td><strong>Description</strong>
+   </td>
+  </tr>
+  <tr>
+   <td><code>action_name</code>
+   </td>
+    <td>The Bazel action to which this action corresponds.
+        Bazel uses this attribute to discover per-action tool and execution
+        requirements.
+   </td>
+  </tr>
+  <tr>
+   <td><code>tools</code>
+   </td>
+   <td>The executable to invoke. The tool applied to the action will be the
+       first tool in the list with a feature set that matches the feature
+       configuration. Default value must be provided.
+   </td>
+  </tr>
+  <tr>
+   <td><code>flag_sets</code>
+   </td>
+   <td>A list of flags that applies to a group of actions. Same as for a
+       feature.
+   </td>
+  </tr>
+  <tr>
+   <td><code>env_sets</code>
+   </td>
+   <td>A list of environment constraints that applies to a group of actions.
+       Same as for a feature.
+   </td>
+  </tr>
+</table>
+
+An `action_config` can require and imply other features and
+<code>action_config</code>s as dictated by the
+[feature relationships](#feature-relationships) described earlier. This behavior
+is similar to that of a feature.
+
+The last two attributes are redundant against the corresponding attributes on
+features and are included because some Bazel actions require certain flags or
+environment variables and the goal is to avoid unnecessary `action_config`+`feature`
+pairs. Typically, sharing a single feature across multiple `action_config`s is
+preferred.
+
+You can not define more than one `action_config` with the same `action_name`
+within the same toolchain. This prevents ambiguity in tool paths
+and enforces the intention behind `action_config` - that an action's properties
+are clearly described in a single place in the toolchain.
+
+### Using tool constructor {:#using-tool-constructor}
+
+An`action_config` can specify a set of tools via its `tools` parameter.
+The `tool()` constructor takes in the following parameters:
+
+
+<table>
+  <col width="300">
+  <col width="600">
+  <tr>
+   <td><strong>Field</strong>
+   </td>
+   <td><strong>Description</strong>
+   </td>
+  </tr>
+  <tr>
+   <td><code>path</code>
+   </td>
+   <td>Path to the tool in question (relative to the current location).
+   </td>
+  </tr>
+  <tr>
+   <td><code>with_features</code>
+   </td>
+   <td>A list of feature sets out of which at least one must be satisfied
+       for this tool to apply.
+   </td>
+  </tr>
+</table>
+
+For a given `action_config`, only a single `tool` applies
+its tool path and execution requirements to the Bazel action. A tool is selected
+by iterating through the `tools` attribute on an `action_config` until a tool
+with a `with_feature` set matching the feature configuration is found
+(see [Feature relationships](#feature-relationships) earlier on this page
+for more information). You should end your tool lists with a default
+tool that corresponds to an empty feature configuration.
+
+### Example usage {:#example-usage}
+
+Features and actions can be used together to implement Bazel actions
+with diverse cross-platform semantics. For example, debug symbol generation on
+macOS requires generating symbols in the compile action, then invoking a
+specialized tool during the link action to create  compressed dsym archive, and
+then decompressing that archive to produce the application bundle and `.plist`
+files consumable by Xcode.
+
+With Bazel, this process can instead be implemented as follows, with
+`unbundle-debuginfo` being a Bazel action:
+
+    load("@rules_cc//cc:defs.bzl", "ACTION_NAMES")
+
+    action_configs = [
+        action_config (
+            action_name = ACTION_NAMES.cpp_link_executable,
+            tools = [
+                tool(
+                    with_features = [
+                        with_feature(features=["generate-debug-symbols"]),
+                    ],
+                    path = "toolchain/mac/ld-with-dsym-packaging",
+                ),
+                tool (path = "toolchain/mac/ld"),
+            ],
+        ),
+    ]
+
+    features = [
+        feature(
+            name = "generate-debug-symbols",
+            flag_sets = [
+                flag_set (
+                    actions = [
+                        ACTION_NAMES.c_compile,
+                        ACTION_NAMES.cpp_compile
+                    ],
+                    flag_groups = [
+                        flag_group(
+                            flags = ["-g"],
+                        ),
+                    ],
+                )
+            ],
+            implies = ["unbundle-debuginfo"],
+       ),
+    ]
+
+
+This same feature can be implemented entirely differently for Linux, which uses
+`fission`, or for Windows, which produces `.pdb` files. For example, the
+implementation for `fission`-based debug symbol generation might look as
+follows:
+
+    load("@rules_cc//cc:defs.bzl", "ACTION_NAMES")
+
+    action_configs = [
+        action_config (
+            name = ACTION_NAMES.cpp_compile,
+            tools = [
+                tool(
+                    path = "toolchain/bin/gcc",
+                ),
+            ],
+        ),
+    ]
+
+    features = [
+        feature (
+            name = "generate-debug-symbols",
+            requires = [with_feature_set(features = ["dbg"])],
+            flag_sets = [
+                flag_set(
+                    actions = [ACTION_NAMES.cpp_compile],
+                    flag_groups = [
+                        flag_group(
+                            flags = ["-gsplit-dwarf"],
+                        ),
+                    ],
+                ),
+                flag_set(
+                    actions = [ACTION_NAMES.cpp_link_executable],
+                    flag_groups = [
+                        flag_group(
+                            flags = ["-Wl", "--gdb-index"],
+                        ),
+                    ],
+                ),
+          ],
+        ),
+    ]
+
+
+### Flag groups {:#flag-groups}
+
+`CcToolchainConfigInfo` allows you to bundle flags into groups that serve a
+specific purpose. You can specify a flag within using pre-defined variables
+within the flag value, which the compiler expands when adding the flag to the
+build command. For example:
+
+    flag_group (
+        flags = ["%{output_execpath}"],
+    )
+
+
+In this case, the contents of the flag will be replaced by the output file path
+of the action.
+
+Flag groups are expanded to the build command in the order in which they appear
+in the list, top-to-bottom, left-to-right.
+
+For flags that need to repeat with different values when added to the build
+command, the flag group can iterate variables of type `list`. For example, the
+variable `include_path` of type `list`:
+
+    flag_group (
+        iterate_over = "include_paths",
+        flags = ["-I%{include_paths}"],
+    )
+
+expands to `-I<path>` for each path element in the `include_paths` list. All
+flags (or `flag_group`s) in the body of a flag group declaration are expanded as
+a unit. For example:
+
+    flag_group (
+        iterate_over = "include_paths",
+        flags = ["-I", "%{include_paths}"],
+    )
+
+expands to `-I <path>` for each path element in the `include_paths` list.
+
+A variable can repeat multiple times. For example:
+
+    flag_group (
+        iterate_over = "include_paths",
+        flags = ["-iprefix=%{include_paths}", "-isystem=%{include_paths}"],
+    )
+
+expands to:
+
+    -iprefix=<inc0> -isystem=<inc0> -iprefix=<inc1> -isystem=<inc1>
+
+Variables can correspond to structures accessible using dot-notation. For
+example:
+
+    flag_group (
+        flags = ["-l%{libraries_to_link.name}"],
+    )
+
+Structures can be nested and may also contain sequences. To prevent name clashes
+and to be explicit, you must specify the full path through the fields. For
+example:
+
+    flag_group (
+        iterate_over = "libraries_to_link",
+        flag_groups = [
+            flag_group (
+                iterate_over = "libraries_to_link.shared_libraries",
+                flags = ["-l%{libraries_to_link.shared_libraries.name}"],
+            ),
+        ],
+    )
+
+
+### Conditional expansion {:#conditional-expansion}
+
+Flag groups support conditional expansion based on the presence of a particular
+variable or its field using the `expand_if_available`, `expand_if_not_available`,
+`expand_if_true`, `expand_if_false`, or `expand_if_equal` attributes. For example:
+
+
+    flag_group (
+        iterate_over = "libraries_to_link",
+        flag_groups = [
+            flag_group (
+                iterate_over = "libraries_to_link.shared_libraries",
+                flag_groups = [
+                    flag_group (
+                        expand_if_available = "libraries_to_link.shared_libraries.is_whole_archive",
+                        flags = ["--whole_archive"],
+                    ),
+                    flag_group (
+                        flags = ["-l%{libraries_to_link.shared_libraries.name}"],
+                    ),
+                    flag_group (
+                        expand_if_available = "libraries_to_link.shared_libraries.is_whole_archive",
+                        flags = ["--no_whole_archive"],
+                    ),
+                ],
+            ),
+        ],
+    )
+
+Note: The `--whole_archive` and `--no_whole_archive` options are added to
+the build command only when a currently iterated library has an
+`is_whole_archive` field.
+
+## CcToolchainConfigInfo reference {:#cctoolchainconfiginfo-reference}
+
+This section provides a reference of build variables, features, and other
+information required to successfully configure C++ rules.
+
+### CcToolchainConfigInfo build variables {:#cctoolchainconfiginfo-build-variables}
+
+The following is a reference of `CcToolchainConfigInfo` build variables.
+
+Note: The **Action** column indicates the relevant action type, if applicable.
+
+<table>
+  <tr>
+   <td><strong>Variable</strong>
+   </td>
+   <td><strong>Action</strong>
+   </td>
+   <td><strong>Description</strong>
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>source_file</code></strong>
+   </td>
+   <td>compile</td>
+   <td>Source file to compile.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>input_file</code></strong>
+   </td>
+   <td>strip</td>
+   <td>Artifact to strip.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>output_file</code></strong>
+   </td>
+   <td>compile, strip</td>
+   <td>Compilation output.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>output_assembly_file</code></strong>
+   </td>
+   <td>compile</td>
+   <td>Emitted assembly file. Applies only when the
+       <code>compile</code> action emits assembly text, typically when using the
+       <code>--save_temps</code> flag. The contents are the same as for
+       <code>output_file</code>.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>output_preprocess_file</code></strong>
+   </td>
+   <td>compile</td>
+   <td>Preprocessed output. Applies only to compile
+       actions that only preprocess the source files, typically when using the
+     <code>--save_temps</code> flag. The contents are the same as for
+     <code>output_file</code>.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>includes</code></strong>
+   </td>
+   <td>compile</td>
+   <td>Sequence of files the compiler must
+       unconditionally include in the compiled source.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>include_paths</code></strong>
+   </td>
+   <td>compile</td>
+   <td>Sequence directories in which the compiler
+       searches for headers included using <code>#include&lt;foo.h&gt;</code>
+       and <code>#include "foo.h"</code>.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>quote_include_paths</code></strong>
+   </td>
+   <td>compile</td>
+   <td>Sequence of <code>-iquote</code> includes -
+       directories in which the compiler searches for headers included using
+       <code>#include "foo.h"</code>.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>system_include_paths</code></strong>
+   </td>
+   <td>compile</td>
+   <td>Sequence of <code>-isystem</code> includes -
+       directories in which the compiler searches for headers included using
+       <code>#include &lt;foo.h&gt;</code>.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>dependency_file</code></strong>
+   </td>
+   <td>compile</td>
+   <td>The <code>.d</code> dependency file generated by the compiler.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>preprocessor_defines</code></strong>
+   </td>
+   <td>compile</td>
+   <td>Sequence of <code>defines</code>, such as <code>--DDEBUG</code>.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>pic</code></strong>
+   </td>
+   <td>compile</td>
+   <td>Compiles the output as position-independent code.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>gcov_gcno_file</code></strong>
+   </td>
+   <td>compile</td>
+   <td>The <code>gcov</code> coverage file.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>per_object_debug_info_file</code></strong>
+   </td>
+   <td>compile</td>
+   <td>The per-object debug info (<code>.dwp</code>) file.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>stripopts</code></strong>
+   </td>
+   <td>strip</td>
+   <td>Sequence of <code>stripopts</code>.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>legacy_compile_flags</code></strong>
+   </td>
+   <td>compile</td>
+   <td>Sequence of flags from legacy
+       <code>CROSSTOOL</code> fields such as <code>compiler_flag</code>,
+       <code>optional_compiler_flag</code>, <code>cxx_flag</code>, and
+       <code>optional_cxx_flag</code>.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>user_compile_flags</code></strong>
+   </td>
+   <td>compile</td>
+   <td>Sequence of flags from either the
+       <code>copt</code> rule attribute or the <code>--copt</code>,
+       <code>--cxxopt</code>, and <code>--conlyopt</code> flags.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>unfiltered_compile_flags</code></strong>
+   </td>
+   <td>compile</td>
+   <td>Sequence of flags from the
+     <code>unfiltered_cxx_flag</code> legacy <code>CROSSTOOL</code> field or the
+       <code>unfiltered_compile_flags</code> feature. These are not filtered by
+       the <code>nocopts</code> rule attribute.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>sysroot</code></strong>
+   </td>
+   <td></td>
+   <td>The <code>sysroot</code>.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>runtime_library_search_directories</code></strong>
+   </td>
+   <td>link</td>
+   <td>Entries in the linker runtime search path (usually
+       set with the <code>-rpath</code> flag).
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>library_search_directories</code></strong>
+   </td>
+   <td>link</td>
+   <td>Entries in the linker search path (usually set with
+       the <code>-L</code> flag).
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>libraries_to_link</code></strong>
+   </td>
+   <td>link</td>
+   <td>Flags providing files to link as inputs in the linker invocation.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>def_file_path</code></strong>
+   </td>
+   <td>link</td>
+   <td>Location of def file used on Windows with MSVC.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>linker_param_file</code></strong>
+   </td>
+   <td>link</td>
+   <td>Location of linker param file created by bazel to
+       overcome command line length limit.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>output_execpath</code></strong>
+   </td>
+   <td>link</td>
+   <td>Execpath of the output of the linker.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>generate_interface_library</code></strong>
+   </td>
+   <td>link</td>
+   <td><code>"yes"</code> or <code>"no"</code> depending on whether interface library should
+       be generated.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>interface_library_builder_path</code></strong>
+   </td>
+   <td>link</td>
+   <td>Path to the interface library builder tool.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>interface_library_input_path</code></strong>
+   </td>
+   <td>link</td>
+   <td>Input for the interface library <code>ifso</code> builder tool.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>interface_library_output_path</code></strong>
+   </td>
+   <td>link</td>
+   <td>Path where to generate interface library using the <code>ifso</code> builder tool.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>legacy_link_flags</code></strong>
+   </td>
+   <td>link</td>
+   <td>Linker flags coming from the legacy <code>CROSSTOOL</code> fields.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>user_link_flags</code></strong>
+   </td>
+   <td>link</td>
+   <td>Linker flags coming from the <code>--linkopt</code>
+       or <code>linkopts</code> attribute.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>linkstamp_paths</code></strong>
+   </td>
+   <td>link</td>
+   <td>A build variable giving linkstamp paths.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>force_pic</code></strong>
+   </td>
+   <td>link</td>
+   <td>Presence of this variable indicates that PIC/PIE code should
+     be generated (Bazel option `--force_pic` was passed).
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>strip_debug_symbols</code></strong>
+   </td>
+   <td>link</td>
+   <td>Presence of this variable indicates that the debug
+       symbols should be stripped.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>is_cc_test</code></strong>
+   </td>
+   <td>link</td>
+   <td>Truthy when current action is a <code>cc_test</code>
+       linking action, false otherwise.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>is_using_fission</code></strong>
+   </td>
+   <td>compile, link</td>
+   <td>Presence of this variable indicates that fission (per-object debug info)
+     is activated. Debug info will be in <code>.dwo</code> files instead
+       of <code>.o</code> files and the compiler and linker need to know this.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>fdo_instrument_path</code></strong>
+   </td>
+   <td>compile, link</td>
+   <td> Path to the directory that stores FDO instrumentation profile.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>fdo_profile_path</code></strong>
+   </td>
+   <td>compile</td>
+   <td> Path to FDO profile.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>fdo_prefetch_hints_path</code></strong>
+   </td>
+   <td>compile</td>
+   <td> Path to the cache prefetch profile.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>cs_fdo_instrument_path</code></strong>
+   </td>
+   <td>compile, link</td>
+   <td> Path to the directory that stores context sensitive FDO
+        instrumentation profile.
+   </td>
+  </tr>
+</table>
+
+### Well-known features {:#wellknown-features}
+
+The following is a reference of features and their activation
+conditions.
+
+<table>
+  <col width="300">
+  <col width="600">
+  <tr>
+   <td><strong>Feature</strong>
+   </td>
+   <td><strong>Documentation</strong>
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>opt | dbg | fastbuild</code></strong>
+   </td>
+   <td>Enabled by default based on compilation mode.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>static_linking_mode | dynamic_linking_mode</code></strong>
+   </td>
+   <td>Enabled by default based on linking mode.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>per_object_debug_info</code></strong>
+   </td>
+    <td>Enabled if the <code>supports_fission</code> feature is specified and
+        enabled and the current compilation mode is specified in the
+        <code>--fission</code> flag.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>supports_start_end_lib</code></strong>
+   </td>
+   <td>If enabled (and the option <code>--start_end_lib</code> is set), Bazel
+     will not link against static libraries but instead use the
+     <code>--start-lib/--end-lib</code> linker options to link against objects
+     directly. This speeds up the build since Bazel doesn't have to build
+     static libraries.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>supports_interface_shared_libraries</code></strong>
+   </td>
+   <td>If enabled (and the option <code>--interface_shared_objects</code> is
+     set), Bazel will link targets that have <code>linkstatic</code> set to
+     False (<code>cc_test</code>s by default) against interface shared
+     libraries. This makes incremental relinking faster.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>supports_dynamic_linker</code></strong>
+   </td>
+   <td>If enabled, C++ rules will know the toolchain can produce shared
+     libraries.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>static_link_cpp_runtimes</code></strong>
+   </td>
+   <td>If enabled, Bazel will link the C++ runtime statically in static linking
+     mode and dynamically in dynamic linking mode. Artifacts
+     specified in the <code>cc_toolchain.static_runtime_lib</code> or
+     <code>cc_toolchain.dynamic_runtime_lib</code> attribute (depending on the
+     linking mode) will be added to the linking actions.
+   </td>
+  </tr>
+  <tr>
+   <td><strong><code>supports_pic</code></strong>
+   </td>
+   <td>If enabled, toolchain will know to use PIC objects for dynamic libraries.
+     The `pic` variable is present whenever PIC compilation is needed. If not enabled
+     by default, and `--force_pic` is passed, Bazel will request `supports_pic` and
+     validate that the feature is enabled. If the feature is missing, or couldn't
+      be enabled, `--force_pic` cannot be used.
+   </td>
+  </tr>
+  <tr>
+    <td>
+      <strong><code>static_linking_mode | dynamic_linking_mode</code></strong>
+    </td>
+    <td>Enabled by default based on linking mode.</td>
+  </tr>
+  <tr>
+     <td><strong><code>no_legacy_features</code></strong>
+     </td>
+     <td>
+       Prevents Bazel from adding legacy features to
+       the C++ configuration when present. See the complete list of
+       features below.
+     </td>
+    </tr>
+</table>
+
+#### Legacy features patching logic {:#legacy-features-patching-logic}
+
+<p>
+  Bazel applies the following changes to the toolchain's features for backwards
+  compatibility:
+
+  <ul>
+    <li>Moves <code>legacy_compile_flags</code> feature to the top of the toolchain</li>
+    <li>Moves <code>default_compile_flags</code> feature to the top of the toolchain</li>
+    <li>Adds <code>dependency_file</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>pic</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>per_object_debug_info</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>preprocessor_defines</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>includes</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>include_paths</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>fdo_instrument</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>fdo_optimize</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>cs_fdo_instrument</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>cs_fdo_optimize</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>fdo_prefetch_hints</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>autofdo</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>build_interface_libraries</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>dynamic_library_linker_tool</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>shared_flag</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>linkstamps</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>output_execpath_flags</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>runtime_library_search_directories</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>library_search_directories</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>archiver_flags</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>libraries_to_link</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>force_pic_flags</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>user_link_flags</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>legacy_link_flags</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>static_libgcc</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>fission_support</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>strip_debug_symbols</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>coverage</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>llvm_coverage_map_format</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>gcc_coverage_map_format</code> (if not present) feature to the top of the toolchain</li>
+    <li>Adds <code>fully_static_link</code> (if not present) feature to the bottom of the toolchain</li>
+    <li>Adds <code>user_compile_flags</code> (if not present) feature to the bottom of the toolchain</li>
+    <li>Adds <code>sysroot</code> (if not present) feature to the bottom of the toolchain</li>
+    <li>Adds <code>unfiltered_compile_flags</code> (if not present) feature to the bottom of the toolchain</li>
+    <li>Adds <code>linker_param_file</code> (if not present) feature to the bottom of the toolchain</li>
+    <li>Adds <code>compiler_input_flags</code> (if not present) feature to the bottom of the toolchain</li>
+    <li>Adds <code>compiler_output_flags</code> (if not present) feature to the bottom of the toolchain</li>
+  </ul>
+</p>
+
+This is a long list of features. The plan is to get rid of them once
+[Crosstool in Starlark](https://github.com/bazelbuild/bazel/issues/5380){: .external} is
+done. For the curious reader see the implementation in
+[CppActionConfigs](https://source.bazel.build/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java?q=cppactionconfigs&ss=bazel),
+and for production toolchains consider adding `no_legacy_features` to make
+the toolchain more standalone.
+
+
+
+Project: /_project.yaml
+Book: /_book.yaml
+
+# Android Build Performance
+
+{% include "_buttons.html" %}
+
+This page contains information on optimizing build performance for Android
+apps specifically. For general build performance optimization with Bazel, see
+[Optimizing Performance](/rules/performance).
+
+## Recommended flags {:#recommended-flags}
+
+The flags are in the
+[`bazelrc` configuration syntax](/run/bazelrc#bazelrc-syntax-semantics), so
+they can be pasted directly into a `bazelrc` file and invoked with
+`--config=<configuration_name>` on the command line.
+
+**Profiling performance**
+
+Bazel writes a JSON trace profile by default to a file called
+`command.profile.gz` in Bazel's output base.
+See the [JSON Profile documentation](/rules/performance#performance-profiling) for
+how to read and interact with the profile.
+
+**Persistent workers for Android build actions**.
+
+A subset of Android build actions has support for
+[persistent workers](https://blog.bazel.build/2015/12/10/java-workers.html).
+
+These actions' mnemonics are:
+
+*   DexBuilder
+*   Javac
+*   Desugar
+*   AaptPackage
+*   AndroidResourceParser
+*   AndroidResourceValidator
+*   AndroidResourceCompiler
+*   RClassGenerator
+*   AndroidResourceLink
+*   AndroidAapt2
+*   AndroidAssetMerger
+*   AndroidResourceMerger
+*   AndroidCompiledResourceMerger
+
+Enabling workers can result in better build performance by saving on JVM
+startup costs from invoking each of these tools, but at the cost of increased
+memory usage on the system by persisting them.
+
+To enable workers for these actions, apply these flags with
+`--config=android_workers` on the command line:
+
+```
+build:android_workers --strategy=DexBuilder=worker
+build:android_workers --strategy=Javac=worker
+build:android_workers --strategy=Desugar=worker
+
+# A wrapper flag for these resource processing actions:
+# - AndroidResourceParser
+# - AndroidResourceValidator
+# - AndroidResourceCompiler
+# - RClassGenerator
+# - AndroidResourceLink
+# - AndroidAapt2
+# - AndroidAssetMerger
+# - AndroidResourceMerger
+# - AndroidCompiledResourceMerger
+build:android_workers --persistent_android_resource_processor
+```
+
+The default number of persistent workers created per action is `4`. We have
+[measured improved build performance](https://github.com/bazelbuild/bazel/issues/8586#issuecomment-500070549){: .external}
+by capping the number of instances for each action to `1` or `2`, although this
+may vary depending on the system Bazel is running on, and the project being
+built.
+
+To cap the number of instances for an action, apply these flags:
+
+```
+build:android_workers --worker_max_instances=DexBuilder=2
+build:android_workers --worker_max_instances=Javac=2
+build:android_workers --worker_max_instances=Desugar=2
+build:android_workers --worker_max_instances=AaptPackage=2
+# .. and so on for each action you're interested in.
+```
+
+**Using AAPT2**
+
+[`aapt2`](https://developer.android.com/studio/command-line/aapt2){: .external} has improved
+performance over `aapt` and also creates smaller APKs. To use `aapt2`, use the
+`--android_aapt=aapt2` flag or set `aapt2` on the `aapt_version` on
+`android_binary` and `android_local_test`.
+
+**SSD optimizations**
+
+The `--experimental_multi_threaded_digest` flag is useful for optimizing digest
+computation on SSDs.

@@ -1,6 +1,3 @@
-"""Script to download Bazel documentation using git sparse checkout."""
-
-import argparse
 import subprocess
 from pathlib import Path
 from typing import Optional
@@ -55,16 +52,3 @@ def main() -> None:
         clone_repository(repo_path)
     else:
         update_repository(repo_path)
-
-
-if __name__ == "__main__":
-    # Only parse arguments if running directly
-    parser = argparse.ArgumentParser(description="Download Bazel documentation")
-    parser.add_argument(
-        "--output-dir",
-        type=Path,
-        default=Path("input/bazel-site"),
-        help="Output directory for the documentation",
-    )
-    args = parser.parse_args()
-    main()
