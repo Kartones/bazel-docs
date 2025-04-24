@@ -62,6 +62,7 @@ def _process_all() -> None:
         output_file=Path("docs/rules_js.md"),
         skip_files=["README.md"],
         sort_key=lambda x: x.name != "index.md",
+        include_filename_as_title=True,
     )
 
 

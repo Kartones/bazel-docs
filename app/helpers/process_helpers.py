@@ -56,11 +56,21 @@ def get_markdown_files(directory: Path, skip_files: Optional[List[str]] = None) 
     return filtered_files
 
 
-def process_markdown_file(file_path: Path) -> str:
-    """Process a single markdown file and return its content."""
+def process_markdown_file(file_path: Path, include_filename_as_title: bool = False) -> str:
+    """Process a single markdown file and return its content.
+
+    Args:
+        file_path: Path to the markdown file
+        include_filename_as_title: If True, prepends the filename as a markdown title
+    """
     with open(file_path, "r", encoding="utf-8") as f:
         content = f.read()
-    return cleanup_content(content)
+
+    cleaned_content = cleanup_content(content)
+
+    if include_filename_as_title:
+        return f"# {file_path.name}\n{cleaned_content}"
+    return cleaned_content
 
 
 def write_output_file(output_file: Path, content: str) -> None:
@@ -83,8 +93,17 @@ def process_standard_docs(
     output_file: Path,
     skip_files: Optional[List[str]] = None,
     sort_key: Optional[Callable[[Path], bool]] = None,
+    include_filename_as_title: bool = False,
 ) -> None:
-    """Process all markdown files in the docs directory and combine into one file."""
+    """Process all markdown files in the docs directory and combine into one file.
+
+    Args:
+        input_dir: Directory containing markdown files
+        output_file: File to write combined content to
+        skip_files: List of filenames to skip
+        sort_key: Function to sort files with
+        include_filename_as_title: If True, prepends each filename as a markdown title
+    """
     print(f"Processing documentation from {input_dir}...")
     skip_files = skip_files or []
 
@@ -103,16 +122,28 @@ def process_standard_docs(
     combined_content = []
     for file_path in markdown_files:
         print(f"Processing {file_path.name}...")
-        content = process_markdown_file(file_path)
+        content = process_markdown_file(file_path, include_filename_as_title)
         combined_content.append(content)
 
-    final_content = "\n\n".join(combined_content)
+    final_content = "\n".join(combined_content)
     write_output_file(output_file, final_content)
     print(f"Documentation processed successfully. Output written to {output_file}")
 
 
-def process_subfolder_docs(input_dir: Path, output_dir: Path, skip_folders: Optional[Set[str]] = None) -> None:
-    """Process a directory with subfolders, creating one file per subfolder."""
+def process_subfolder_docs(
+    input_dir: Path,
+    output_dir: Path,
+    skip_folders: Optional[Set[str]] = None,
+    include_filename_as_title: bool = False,
+) -> None:
+    """Process a directory with subfolders, creating one file per subfolder.
+
+    Args:
+        input_dir: Directory containing subdirectories with markdown files
+        output_dir: Directory to write output files to
+        skip_folders: Set of folder names to skip
+        include_filename_as_title: If True, prepends each filename as a markdown title
+    """
     skip_folders = skip_folders or set()
 
     if not input_dir.exists():
@@ -138,13 +169,13 @@ def process_subfolder_docs(input_dir: Path, output_dir: Path, skip_folders: Opti
                 output_file.unlink()
 
             if index_file:
-                content = process_markdown_file(index_file)
+                content = process_markdown_file(index_file, include_filename_as_title)
                 write_output_file(output_file, content)
 
             # Process other files
             other_files = [f for f in markdown_files if f.name != "index.md"]
             for file in other_files:
-                content = process_markdown_file(file)
+                content = process_markdown_file(file, include_filename_as_title)
                 append_to_output_file(output_file, content)
 
     print("Documentation processing complete.")
