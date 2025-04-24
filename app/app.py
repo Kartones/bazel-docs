@@ -26,6 +26,12 @@ REPOSITORIES = {
         "branch": "main",
         "sparse_pattern": "docs/*",
     },
+    "rules-ts": {
+        "path": "input/rules-ts",
+        "url": "git@github.com:aspect-build/rules_ts.git",
+        "branch": "main",
+        "sparse_pattern": "docs/*",
+    },
 }
 
 
@@ -61,6 +67,16 @@ def _process_all() -> None:
         input_dir=Path("input/rules-js/docs"),
         output_file=Path("docs/rules_js.md"),
         skip_files=["README.md"],
+        sort_key=lambda x: x.name != "index.md",
+        include_filename_as_title=True,
+    )
+
+    # Process rules_ts
+    print("Processing rules-ts...")
+    process_standard_docs(
+        input_dir=Path("input/rules-ts/docs"),
+        output_file=Path("docs/rules_ts.md"),
+        skip_files=[],
         sort_key=lambda x: x.name != "index.md",
         include_filename_as_title=True,
     )
