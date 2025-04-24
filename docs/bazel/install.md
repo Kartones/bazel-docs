@@ -1,10 +1,6 @@
-Project: /_project.yaml
-Book: /_book.yaml
+
 
 # Installing Bazel
-
-{% dynamic setvar source_file "site/en/install/index.md" %}
-{% include "_buttons.html" %}
 
 This page describes the various platforms supported by Bazel and links
 to the packages for more details.
@@ -13,7 +9,7 @@ to the packages for more details.
 
 You can find available Bazel releases on our [release page](/release).
 
-## Community-supported packages {:#community-supported-packages}
+## Community-supported packages
 
 Bazel community members maintain these packages. The Bazel team doesn't
 officially support them. Contact the package maintainers for support.
@@ -29,7 +25,7 @@ officially support them. Contact the package maintainers for support.
 *   [Scoop](https://github.com/scoopinstaller/scoop-main/blob/master/bucket/bazel.json){: .external}
 *   [Raspberry Pi](https://github.com/koenvervloesem/bazel-on-arm/blob/master/README.md){: .external}
 
-## Community-supported architectures {:#community-supported-architectures}
+## Community-supported architectures
 
 *   [ppc64el](https://ftp2.osuosl.org/pub/ppc64el/bazel/){: .external}
 
@@ -38,12 +34,8 @@ For other platforms, you can try to [compile from source](/install/compile-sourc
 [arch]: https://archlinux.org/packages/extra/x86_64/bazel/
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Installing / Updating Bazel using Bazelisk
-
-{% include "_buttons.html" %}
 
 ## Installing Bazel
 
@@ -65,7 +57,7 @@ are the author of one). That page summarizes best practices on how to test and
 migrate your project with upcoming incompatible changes and how to provide
 feedback to the incompatible change authors.
 
-### Managing Bazel versions with Bazelisk {:#manage-with-bazelisk}
+### Managing Bazel versions with Bazelisk
 
 [Bazelisk](https://github.com/bazelbuild/bazelisk){: .external} helps you manage
 Bazel versions.
@@ -79,7 +71,7 @@ Bazelisk can:
 *   Help migrate your project for incompatible changes (see above)
 *   Easily try release candidates
 
-### Recommended migration process {:#migration-process}
+### Recommended migration process
 
 Within minor updates to any LTS release, any
 project can be prepared for the next release without breaking
@@ -100,12 +92,8 @@ After migration, you can continue to build your projects without worrying about
 backward-compatibility until the next major release.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Integrating Bazel with IDEs
-
-{% include "_buttons.html" %}
 
 This page covers how to integrate Bazel with IDEs, such as IntelliJ, Android
 Studio, and CLion (or build your own IDE plugin). It also includes links to
@@ -119,9 +107,9 @@ If you are interested in developing an editor or IDE plugin for Bazel, please
 join the `#ide` channel on the [Bazel Slack](https://slack.bazel.build) or start
 a discussion on [GitHub](https://github.com/bazelbuild/bazel/discussions).
 
-## IDEs and editors {:#ides-editors}
+## IDEs and editors
 
-### IntelliJ, Android Studio, and CLion {:#intellij-android-clion}
+### IntelliJ, Android Studio, and CLion
 
 [Official plugin](http://ij.bazel.build) for IntelliJ, Android Studio, and
 CLion. The plugin is [open source](https://github.com/bazelbuild/intellij){: .external}.
@@ -149,14 +137,14 @@ Plugin Repository and install the zip file from the IDE's plugin browser:
    plugin](https://plugins.jetbrains.com/plugin/8609-intellij-with-bazel){: .external}
 *  [CLion plugin](https://plugins.jetbrains.com/plugin/9554-clion-with-bazel){: .external}
 
-### Xcode {:#xcode}
+### Xcode
 
 [rules_xcodeproj](https://github.com/buildbuddy-io/rules_xcodeproj){: .external},
 [Tulsi](https://tulsi.bazel.build){: .external}, and
 [XCHammer](https://github.com/pinterest/xchammer){: .external} generate Xcode
 projects from Bazel `BUILD` files.
 
-### Visual Studio Code {:#visual-studio-code}
+### Visual Studio Code
 
 Official plugin for VS Code.
 
@@ -172,38 +160,38 @@ The plugin is [open source](https://github.com/bazelbuild/vscode-bazel){: .exter
 
 See also: [Autocomplete for Source Code](#autocomplete-for-source-code)
 
-### Atom {:#atom}
+### Atom
 
 Find the [`language-bazel` package](https://atom.io/packages/language-bazel){: .external}
 on the Atom package manager.
 
 See also: [Autocomplete for Source Code](#autocomplete-for-source-code)
 
-### Vim {:#vim}
+### Vim
 
 See [`bazelbuild/vim-bazel` on GitHub](https://github.com/bazelbuild/vim-bazel){: .external}
 
 See also: [Autocomplete for Source Code](#autocomplete-for-source-code)
 
-### Emacs {:#emacs}
+### Emacs
 
 See [`bazelbuild/bazel-emacs-mode` on
 GitHub](https://github.com/bazelbuild/emacs-bazel-mode){: .external}
 
 See also: [Autocomplete for Source Code](#autocomplete-for-source-code)
 
-### Visual Studio {:#visual-studio}
+### Visual Studio
 
 [Lavender](https://github.com/tmandry/lavender){: .external} is an experimental project for
 generating Visual Studio projects that use Bazel for building.
 
-### Eclipse {:#eclipse}
+### Eclipse
 
 [Bazel Eclipse Feature](https://github.com/salesforce/bazel-eclipse){: .external}
 is a set of plugins for importing Bazel packages into an Eclipse workspace as
 Eclipse projects.
 
-## Autocomplete for Source Code {:#autocomplete-for-source-code}
+## Autocomplete for Source Code
 
 ### C Language Family (C++, C, Objective-C, and Objective-C++)
 
@@ -219,24 +207,20 @@ consumes the Protobuf output of Bazel to extract the compile commands.
 
 [`georgewfraser/java-language-server`](https://github.com/georgewfraser/java-language-server) - Java Language Server (LSP) with support for Bazel-built projects
 
-## Automatically run build and test on file change {:#bazel-watcher}
+## Automatically run build and test on file change
 
 [Bazel watcher](https://github.com/bazelbuild/bazel-watcher){: .external} is a
 tool for building Bazel targets when source files change.
 
-## Building your own IDE plugin {:#build-own-plugin}
+## Building your own IDE plugin
 
 Read the [**IDE support** blog
 post](https://blog.bazel.build/2016/06/10/ide-support.html) to learn more about
 the Bazel APIs to use when building an IDE plugin.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Compiling Bazel from Source
-
-{% include "_buttons.html" %}
 
 This page describes how to install Bazel from source and provides
 troubleshooting tips for common issues.
@@ -248,9 +232,9 @@ To build Bazel from source, you can do one of the following:
 *   Build it [without an existing Bazel binary](#bootstrap-bazel) which is known
     as _bootstrapping_.
 
-## Build Bazel using Bazel {:#build-bazel-using-bazel}
+## Build Bazel using Bazel
 
-### Summary {:#summary}
+### Summary
 
 1.  Get the latest Bazel release from the
     [GitHub release page](https://github.com/bazelbuild/bazel/releases){: .external} or with
@@ -274,7 +258,7 @@ To build Bazel from source, you can do one of the following:
 
 Detailed instructions follow below.
 
-### Step 1: Get the latest Bazel release {:#build-bazel-install-bazel}
+### Step 1: Get the latest Bazel release
 
 **Goal**: Install or download a release version of Bazel. Make sure you can run
 it by typing `bazel` in a terminal.
@@ -303,7 +287,7 @@ scratch (bootstrap)](#bootstrap-bazel).)
 
         You must make the binary executable by running `chmod +x /path/to/bazel`.
 
-### Step 2: Download Bazel's sources from GitHub {:#build-bazel-git}
+### Step 2: Download Bazel's sources from GitHub
 
 If you are familiar with Git, then just git clone https://github.com/bazelbuild/bazel
 
@@ -317,12 +301,12 @@ Otherwise:
     For example create a `bazel-src` directory under your home directory and
     extract there.
 
-### Step 3: Install prerequisites {:#build-bazel-prerequisites}
+### Step 3: Install prerequisites
 
 Install the same prerequisites as for bootstrapping (see below) -- JDK, C++
 compiler, MSYS2 (if you are building on Windows), etc.
 
-### Step 4a: Build Bazel on Ubuntu Linux, macOS, and other Unix-like systems {:#build-bazel-on-unixes}
+### Step 4a: Build Bazel on Ubuntu Linux, macOS, and other Unix-like systems
 
 For instructions for Windows, see [Build Bazel on Windows](#build-bazel-on-windows).
 
@@ -350,7 +334,7 @@ For instructions for Windows, see [Build Bazel on Windows](#build-bazel-on-windo
 
 4.  The output will be at `bazel-bin/src/bazel-dev` (or `bazel-bin/src/bazel`).
 
-### Step 4b: Build Bazel on Windows {:#build-bazel-on-windows}
+### Step 4b: Build Bazel on Windows
 
 For instructions for Unix-like systems, see
 [Ubuntu Linux, macOS, and other Unix-like systems](#build-bazel-on-unixes).
@@ -381,7 +365,7 @@ For instructions for Unix-like systems, see
 4.  The output will be at `bazel-bin\src\bazel-dev.exe` (or
     `bazel-bin\src\bazel.exe`).
 
-### Step 5: Install the built binary {:#build-bazel-install}
+### Step 5: Install the built binary
 
 Actually, there's nothing to install.
 
@@ -391,11 +375,11 @@ your PATH so that you can run "bazel" everywhere.)
 
 ---
 
-## Build Bazel from scratch (bootstrapping) {:#bootstrap-bazel}
+## Build Bazel from scratch (bootstrapping)
 
 You can also build Bazel from scratch, without using an existing Bazel binary.
 
-### Step 1: Download Bazel's sources (distribution archive) {:#download-distfile}
+### Step 1: Download Bazel's sources (distribution archive)
 
 (This step is the same for all platforms.)
 
@@ -418,11 +402,11 @@ You can also build Bazel from scratch, without using an existing Bazel binary.
     You should verify the signature made by Bazel's
     [release key](https://bazel.build/bazel-release.pub.gpg) 3D5919B448457EE0.
 
-### Step 2a: Bootstrap Bazel on Ubuntu Linux, macOS, and other Unix-like systems {:#bootstrap-unix-overview}
+### Step 2a: Bootstrap Bazel on Ubuntu Linux, macOS, and other Unix-like systems
 
 For instructions for Windows, see [Bootstrap Bazel on Windows](#bootstrap-windows).
 
-#### 2.1. Install the prerequisites {:#bootstrap-unix-prereq}
+#### 2.1. Install the prerequisites
 
 *   **Bash**
 
@@ -442,7 +426,7 @@ following command:
 sudo apt-get install build-essential openjdk-21-jdk python zip unzip
 ```
 
-#### 2.2. Bootstrap Bazel on Unix {:#bootstrap-unix}
+#### 2.2. Bootstrap Bazel on Unix
 
 1.  Open a shell or Terminal window.
 
@@ -459,12 +443,12 @@ To build the `bazel` binary in a reproducible way, also set
 [`SOURCE_DATE_EPOCH`](https://reproducible-builds.org/specs/source-date-epoch/)
 in the "Run the compilation script" step.
 
-### Step 2b: Bootstrap Bazel on Windows {:#bootstrap-windows-overview}
+### Step 2b: Bootstrap Bazel on Windows
 
 For instructions for Unix-like systems, see
 [Bootstrap Bazel on Ubuntu Linux, macOS, and other Unix-like systems](#bootstrap-unix).
 
-#### 2.1. Install the prerequisites {:#bootstrap-windows-prereq}
+#### 2.1. Install the prerequisites
 
 *   [MSYS2 shell](https://msys2.github.io/)
 
@@ -485,7 +469,7 @@ For instructions for Unix-like systems, see
     [https://www.python.org](https://www.python.org)). Versions installed via
     pacman in MSYS2 will not work.
 
-#### 2.2. Bootstrap Bazel on Windows {:#bootstrap-windows}
+#### 2.2. Bootstrap Bazel on Windows
 
 1.  Open the MSYS2 shell.
 
@@ -533,12 +517,8 @@ You don't need to run Bazel from the MSYS2 shell. You can run Bazel from the
 Command Prompt (`cmd.exe`) or PowerShell.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Installing Bazel on Ubuntu
-
-{% include "_buttons.html" %}
 
 This page describes the options for installing Bazel on Ubuntu.
 It also provides links to the Bazel completion scripts and the binary installer,
@@ -570,9 +550,9 @@ Bazel comes with two completion scripts. After installing Bazel, you can:
 *   Access the [bash completion script](/install/completion#bash)
 *   Install the [zsh completion script](/install/completion#zsh)
 
-## Using Bazel's apt repository {:#install-on-ubuntu}
+## Using Bazel's apt repository
 
-### Step 1: Add Bazel distribution URI as a package source {:#add-dis-uri}
+### Step 1: Add Bazel distribution URI as a package source
 
 **Note:** This is a one-time setup step.
 
@@ -590,7 +570,7 @@ The component name "jdk1.8" is kept only for legacy reasons and doesn't relate
 to supported or included JDK versions. Bazel releases are Java-version agnostic.
 Changing the "jdk1.8" component name would break existing users of the repo.
 
-### Step 2: Install and update Bazel {:#install-bazel}
+### Step 2: Install and update Bazel
 
 ```posix-terminal
 sudo apt update && sudo apt install bazel
@@ -623,7 +603,7 @@ sudo ln -s /usr/bin/bazel-1.0.0 /usr/bin/bazel
 bazel --version  # 1.0.0
 ```
 
-### Step 3: Install a JDK (optional) {:#install-jdk}
+### Step 3: Install a JDK (optional)
 
 Bazel includes a private, bundled JRE as its runtime and doesn't require you to
 install any specific version of Java.
@@ -634,7 +614,7 @@ However, if you want to build Java code using Bazel, you have to install a JDK.
 sudo apt install default-jdk
 ```
 
-## Using the binary installer {:#binary-installer}
+## Using the binary installer
 
 Generally, you should use the apt repository, but the binary installer
 can be useful if you don't have admin permissions on your machine or
@@ -645,7 +625,7 @@ The binary installers can be downloaded from Bazel's [GitHub releases page](http
 The installer contains the Bazel binary and extracts it into your `$HOME/bin`
 folder. Some additional libraries must be installed manually for Bazel to work.
 
-### Step 1: Install required packages {:#install-packages}
+### Step 1: Install required packages
 
 Bazel needs a C++ compiler and unzip / zip in order to work:
 
@@ -659,7 +639,7 @@ If you want to build Java code using Bazel, install a JDK:
 sudo apt-get install default-jdk
 ```
 
-### Step 2: Run the installer {:#run-installer}
+### Step 2: Run the installer
 
 Next, download the Bazel binary installer named `bazel-{{ '<var>' }}version{{ '</var>' }}-installer-linux-x86_64.sh`
 from the [Bazel releases page on GitHub](https://github.com/bazelbuild/bazel/releases){: .external}.
@@ -676,7 +656,7 @@ The `--user` flag installs Bazel to the `$HOME/bin` directory on your system and
 sets the `.bazelrc` path to `$HOME/.bazelrc`. Use the `--help` command to see
 additional installation options.
 
-### Step 3: Set up your environment {:#set-environment}
+### Step 3: Set up your environment
 
 If you ran the Bazel installer with the `--user` flag as above, the Bazel
 executable is installed in your `$HOME/bin` directory.
@@ -689,7 +669,7 @@ export PATH="$PATH:$HOME/bin"
 You can also add this command to your `~/.bashrc` or `~/.zshrc` file to make it
 permanent.
 
-## Using the Bazel Docker container {:#docker-container}
+## Using the Bazel Docker container
 
 We publish Docker container with Bazel installed for each Bazel version at `gcr.io/bazel-public/bazel`.
 You can use the Docker container as follows:
@@ -702,23 +682,19 @@ The Docker container is built by [these steps](https://github.com/bazelbuild/con
 
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Installing Bazel on Windows
-
-{% include "_buttons.html" %}
 
 This page describes the requirements and steps to install Bazel on Windows.
 It also includes troubleshooting and other ways to install Bazel, such as
 using Chocolatey or Scoop.
 
-## Installing Bazel {:#installing-bazel}
+## Installing Bazel
 
 This section covers the prerequisites, environment setup, and detailed
 steps during installation on Windows.
 
-### Check your system  {:#check-system}
+### Check your system 
 
 Recommended: 64 bit Windows 10, version 1703 (Creators Update) or newer
 
@@ -728,14 +704,13 @@ To check your Windows version:
 * Type `winver` in the search box and press Enter.
 * You should see the About Windows box with your Windows version information.
 
-### Install the prerequisites {:#install-prerequisites}
+### Install the prerequisites
 
 *   [Microsoft Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170){: .external}
 
-### Download Bazel {:#download-bazel}
+### Download Bazel
 
 *Recommended*: [Use Bazelisk](/install/bazelisk)
-
 
 Alternatively you can:
 
@@ -745,7 +720,7 @@ Alternatively you can:
 *   [Install Bazel from Scoop](#scoop)
 *   [Build Bazel from source](/install/compile-source)
 
-### Set up your environment {:#set-environment}
+### Set up your environment
 
 To make Bazel easily accessible from command prompts or PowerShell by default, you can rename the Bazel binary to `bazel.exe` and add it to your default paths.
 
@@ -755,7 +730,7 @@ set PATH=%PATH%;{{ '<var>' }}path to the Bazel binary{{ '</var>' }}
 
 You can also change your system `PATH` environment variable to make it permanent. Check out how to [set environment variables](/configure/windows#set-environment-variables).
 
-### Done {:#done}
+### Done
 
 "Success: You've installed Bazel."
 
@@ -772,7 +747,7 @@ Next, you can check out more tips and guidance here:
 *   [Best practices on Windows](/configure/windows#best-practices)
 *   [Tutorials](/start/#tutorials)
 
-## Installing compilers and language runtimes {:#install-compilers}
+## Installing compilers and language runtimes
 
 Depending on which languages you want to build, you will need:
 
@@ -821,7 +796,7 @@ Depending on which languages you want to build, you will need:
 
     Also supported: Python 2.7 or newer for Windows x86-64
 
-## Troubleshooting {:#troubleshooting}
+## Troubleshooting
 
 ### Bazel does not find Bash or bash.exe
 
@@ -900,9 +875,9 @@ If that doesn't help:
 
     If you open a new cmd.exe or PowerShell terminal and run Bazel now, it will find Visual C++.
 
-## Other ways to install Bazel {:#install-options}
+## Other ways to install Bazel
 
-### Using Chocolatey {:#chocolately}
+### Using Chocolatey
 
 1.  Install the [Chocolatey](https://chocolatey.org) package manager
 
@@ -920,7 +895,7 @@ See [Chocolatey installation and package maintenance
 guide](/contribute/windows-chocolatey-maintenance) for more
 information about the Chocolatey package.
 
-### Using Scoop {:#scoop}
+### Using Scoop
 
 1.  Install the [Scoop](https://scoop.sh/) package manager using the following PowerShell command:
 
@@ -938,17 +913,13 @@ See [Scoop installation and package maintenance
 guide](/contribute/windows-scoop-maintenance) for more
 information about the Scoop package.
 
-### Build from source {:#build-from-source}
+### Build from source
 
 To build Bazel from scratch instead of installing, see [Compiling from source](/install/compile-source).
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Installing Bazel on macOS
-
-{% include "_buttons.html" %}
 
 This page describes how to install Bazel on macOS and set up your environment.
 
@@ -1087,19 +1058,15 @@ To update to a newer release of Bazel, download and install the desired version.
 
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Getting Started with Bazel Docker Container
-
-{% include "_buttons.html" %}
 
 This page provides details on the contents of the Bazel container, how to build
 the [abseil-cpp](https://github.com/abseil/abseil-cpp){: .external} project using Bazel
 inside the Bazel container, and how to build this project directly
 from the host machine using the Bazel container with directory mounting.
 
-## Build Abseil project from your host machine with directory mounting {:#build-abseil}
+## Build Abseil project from your host machine with directory mounting
 
 The instructions in this section allow you to build using the Bazel container
 with the sources checked out in your host environment. A container is started up
@@ -1149,7 +1116,7 @@ docker run \
   build --config={asan | tsan | msan} -- //absl/... -//absl/types:variant_test
 ```
 
-## Build Abseil project from inside the container {:#build-abseil-inside-container}
+## Build Abseil project from inside the container
 
 The instructions in this section allow you to build using the Bazel container
 with the sources inside the container. By starting a container at the beginning
@@ -1184,7 +1151,7 @@ MemorySanitizer (msan) accordingly.
 ubuntu@5a99103747c6:~/abseil-cpp$ bazel build --config={asan | tsan | msan} -- //absl/... -//absl/types:variant_test
 ```
 
-## Explore the Bazel container {:#explore-bazel-container}
+## Explore the Bazel container
 
 If you haven't already, start an interactive shell inside the Bazel container.
 
@@ -1220,23 +1187,19 @@ Build timestamp: 1685725198
 Build timestamp as int: 1685725198
 ```
 
-## Explore the Bazel Dockerfile {:#explore-bazel-dockerfile}
+## Explore the Bazel Dockerfile
 
 If you want to check how the Bazel Docker image is built, you can find its Dockerfile at [bazelbuild/continuous-integration/bazel/oci](https://github.com/bazelbuild/continuous-integration/tree/master/bazel/oci).
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Command-Line Completion
-
-{% include "_buttons.html" %}
 
 You can enable command-line completion (also known as tab-completion) in Bash
 and Zsh. This lets you tab-complete command names, flags names and flag values,
 and target names.
 
-## Bash {:#bash}
+## Bash
 
 Bazel comes with a Bash completion script.
 
@@ -1295,7 +1258,7 @@ If you installed Bazel:
             source /path/to/bazel-complete.bash
             ```
 
-## Zsh {:#zsh}
+## Zsh
 
 Bazel comes with a Zsh completion script.
 
@@ -1357,12 +1320,8 @@ If you installed Bazel:
         ```
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Installing Bazel on openSUSE Tumbleweed & Leap
-
-{% include "_buttons.html" %}
 
 This page describes how to install Bazel on openSUSE Tumbleweed and Leap.
 
@@ -1374,7 +1333,7 @@ available Bazel versions via openSUSE's [software search](https://software.opens
 
 The commands below must be run either via `sudo` or while logged in as `root`.
 
-## Installing Bazel on openSUSE {:#install-opensuse}
+## Installing Bazel on openSUSE
 
 Run the following commands to install the package. If you need a specific
 version, you can install it via the specific `bazelXXX` package, otherwise,

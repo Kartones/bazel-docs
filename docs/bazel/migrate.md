@@ -1,10 +1,6 @@
-Project: /_project.yaml
-Book: /_book.yaml
+
 
 # Migrating to Bazel
-
-{% dynamic setvar source_file "site/en/migrate/index.md" %}
-{% include "_buttons.html" %}
 
 This page links to migration guides for Bazel.
 
@@ -12,12 +8,8 @@ This page links to migration guides for Bazel.
 *  [Xcode](/migrate/xcode)
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Migrating from Maven to Bazel
-
-{% include "_buttons.html" %}
 
 This page describes how to migrate from Maven to Bazel, including the
 prerequisites and installation steps. It describes the differences between Maven
@@ -33,14 +25,14 @@ Note: While Bazel supports downloading and publishing Maven artifacts with
 , it does not directly support Maven-based plugins. Maven plugins can't be
 directly run by Bazel since there's no Maven compatibility layer.
 
-## Before you begin {:#before-you-begin}
+## Before you begin
 
 *   [Install Bazel](/install) if it's not yet installed.
 *   If you're new to Bazel, go through the tutorial [Introduction to Bazel:
     Build Java](/start/java) before you start migrating. The tutorial explains
     Bazel's concepts, structure, and label syntax.
 
-## Differences between Maven and Bazel {:#dif-maven-bazel}
+## Differences between Maven and Bazel
 
 *   Maven uses top-level `pom.xml` file(s). Bazel supports multiple build files
     and multiple targets per `BUILD` file, allowing for builds that are more
@@ -52,7 +44,7 @@ directly run by Bazel since there's no Maven compatibility layer.
     `BUILD` files. Best practice is to add a `BUILD` file to each new Java
     package.
 
-## Migrate from Maven to Bazel {:#migrate-maven-bazel}
+## Migrate from Maven to Bazel
 
 The steps below describe how to migrate your project to Bazel:
 
@@ -72,7 +64,7 @@ $ git clone https://github.com/google/guava.git && cd guava
 $ git checkout v31.1
 ```
 
-### 1. Create the MODULE.bazel file {:#1-build}
+### 1. Create the MODULE.bazel file
 
 Create a file named `MODULE.bazel` at the root of your project. If your project
 has no external dependencies, this file can be empty.
@@ -84,7 +76,7 @@ instructions about using this ruleset, see [the
 README](https://github.com/bazelbuild/rules_jvm_external/#rules_jvm_external){: .external}
 .
 
-#### Guava project example: external dependencies {:#guava-1}
+#### Guava project example: external dependencies
 
 You can list the external dependencies of the [Guava
 project](https://github.com/google/guava){: .external} with the
@@ -111,7 +103,7 @@ maven.install(
 use_repo(maven, "maven")
 ```
 
-### 2. Create one BUILD file {:#2-build}
+### 2. Create one BUILD file
 
 Now that you have your workspace defined and external dependencies (if
 applicable) listed, you need to create `BUILD` files to describe how your
@@ -191,7 +183,7 @@ your build by adding more `BUILD` files with more granular targets.
     The project has now been successfully built with Bazel. You will need to add
     more `BUILD` files to allow incremental builds of the project.
 
-#### Guava project example: start with one BUILD file {:#guava-2}
+#### Guava project example: start with one BUILD file
 
 When migrating the Guava project to Bazel, initially one `BUILD` file is used to
 build the entire project. Here are the contents of this initial `BUILD` file in
@@ -215,7 +207,7 @@ java_library(
 )
 ```
 
-### 3. Create more BUILD files (optional) {:#3-build}
+### 3. Create more BUILD files (optional)
 
 Bazel does work with just one `BUILD file`, as you saw after completing your
 first build. You should still consider breaking the build into smaller chunks by
@@ -247,7 +239,7 @@ Tips for adding more `BUILD` files:
     that the project continues to build with Bazel as you add each build file.
     Run `bazel build //...` to ensure all of your targets still build.
 
-### 4. Build using Bazel {:#4-build}
+### 4. Build using Bazel
 
 You've been building using Bazel as you add `BUILD` files to validate the setup
 of the build.
@@ -255,19 +247,15 @@ of the build.
 When you have `BUILD` files at the desired granularity, you can use Bazel to
 produce all of your builds.
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Migrating from Xcode to Bazel
-
-{% include "_buttons.html" %}
 
 This page describes how to build or test an Xcode project with Bazel. It
 describes the differences between Xcode and Bazel, and provides the steps for
 converting an Xcode project to a Bazel project. It also provides troubleshooting
 solutions to address common errors.
 
-## Differences between Xcode and Bazel {:#dif-xcode-bazel}
+## Differences between Xcode and Bazel
 
 *   Bazel requires you to explicitly specify every build target and its
     dependencies, plus the corresponding build settings via build rules.
@@ -286,7 +274,7 @@ solutions to address common errors.
     `bazel build` and `bazel test` commands provide build and test capabilities
     with certain limitations described later in this guide.
 
-## Before you begin {:#before-you-begin}
+## Before you begin
 
 Before you begin, do the following:
 
@@ -299,7 +287,7 @@ Before you begin, do the following:
 
 3.  Analyze and understand the project's dependencies.
 
-### Analyze project dependencies {:#analyze-project-dependencies}
+### Analyze project dependencies
 
 Unlike Xcode, Bazel requires you to explicitly declare all dependencies for
 every target in the `BUILD` file.
@@ -307,7 +295,7 @@ every target in the `BUILD` file.
 For more information on external dependencies, see [Working with external
 dependencies](/docs/external).
 
-## Build or test an Xcode project with Bazel {:#build-xcode-project}
+## Build or test an Xcode project with Bazel
 
 To build or test an Xcode project with Bazel, do the following:
 
@@ -329,7 +317,7 @@ To build or test an Xcode project with Bazel, do the following:
 
 6.  [Generate the Xcode project with rules_xcodeproj](#generate-the-xcode-project-with-rules_xcodeproj)
 
-### Step 1: Create the `MODULE.bazel` file {:#create-workspace}
+### Step 1: Create the `MODULE.bazel` file
 
 Create a `MODULE.bazel` file in a new directory. This directory becomes the
 Bazel workspace root. If the project uses no external dependencies, this file
@@ -340,7 +328,7 @@ the project's directories, specify these external dependencies in the
 Note: Place the project source code within the directory tree containing the
 `MODULE.bazel` file.
 
-### Step 2: (Experimental) Integrate SwiftPM dependencies {:#integrate-swiftpm}
+### Step 2: (Experimental) Integrate SwiftPM dependencies
 
 To integrate SwiftPM dependencies into the Bazel workspace with
 [swift_bazel](https://github.com/cgrindel/swift_bazel){: .external}, you must
@@ -352,7 +340,7 @@ Note: SwiftPM support is a manual process with many variables. SwiftPM
 integration with Bazel has not been fully verified and is not officially
 supported.
 
-### Step 3: Create a `BUILD` file {:#create-build-file}
+### Step 3: Create a `BUILD` file
 
 Once you have defined the workspace and external dependencies, you need to
 create a `BUILD` file that tells Bazel how the project is structured. Create the
@@ -366,7 +354,7 @@ initial build of the project as follows:
 **Tip:** To learn more about packages and other Bazel concepts, see [Workspaces,
 packages, and targets](/concepts/build-ref).
 
-#### Step 3a: Add the application target {:#add-app-target}
+#### Step 3a: Add the application target
 
 Add a
 [`macos_application`](https://github.com/bazelbuild/rules_apple/blob/master/doc/rules-macos.md#macos_application){: .external}
@@ -390,7 +378,7 @@ In the target, specify the following at the minimum:
     application supports. This ensures Bazel builds the application with the
     correct API levels.
 
-#### Step 3b: (Optional) Add the test target(s) {:#add-test-target}
+#### Step 3b: (Optional) Add the test target(s)
 
 Bazel's [Apple build
 rules](https://github.com/bazelbuild/rules_apple){: .external} support running
@@ -418,7 +406,7 @@ with the project and adjust them as necessary. For tests that require the iOS
 simulator, also specify the `ios_application` target name as the value of the
 `test_host` attribute.
 
-#### Step 3c: Add the library target(s) {:#add-library-target}
+#### Step 3c: Add the library target(s)
 
 Add an [`objc_library`](/reference/be/objective-c#objc_library) target for each
 Objective-C library and a
@@ -458,7 +446,7 @@ At this point, it is a good idea to test the build:
 
 `bazel build //:<application_target>`
 
-### Step 4: (Optional) Granularize the build {:#granularize-build}
+### Step 4: (Optional) Granularize the build
 
 If the project is large, or as it grows, consider chunking it into multiple
 Bazel packages. This increased granularity provides:
@@ -492,7 +480,7 @@ Tips for granularizing the project:
 *   Build the project after each major change to the `BUILD` files and fix build
     errors as you encounter them.
 
-### Step 5: Run the build {:#run-build}
+### Step 5: Run the build
 
 Run the fully migrated build to ensure it completes with no errors or warnings.
 Run every application and test target individually to more easily find sources
@@ -504,7 +492,7 @@ For example:
 bazel build //:my-target
 ```
 
-### Step 6: Generate the Xcode project with rules_xcodeproj {:#generate-the-xcode-project-with-rules_xcodeproj}
+### Step 6: Generate the Xcode project with rules_xcodeproj
 
 When building with Bazel, the `MODULE.bazel` and `BUILD` files become the source
 of truth about the build. To make Xcode aware of this, you must generate a
@@ -512,7 +500,7 @@ Bazel-compatible Xcode project using
 [rules_xcodeproj](https://github.com/buildbuddy-io/rules_xcodeproj#features){: .external}
 .
 
-### Troubleshooting {:#troubleshooting}
+### Troubleshooting
 
 Bazel errors can arise when it gets out of sync with the selected Xcode version,
 like when you apply an update. Here are some things to try if you're

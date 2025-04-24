@@ -4,6 +4,7 @@ from app.download_bazel_site import main as download_bazel_main
 from app.process_bazel_docs import main as process_bazel_main
 from app.download_rules_nodejs import main as download_rules_nodejs_main
 from app.process_rules_nodejs_docs import main as process_rules_nodejs_docs
+from app.cleanup import main as cleanup_main
 
 
 def main() -> None:
@@ -22,6 +23,12 @@ def main() -> None:
         description="Process downloaded documentation into markdown files",
     )
 
+    subparsers.add_parser(
+        "cleanup",
+        help="Delete input folder",
+        description="Delete the input folder containing downloaded documentation",
+    )
+
     args = parser.parse_args()
 
     if args.command == "download":
@@ -30,6 +37,8 @@ def main() -> None:
     elif args.command == "process":
         process_bazel_main()
         process_rules_nodejs_docs()
+    elif args.command == "cleanup":
+        cleanup_main()
     else:
         parser.print_help()
         raise SystemExit(1)

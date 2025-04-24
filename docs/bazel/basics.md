@@ -1,10 +1,6 @@
-Project: /_project.yaml
-Book: /_book.yaml
+
 
 # Build Basics
-
-{% dynamic setvar source_file "site/en/basics/index.md" %}
-{% include "_buttons.html" %}
 
 A build system is one of the most important parts of an engineering organization
 because each developer interacts with it potentially dozens or hundreds of times
@@ -59,17 +55,12 @@ modification here!
     strategies to counteract those complications.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Task-Based Build Systems
-
-{% include "_buttons.html" %}
 
 This page covers task-based build systems, how they work and some of the
 complications that can occur with task-based systems. After shell scripts,
 task-based build systems are the next logical evolution of building.
-
 
 ## Understanding task-based build systems
 
@@ -278,12 +269,8 @@ This approach led to the creation of artifact-based build systems, like Blaze
 and Bazel.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Distributed Builds
-
-{% include "_buttons.html" %}
 
 When you have a large codebase, chains of dependencies can become very deep.
 Even simple binaries can often depend on tens of thousands of build targets. At
@@ -418,12 +405,8 @@ us to implement a huge number of automated tools and systems that rely on our
 build.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Dependency Management
-
-{% include "_buttons.html" %}
 
 In looking through the previous pages, one theme repeats over and over: managing
 your own code is fairly straightforward, but managing its dependencies is much
@@ -721,12 +704,8 @@ at Google only because Google’s source control system is custom built to handl
 an extremely large monorepo, so vendoring might not be an option for all
 organizations.
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Artifact-Based Build Systems
-
-{% include "_buttons.html" %}
 
 This page covers artifact-based build systems and the philosophy behind their
 creation. Bazel is an artifact-based build system. While task-based build
@@ -1003,12 +982,8 @@ will always be at the mercy of a third party for your build system’s
 availability, even if the checked-in hashes guarantee its security.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Why a Build System?
-
-{% include "_buttons.html" %}
 
 This page discusses what build systems are, what they do, why you should use a
 build system, and why compilers and build scripts aren't the best choice as your
@@ -1133,17 +1108,13 @@ difficult to account for the minor differences in those machines. At this point,
 this simple approach breaks down and it’s time to invest in a real build system.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Hermeticity
-
-{% include "_buttons.html" %}
 
 This page covers hermeticity, the benefits of using hermetic builds, and
 strategies for identifying non-hermetic behavior in your builds.
 
-## Overview {:#overview}
+## Overview
 
 When given the same input source code and product configuration, a hermetic
 build system always returns the same output by isolating the build from changes
@@ -1166,7 +1137,7 @@ The two important aspects of hermeticity are:
   unique hash code. Hermetic build systems use this hash to identify changes to
   the build's input.
 
-## Benefits {:#benefits}
+## Benefits
 
 The major benefits of hermetic builds are:
 
@@ -1181,7 +1152,7 @@ The major benefits of hermetic builds are:
 * **Reproducibility**: Hermetic builds are good for troubleshooting because you
   know the exact conditions that produced the build.
 
-## Identifying non-hermeticity {:#nonhermeticity}
+## Identifying non-hermeticity
 
 If you are preparing to switch to Bazel, migration is easier if you improve
 your existing builds' hermeticity in advance. Some common sources of
@@ -1197,7 +1168,7 @@ non-hermeticity in builds are:
   tree, fixing the source tree for target A. Then trying to build target B may
   fail.
 
-## Troubleshooting non-hermetic builds {:#troubleshooting-nonhermeticity}
+## Troubleshooting non-hermetic builds
 
 Starting with local execution, issues that affect local cache hits reveal
 non-hermetic actions.
@@ -1230,7 +1201,7 @@ Note: Make your build fully hermetic when mixing remote and local execution,
 using Bazel’s “dynamic strategy” functionality. Running Bazel inside the remote
 Docker container will enable the build to execute the same in both environments.
 
-## Hermeticity with Bazel {:#hermeticity-bazel}
+## Hermeticity with Bazel
 
 For more information about how other projects have had success using hermetic
 builds with Bazel, see these  BazelCon talks:

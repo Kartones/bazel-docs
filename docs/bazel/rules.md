@@ -1,10 +1,6 @@
-Project: /_project.yaml
-Book: /_book.yaml
+
 
 # Rules
-
-{% dynamic setvar source_file "site/en/rules/index.md" %}
-{% include "_buttons.html" %}
 
 The Bazel ecosystem has a growing and evolving set of rules to support popular
 languages and packages. Much of Bazel's strength comes from the ability to
@@ -12,7 +8,7 @@ languages and packages. Much of Bazel's strength comes from the ability to
 
 This page describes the recommended, native, and non-native Bazel rules.
 
-## Recommended rules {:#recommended-rules}
+## Recommended rules
 
 Here is a selection of recommended rules:
 
@@ -74,7 +70,7 @@ BUILD files without a `load` statement.
   - [`xcode_config`](/reference/be/objective-c#xcode_config)
   - [`xcode_version`](/reference/be/objective-c#xcode_version)
 
-## Embedded non-native rules {:#embedded-rules}
+## Embedded non-native rules
 
 Bazel also embeds additional rules written in [Starlark](/rules/language). Those can be loaded from
 the `@bazel_tools` built-in external repository.
@@ -87,12 +83,8 @@ the `@bazel_tools` built-in external repository.
   - [Utility functions on patching](/rules/lib/repo/utils)
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Starlark Language
-
-{% include "_buttons.html" %}
 
 <!-- [TOC] -->
 
@@ -136,7 +128,7 @@ types are supported:
 * [list](lib/list)
 * [string](lib/string)
 
-## Type annotations {:#StarlarkTypes}
+## Type annotations
 
 **Experimental**. Type annotations are an experimental feature and may change
 at any time. Don't depend on it. It may be enabled in Bazel at HEAD
@@ -148,7 +140,7 @@ with a syntax inspired by [PEP 484](https://peps.python.org/pep-0484/).
 - Starlark type annotations are under active development. The progress is
   tracked on [issue#22935](https://github.com/bazelbuild/bazel/issues/22935).
 - The specification is incrementally extended: [starlark-with-types/spec.md](https://github.com/bazelbuild/starlark/blob/starlark-with-types/spec.md)
-- Initial proposal: {# disableFinding(LINK_DOCS) #}[SEP-001 Bootstrapping Starlark types](https://docs.google.com/document/d/1Sid7EAbBd_w_T7D94Li_f_bK3zMTztFbzIMvcpzo1wY/edit?tab=t.0#heading=h.5mcn15i0e1ch)
+- Initial proposal: [SEP-001 Bootstrapping Starlark types](https://docs.google.com/document/d/1Sid7EAbBd_w_T7D94Li_f_bK3zMTztFbzIMvcpzo1wY/edit?tab=t.0#heading=h.5mcn15i0e1ch)
 
 ## Mutability
 
@@ -195,7 +187,7 @@ Global variables defined in `bzl` files cannot be changed outside of the
 `bzl` file that defined them. Just like the above example using `bzl` files,
 values returned by rules are immutable.
 
-## Differences between BUILD and .bzl files {:#differences-between-build-and-bzl-files}
+## Differences between BUILD and .bzl files
 
 `BUILD` files register targets via making calls to rules. `.bzl` files provide
 definitions for constants, rules, macros, and functions.
@@ -256,12 +248,8 @@ The following Python features are not supported:
 * most builtin functions, most methods.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # .bzl style guide
-
-{% include "_buttons.html" %}
 
 This page covers basic style guidelines for Starlark and also includes
 information on macros and rules.
@@ -298,15 +286,15 @@ developers and tools. The
 [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself){: .external} principle doesn't
 really apply here.
 
-## General advice {:#general-advice}
+## General advice
 
 *   Use [Buildifier](https://github.com/bazelbuild/buildtools/tree/master/buildifier#linter){: .external}
     as a formatter and linter.
 *   Follow [testing guidelines](/rules/testing).
 
-## Style {:#style}
+## Style
 
-### Python style {:#python-style}
+### Python style
 
 When in doubt, follow the
 [PEP 8 style guide](https://www.python.org/dev/peps/pep-0008/) where possible.
@@ -319,19 +307,18 @@ some aspects of Python style do not apply. For example, PEP 8 advises that
 comparisons to singletons be done with `is`, which is not an operator in
 Starlark.
 
-
-### Docstring {:#docstring}
+### Docstring
 
 Document files and functions using [docstrings](https://github.com/bazelbuild/buildtools/blob/master/WARNINGS.md#function-docstring){: .external}.
 Use a docstring at the top of each `.bzl` file, and a docstring for each public
 function.
 
-### Document rules and aspects {:#doc-rules-aspects}
+### Document rules and aspects
 
 Rules and aspects, along with their attributes, as well as providers and their
 fields, should be documented using the `doc` argument.
 
-### Naming convention {:#naming-convention}
+### Naming convention
 
 *   Variables and function names use lowercase with words separated by
     underscores (`[a-z][a-z0-9_]*`), such as `cc_library`.
@@ -339,7 +326,7 @@ fields, should be documented using the `doc` argument.
     private values cannot be used from other files. Local variables should not
     use the underscore prefix.
 
-### Line length {:#line-length}
+### Line length
 
 As in `BUILD` files, there is no strict line length limit as labels can be long.
 When possible, try to use at most 79 characters per line (following Python's
@@ -348,7 +335,7 @@ should not be enforced strictly: editors should display more than 80 columns,
 automated changes will frequently introduce longer lines, and humans shouldn't
 spend time splitting lines that are already readable.
 
-### Keyword arguments {:#keyword-arguments}
+### Keyword arguments
 
 In keyword arguments, spaces around the equal sign are preferred:
 
@@ -362,12 +349,12 @@ def fct(name, srcs):
     )
 ```
 
-### Boolean values {:#boolean-values}
+### Boolean values
 
 Prefer values `True` and `False` (rather than of `1` and `0`) for boolean values
 (such as when using a boolean attribute in a rule).
 
-### Use print only for debugging {:#print-for-debugging}
+### Use print only for debugging
 
 Do not use the `print()` function in production code; it is only intended for
 debugging, and will spam all direct and indirect users of your `.bzl` file. The
@@ -377,7 +364,7 @@ uses of `print()` are guarded by `if DEBUG:` where `DEBUG` is hardcoded to
 `False`. Be mindful of whether these statements are useful enough to justify
 their impact on readability.
 
-## Macros {:#macros}
+## Macros
 
 A macro is a function which instantiates one or more rules during the loading
 phase. In general, use rules whenever possible instead of macros. The build
@@ -430,7 +417,7 @@ As a rule of thumb, the more macros resemble the rules, the better.
 
 See also [macros](/extending/macros#conventions).
 
-## Rules {:#rules}
+## Rules
 
 *   Rules, aspects, and their attributes should use lower_case names ("snake
     case").
@@ -471,12 +458,8 @@ See also [macros](/extending/macros#conventions).
 *   Follow [performance guidelines](/rules/performance) in your rules.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Creating a Symbolic Macro
-
-{% include "_buttons.html" %}
 
 IMPORTANT: This tutorial is for [*symbolic macros*](/extending/macros) – the new
 macro system introduced in Bazel 8. If you need to support older Bazel versions,
@@ -590,12 +573,8 @@ cc_binary(
 ```
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Rules Tutorial
-
-{% include "_buttons.html" %}
 
 <!-- [TOC] -->
 
@@ -961,17 +940,13 @@ exports_files(["file.cc.tpl"])
     which includes additional examples of rules.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Challenges of Writing Rules
-
-{% include "_buttons.html" %}
 
 This page gives a high-level overview of the specific issues and challenges
 of writing efficient Bazel rules.
 
-## Summary Requirements {:#summary-requirements}
+## Summary Requirements
 
 * Assumption: Aim for Correctness, Throughput, Ease of Use & Latency
 * Assumption: Large Scale Repositories
@@ -983,14 +958,14 @@ of writing efficient Bazel rules.
   requires Unusual Coding Patterns
 * Intrinsic: Avoiding Quadratic Time and Memory Consumption is Hard
 
-## Assumptions {:#assumptions}
+## Assumptions
 
 Here are some assumptions made about the build system, such as need for
 correctness, ease of use, throughput, and large scale repositories. The
 following sections address these assumptions and offer guidelines to ensure
 rules are written in an effective manner.
 
-### Aim for correctness, throughput, ease of use & latency {:#aim}
+### Aim for correctness, throughput, ease of use & latency
 
 We assume that the build system needs to be first and foremost correct with
 respect to incremental builds. For a given source tree, the output of the
@@ -1021,7 +996,7 @@ message that a `BUILD` file has a typo.
 Note that these goals often overlap; latency is as much a function of throughput
 of the remote execution service as is correctness relevant for ease of use.
 
-### Large scale repositories {:#large-repos}
+### Large scale repositories
 
 The build system needs to operate at the scale of large repositories where large
 scale means that it does not fit on a single hard drive, so it is impossible to
@@ -1032,7 +1007,7 @@ hundreds of thousands of globs. While it is theoretically possible to read all
 reasonable amount of time and memory. As such, it is critical that `BUILD` files
 can be loaded and parsed independently.
 
-### BUILD-like description language {:#language}
+### BUILD-like description language
 
 In this context, we assume a configuration language that is
 roughly similar to `BUILD` files in declaration of library and binary rules
@@ -1040,12 +1015,12 @@ and their interdependencies. `BUILD` files can be read and parsed independently,
 and we avoid even looking at source files whenever we can (except for
 existence).
 
-## Historic {:#historic}
+## Historic
 
 There are differences between Bazel versions that cause challenges and some
 of these are outlined in the following sections.
 
-### Hard separation between loading, analysis, and execution is outdated but still affects the API {:#loading-outdated}
+### Hard separation between loading, analysis, and execution is outdated but still affects the API
 
 Technically, it is sufficient for a rule to know the input and output files of
 an action just before the action is sent to remote execution. However, the
@@ -1066,12 +1041,12 @@ output of an action; instead, it needs to generate a partial directed bipartite
 graph of build steps and output file names that is only determined from the rule
 itself and its dependencies.
 
-## Intrinsic {:#intrinsic}
+## Intrinsic
 
 There are some intrinsic properties that make writing rules challenging and
 some of the most common ones are described in the following sections.
 
-### Remote execution and caching are hard {:#remote-execution}
+### Remote execution and caching are hard
 
 Remote execution and caching improve build times in large repositories by
 roughly two orders of magnitude compared to running the build on a single
@@ -1087,7 +1062,7 @@ the scheduler replies with the digests of the output files; the files itself are
 addressed by digest later on. However, this imposes restrictions on the Bazel
 rules, which need to declare all input files ahead of time.
 
-### Using change information for correct and fast incremental builds requires unusual coding patterns {:#coding-patterns}
+### Using change information for correct and fast incremental builds requires unusual coding patterns
 
 Above, we argued that in order to be correct, Bazel needs to know all the input
 files that go into a build step in order to detect whether that build step is
@@ -1140,7 +1115,7 @@ in the first place. The danger of accidental use of such APIs is just too big -
 several Bazel bugs in the past were caused by rules using unsafe APIs, even
 though the rules were written by the Bazel team or other domain experts.
 
-### Avoiding quadratic time and memory consumption is hard {:#avoid}
+### Avoiding quadratic time and memory consumption is hard
 
 To make matters worse, apart from the requirements imposed by Skyframe, the
 historical constraints of using Java, and the outdatedness of the rules API,
@@ -1168,7 +1143,7 @@ the Java runtime classpath, or the C++ linker command line. For example, it
 could expand the command line string representation of the C++ link action. N/2
 copies of N/2 elements is O(N^2) memory.
 
-#### Custom collections classes to avoid quadratic complexity {:#custom-classes}
+#### Custom collections classes to avoid quadratic complexity
 
 Bazel is heavily affected by both of these scenarios, so we introduced a set of
 custom collection classes that effectively compress the information in memory by
@@ -1187,12 +1162,8 @@ accidentally passing a NestedSet to one of these methods leads to copying
 behavior, and reintroduces quadratic memory consumption.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Frequently Asked Questions
-
-{% include "_buttons.html" %}
 
 These are some common issues and questions with writing extensions.
 
@@ -1270,12 +1241,8 @@ tooling to extract documentation. Feel free to use standard non-string comments
 wherever it may help the reader of your code.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Writing Rules on Windows
-
-{% include "_buttons.html" %}
 
 This page focuses on writing Windows-compatible rules, common problems of
 writing portable rules, and some solutions.
@@ -1543,17 +1510,13 @@ TODO:
 -->
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Testing
-
-{% include "_buttons.html" %}
 
 There are several different approaches to testing Starlark code in Bazel. This
 page gathers the current best practices and frameworks by use case.
 
-## Testing rules {:#testing-rules}
+## Testing rules
 
 [Skylib](https://github.com/bazelbuild/bazel-skylib){: .external} has a test framework called
 [`unittest.bzl`](https://github.com/bazelbuild/bazel-skylib/blob/main/lib/unittest.bzl){: .external}
@@ -1592,7 +1555,7 @@ generated script that fails at test execution time.
 
 See below for a minimal toy example, followed by an example that checks actions.
 
-### Minimal example {:#testing-rules-example}
+### Minimal example
 
 `//mypkg/myrules.bzl`:
 
@@ -1614,7 +1577,6 @@ myrule = rule(
 ```
 
 `//mypkg/myrules_test.bzl`:
-
 
 ```python
 load("@bazel_skylib//lib:unittest.bzl", "asserts", "analysistest")
@@ -1722,7 +1684,7 @@ Then:
 Note that the labels of all targets can conflict with other labels in the same
 BUILD package, so it's helpful to use a unique name for the test.
 
-### Failure testing {:#failure-testing}
+### Failure testing
 
 It may be useful to verify that a rule fails given certain inputs or in certain
 state. This can be done using the analysis test framework:
@@ -1763,7 +1725,7 @@ def _test_failure():
 # ":failure_testing_test" to the suite's test targets.
 ```
 
-### Verifying registered actions {:#verifying-registered-actions}
+### Verifying registered actions
 
 You may want to write tests which make assertions about the actions that your
 rule registers, for example, using `ctx.actions.run()`. This can be done in your
@@ -1786,7 +1748,7 @@ Note that `analysistest.target_actions(env)` returns a list of
 [`Action`](lib/Action) objects which represent actions registered by the
 target under test.
 
-### Verifying rule behavior under different flags {:#verifying-rule-behavior}
+### Verifying rule behavior under different flags
 
 You may want to verify your real rule behaves a certain way given certain build
 flags. For example, your rule may behave differently if a user specifies:
@@ -1834,8 +1796,7 @@ In the specified `config_settings` dictionary, command line flags must be
 prefixed with a special placeholder value `//command_line_option:`, as is shown
 above.
 
-
-## Validating artifacts {:#validating-artifacts}
+## Validating artifacts
 
 The main ways to check that your generated files are correct are:
 
@@ -1844,7 +1805,7 @@ The main ways to check that your generated files are correct are:
 
 *   You can use a specialized rule for the kind of test you want to perform.
 
-### Using a test target {:#using-test-target}
+### Using a test target
 
 The most straightforward way to validate an artifact is to write a script and
 add a `*_test` target to your BUILD file. The specific artifacts you want to
@@ -1885,7 +1846,7 @@ sh_test(
 )
 ```
 
-### Using a custom rule {:#using-custom-rule}
+### Using a custom rule
 
 A more complicated alternative is to write the shell script as a template that
 gets instantiated by a new rule. This involves more indirection and Starlark
@@ -1967,7 +1928,7 @@ Alternatively, instead of using a template expansion action, you could have
 inlined the template into the .bzl file as a string and expanded it during the
 analysis phase using the `str.format` method or `%`-formatting.
 
-## Testing Starlark utilities {:#testing-starlark-utilities}
+## Testing Starlark utilities
 
 [Skylib](https://github.com/bazelbuild/bazel-skylib){: .external}'s
 [`unittest.bzl`](https://github.com/bazelbuild/bazel-skylib/blob/main/lib/unittest.bzl){: .external}
@@ -1984,7 +1945,6 @@ def myhelper():
 ```
 
 `//mypkg/myhelpers_test.bzl`:
-
 
 ```python
 load("@bazel_skylib//lib:unittest.bzl", "asserts", "unittest")
@@ -2020,12 +1980,8 @@ myhelpers_test_suite(name = "myhelpers_tests")
 For more examples, see Skylib's own [tests](https://github.com/bazelbuild/bazel-skylib/blob/main/tests/BUILD){: .external}.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Optimizing Performance
-
-{% include "_buttons.html" %}
 
 When writing rules, the most common performance pitfall is to traverse or copy
 data that is accumulated from dependencies. When aggregated over the whole
@@ -2037,7 +1993,7 @@ assists you in finding spots where you might have made a mistake. Be warned:
 The cost of writing an inefficient rule may not be evident until it is in
 widespread use.
 
-## Use depsets {:#use-depsets}
+## Use depsets
 
 Whenever you are rolling up information from rule dependencies you should use
 [depsets](lib/depset). Only use plain lists or dicts to publish information
@@ -2095,7 +2051,7 @@ def _impl(ctx):
 
 See the [depset overview](/extending/depsets) page for more information.
 
-### Avoid calling `depset.to_list()` {:#avoid-depset-to-list}
+### Avoid calling `depset.to_list()`
 
 You can coerce a depset to a flat list using
 [`to_list()`](lib/depset#to_list), but doing so usually results in O(N^2)
@@ -2108,7 +2064,7 @@ accumulated over each level of the build graph. But this is *still* O(N^2) when
 you build a set of targets with overlapping dependencies. This happens when
 building your tests `//foo/tests/...`, or when importing an IDE project.
 
-### Reduce the number of calls to `depset` {:#reduce-calls-depset}
+### Reduce the number of calls to `depset`
 
 Calling `depset` inside a loop is often a mistake. It can lead to depsets with
 very deep nesting, which perform poorly. For example:
@@ -2138,7 +2094,7 @@ This can sometimes be reduced using a list comprehension:
 x = depset(transitive = [i.deps for i in inputs])
 ```
 
-## Use ctx.actions.args() for command lines {:#ctx-actions-args}
+## Use ctx.actions.args() for command lines
 
 When building command lines you should use [ctx.actions.args()](lib/Args).
 This defers expansion of any depsets to the execution phase.
@@ -2199,7 +2155,7 @@ def _to_short_path(f):
   return f.short_path
 ```
 
-## Transitive action inputs should be depsets {:#transitive-action-inputs}
+## Transitive action inputs should be depsets
 
 When building an action using [ctx.actions.run](lib/actions?#run), do not
 forget that the `inputs` field accepts a depset. Use this whenever inputs are
@@ -2213,7 +2169,7 @@ ctx.actions.run(
 )
 ```
 
-## Hanging {:#hanging}
+## Hanging
 
 If Bazel appears to be hung, you can hit <kbd>Ctrl-&#92;</kbd> or send
 Bazel a `SIGQUIT` signal (`kill -3 $(bazel info server_pid)`) to get a thread
@@ -2223,7 +2179,7 @@ Since you may not be able to run `bazel info` if bazel is hung, the
 `output_base` directory is usually the parent of the `bazel-<workspace>`
 symlink in your workspace directory.
 
-## Performance profiling {:#performance-profiling}
+## Performance profiling
 
 The [JSON trace profile](/advanced/performance/json-trace-profile) can be very
 useful to quickly understand what Bazel spent time on during the invocation.
@@ -2235,13 +2191,13 @@ flag may be used to capture Java Flight Recorder profiles of various kinds
 The [`--starlark_cpu_profile`](https://bazel.build/reference/command-line-reference#flag--starlark_cpu_profile)
 flag may be used to write a pprof profile of CPU usage by all Starlark threads.
 
-## Memory profiling {:#memory-profiling}
+## Memory profiling
 
 Bazel comes with a built-in memory profiler that can help you check your rule’s
 memory use. If there is a problem you can dump the heap to find the
 exact line of code that is causing the problem.
 
-### Enabling memory tracking {:#enabling-memory-tracking}
+### Enabling memory tracking
 
 You must pass these two startup flags to *every* Bazel invocation:
 
@@ -2258,7 +2214,7 @@ Repository][allocation-instrumenter-link].
 These start the server in memory tracking mode. If you forget these for even
 one Bazel invocation the server will restart and you will have to start over.
 
-### Using the Memory Tracker {:#memory-tracker}
+### Using the Memory Tracker
 
 As an example, look at the target `foo` and see what it does. To only
 run the analysis and not run the build execution phase, add the
@@ -2325,12 +2281,8 @@ $ pprof -text -lines $HOME/prof.gz
 ```
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Deploying Rules
-
-{% include "_buttons.html" %}
 
 This page is for rule writers who are planning to make their rules available
 to others.
@@ -2489,7 +2441,6 @@ repository, consider splitting the repository with `toolchain` targets from the
 repository with `<LANG>_toolchain` targets. Former will be always fetched, and
 the latter will only be fetched when user actually needs to build `<LANG>` code.
 
-
 #### Release snippet
 
 In your release announcement provide a snippet that your users can copy-paste
@@ -2498,7 +2449,6 @@ into their `MODULE.bazel` file. This snippet in general will look as follows:
 ```
 bazel_dep(name = "rules_<LANG>", version = "<VERSION>")
 ```
-
 
 ### Tests
 
@@ -2551,12 +2501,8 @@ We used to have all of the rules in the Bazel repository (under
 there, but we are working on moving the remaining rules out.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Creating a Legacy Macro
-
-{% include "_buttons.html" %}
 
 IMPORTANT: This tutorial is for [*legacy macros*](/extending/legacy-macros). If
 you only need to support Bazel 8 or newer, we recommend using [symbolic
@@ -2652,12 +2598,8 @@ if possible, instead using [symbolic macros](/extending/macros), which have
 built\-in checks on attribute types.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Using Macros to Create Custom Verbs
-
-{% include "_buttons.html" %}
 
 Day-to-day interaction with Bazel happens primarily through a few commands:
 `build`, `test`, and `run`. At times, though, these can feel limited: you may

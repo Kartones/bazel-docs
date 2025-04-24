@@ -42,8 +42,7 @@ def update_repository(repo_path: Path) -> None:
 
 
 def main() -> None:
-    """Main entry point for the script."""
-    # This function is called from app.py, so we don't need to parse arguments here
+    """Main entry point for the command."""
     repo_path = Path("input/rules-nodejs")
     repo_path.parent.mkdir(parents=True, exist_ok=True)
 

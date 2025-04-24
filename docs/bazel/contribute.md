@@ -1,14 +1,10 @@
-Project: /_project.yaml
-Book: /_book.yaml
+
 
 # Contributing to Bazel
 
-{% dynamic setvar source_file "site/en/contribute/index.md" %}
-{% include "_buttons.html" %}
-
 There are many ways to help the Bazel project and ecosystem.
 
-## Provide feedback {:#feedback}
+## Provide feedback
 
 As you use Bazel, you may find things that can be improved.
 You can help by [reporting issues](http://github.com/bazelbuild/bazel/issues){: .external}
@@ -21,7 +17,7 @@ when:
      link at the top right corner of the page.
    - An error message could be improved.
 
-## Participate in the community {:#community}
+## Participate in the community
 
 You can engage with the Bazel community by:
 
@@ -32,7 +28,7 @@ You can engage with the Bazel community by:
      https://github.com/bazelbuild/examples){: .external}.
    - Sharing your experience or your tips, for example, on a blog or social media.
 
-## Contribute code {:#contribute-code}
+## Contribute code
 
 Bazel is a large project and making a change to the Bazel source code
 can be difficult.
@@ -56,7 +52,7 @@ portability, and the impact on memory usage and performance.
 To learn about how to submit a change, see the
 [patch acceptance process](/contribute/patch-acceptance).
 
-## Bazel's code description {:#code-description}
+## Bazel's code description
 
 Bazel has a large codebase with code in multiple locations. See the [codebase guide](/contribute/codebase) for more details.
 
@@ -74,8 +70,7 @@ Bazel is organized as follows:
 *  Various tooling for language support are described in the list in the
    [compiling Bazel](/install/compile-source) section.
 
-
-### Searching Bazel's source code {:#search-code}
+### Searching Bazel's source code
 
 To quickly search through Bazel's source code, use
 [Bazel Code Search](https://source.bazel.build/). You can navigate Bazel's
@@ -84,21 +79,17 @@ information. To learn more, see the
 [Bazel Code Search User Guide](/contribute/search).
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Searching the codebase
 
-{% include "_buttons.html" %}
-
-## Product overview {:#product-overview}
+## Product overview
 
 Bazel's [code search and source browsing interface](https://source.bazel.build)
 is a web-based tool for browsing Bazel source code repositories. You can
 use these features to navigate among different repositories, branches, and
 files. You can also view history, diffs, and blame information.
 
-## Getting started {:#getting-started}
+## Getting started
 
 Note: For the best experience, use the latest version of Chrome, Safari, or
 Firefox.
@@ -118,9 +109,9 @@ commit.
 At the top of the screen is a search box. You can use this box to search for
 specific files and code.
 
-## Working with repositories {:#working-with-repositories}
+## Working with repositories
 
-### Opening a repository {:#opening-a-repository}
+### Opening a repository
 
 To open a repository, click its name from the main screen.
 
@@ -130,11 +121,11 @@ repository and allows you to move quickly to another location such as another
 repository, or another location within a repository, such as a file, branch, or
 commit.
 
-### Switch repositories {:#switch-repositories}
+### Switch repositories
 
 To switch to a different repository, select the repository from the Breadcrumb toolbar.
 
-### View a repository at a specific commit {:#view-a-repository-at-a-specific-commit}
+### View a repository at a specific commit
 
 To view a repository at a specific commit:
 
@@ -145,7 +136,7 @@ To view a repository at a specific commit:
 
 The interface now shows the repository as it existed at that commit.
 
-### Open a branch, commit, or tag {:#open-a-branch-commit-or-tag}
+### Open a branch, commit, or tag
 
 By default, the code search and source browsing interface opens a repository to
 the default branch.  To open a different branch, from the Breadcrumb toolbar,
@@ -161,7 +152,7 @@ branch using a branch name, a tag name, or through a search box.
 *  To search for a branch, commit, or tag, select the corresponding item and
    type a search term in the search box.
 
-## Working with files {:#working-with-files}
+## Working with files
 
 When you select a repository from the main screen, the screen changes to display
 a view of that repository. If a README file exists, its contents appear in the
@@ -179,13 +170,13 @@ three components:
 *  A **File path** box, which displays the name of the current file or folder
    and its corresponding path
 
-### Open a file {:#open-a-file}
+### Open a file
 
 You can open a file by browsing to its directory and selecting it. The view of
 the repository updates to show the contents of the file in the file pane, and
 its location in the repository in the tree pane.
 
-### View file changes {:#view-file-changes}
+### View file changes
 
 To view file changes:
 
@@ -194,7 +185,7 @@ To view file changes:
 
 The file pane updates to display who made changes to the file and when.
 
-### View change history {:#view-change-history}
+### View change history
 
 To view the change history of a file:
 
@@ -202,7 +193,7 @@ To view the change history of a file:
 1.  Click **HISTORY**, located in the upper-right corner.
     The **Change history** pane appears, showing the commits for this file.
 
-### View code reviews {:#view-code-reviews}
+### View code reviews
 
 For Gerrit code reviews, you can open the tool directly from the Change History pane.
 
@@ -217,7 +208,7 @@ To view the code review for a file:
 
 The Gerrit Code Review tool opens in a new browser window.
 
-### Open a file at a specific commit {:#open-a-file-at-a-specific-commit}
+### Open a file at a specific commit
 
 To open a file at a specific commit:
 
@@ -227,7 +218,7 @@ To open a file at a specific commit:
 1. Hover over a commit. A **VIEW** button appears.
 1. Click the **VIEW** button.
 
-### Compare a file to a different commit {:#compare-a-file-to-a-different-commit}
+### Compare a file to a different commit
 
 To compare a file at a different commit:
 
@@ -246,7 +237,7 @@ To change either file, hover over the commit in the Change History pane. Then,
 click either the **Left** or **Right** button to have the open the commit on the
 left or right side of the diff.
 
-### Browsing cross references {:#browsing-cross-references}
+### Browsing cross references
 
 Another way to browse source repositories is through the use of cross
 references. These references appear automatically as hyperlinks within a given
@@ -277,7 +268,7 @@ You can continue to browse cross references using the Cross Reference pane, just
 as you can in the File pane. When you do, the pane displays a breadcrumb trail,
 which you can use to navigate between different cross references.
 
-## Searching for code {:#search}
+## Searching for code
 
 You can search for specific files or code snippets using the search box located
 at the top of the screen. Searches are always against the default branch.
@@ -359,18 +350,14 @@ f:</td>
 </tbody>
 </table>
 
-## Additional Support {:#additional-support}
+## Additional Support
 
 To report an issue, click the **Feedback** button that appears in the top
 right-hand corner of the screen and enter your feedback in the provided form.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Guide for Bazel Maintainers
-
-{% include "_buttons.html" %}
 
 This is a guide for the maintainers of the Bazel open source project.
 
@@ -392,18 +379,18 @@ subteams to manage aspects of the open source project. These are:
 * **Developer Experience Gardeners**: Encourage external contributions, review
   issues and pull requests, and make our development workflow more open.
 
-## Releases {:#releases}
+## Releases
 
 * [Release Playbook](https://github.com/bazelbuild/continuous-integration/blob/master/docs/release-playbook.md){: .external}
 * [Testing local changes with downstream projects](https://github.com/bazelbuild/continuous-integration/blob/master/docs/downstream-testing.md){: .external}
 
-## Continuous Integration {:#integration}
+## Continuous Integration
 
 Read the Green team's guide to Bazel's CI infrastructure on the
 [bazelbuild/continuous-integration](https://github.com/bazelbuild/continuous-integration/blob/master/buildkite/README.md){: .external}
 repository.
 
-## Lifecycle of an Issue {:#lifecycle-issue}
+## Lifecycle of an Issue
 
 1. A user creates an issue by choosing one of the
 [issue templates](https://github.com/bazelbuild/bazel/issues/new/choose){: .external}
@@ -446,7 +433,7 @@ resolution, if possible. If you are an owner of a team label, see [this section
 
 When an issue is resolved, it can be closed.
 
-## Lifecycle of a Pull Request {:#lifecycle-pull-request}
+## Lifecycle of a Pull Request
 
 1. A user creates a pull request.
 1. If you a member of a Bazel team and sending a PR against your own area,
@@ -465,13 +452,12 @@ When an issue is resolved, it can be closed.
    and exported back out to GitHub.
 1. When the commit merges into master, GitHub automatically closes the PR.
 
-
-## My team owns a label. What should I do? {:#label-own}
+## My team owns a label. What should I do?
 
 Subteams need to triage all issues in the [labels they own](#team-labels),
 preferably on a weekly basis.
 
-### Issues {:#issues}
+### Issues
 
 1. Filter the list of issues by your team label **and** the `untriaged` label.
 1. Review the issue.
@@ -485,7 +471,7 @@ preferably on a weekly basis.
 Note that you need to be in the [bazelbuild
 organization](https://github.com/bazelbuild){: .external} to be able to add or remove labels.
 
-### Pull Requests {:#pull-requests}
+### Pull Requests
 
 1. Filter the list of pull requests by your team label.
 1. Review open pull requests.
@@ -499,7 +485,7 @@ organization](https://github.com/bazelbuild){: .external} to be able to add or r
 1. Submit the internal patch. If the patch submits and exports successfully, the
    PR will be closed automatically by GitHub.
 
-## Priority {:#priority}
+## Priority
 
 The following definitions for priority will be used by the maintainers to triage
 issues.
@@ -535,7 +521,7 @@ issues.
   resources to deal with them. As always, feel free to comment or add reactions
   to these issues even when closed.
 
-## Team labels {:#team-labels}
+## Team labels
 
 *   [`team-Android`](https://github.com/bazelbuild/bazel/labels/team-Android){: .external}: Issues for Android team
     *   Contact: [ahumesky](https://github.com/ahumesky){: .external}
@@ -581,19 +567,15 @@ labels.
 See the full list of labels [here](https://github.com/bazelbuild/bazel/labels){: .external}.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Bazel docs style guide
-
-{% include "_buttons.html" %}
 
 Thank you for contributing to Bazel's documentation. This serves as a quick
 documentation style guide to get you started. For any style questions not
 answered by this guide, follow the
 [Google developer documentation style guide](https://developers.google.com/style){: .external}.
 
-## Defining principles {:#principles}
+## Defining principles
 
 Bazel docs should uphold these principles:
 
@@ -605,11 +587,11 @@ Bazel docs should uphold these principles:
 -  **Correct.** Write in a way where the content stays correct for as long as
    possible by avoiding time-based information and promises for the future.
 
-## Writing {:#writing-tips}
+## Writing
 
 This section contains basic writing tips.
 
-### Headings {:#headings}
+### Headings
 
 -  Page-level headings start at H2. (H1 headings are used as page titles.)
 -  Make headers as short as is sensible. This way, they fit in the TOC
@@ -629,7 +611,7 @@ This section contains basic writing tips.
    -  <span class="compare-better">Yes</span>: Preserving graph order
    -  <span class="compare-worse">No</span>: On the preservation of graph order
 
-### Names {:#names}
+### Names
 
 -  Capitalize proper nouns, such as Bazel and Starlark.
 
@@ -643,7 +625,7 @@ This section contains basic writing tips.
    -  For example, if you're writing about issuing commands on a
       terminal, don't use both terminal and command line on the page.
 
-### Page scope {:#page-scope}
+### Page scope
 
 -  Each page should have one purpose and that should be defined at the
    beginning. This helps readers find what they need quicker.
@@ -655,7 +637,7 @@ This section contains basic writing tips.
    there is no clear action, you can include links to similar concepts,
    examples, or other avenues for exploration.
 
-### Subject {:#subject}
+### Subject
 
 In Bazel documentation, the audience should primarily be users—the people using
 Bazel to build their software.
@@ -678,7 +660,7 @@ Bazel to build their software.
    -  <span class="compare-worse">No</span>: Bazel is evolving, and we will make changes to Bazel that at
       times will be incompatible and require some changes from Bazel users.
 
-### Temporal {:#temporal}
+### Temporal
 
 Where possible, avoid terms that orient things in time, such as referencing
 specific dates (Q2 2022) or saying "now", "currently", or "soon."  These go
@@ -691,7 +673,7 @@ specify a version level instead, such as "Bazel X.x and higher supports
 -  <span class="compare-worse">No</span>: Bazel will soon support remote
    caching, likely in October 2017.
 
-### Tense {:#tense}
+### Tense
 
 -  Use present tense. Avoid past or future tense unless absolutely necessary
    for clarity.
@@ -709,7 +691,7 @@ specify a version level instead, such as "Bazel X.x and higher supports
    -  <span class="compare-worse">No</span>: X is initiated by Bazel and then
       afterward Y will be built with the output.
 
-### Tone {:#tone}
+### Tone
 
 Write with a business friendly tone.
 
@@ -721,9 +703,9 @@ Write with a business friendly tone.
 -  Avoid overly formal language. Write as though you're explaining the
    concept to someone who is curious about tech, but doesn't know the details.
 
-## Formatting {:#format}
+## Formatting
 
-### File type {:#file-type}
+### File type
 
 For readability, wrap lines at 80 characters. Long links or code snippets
 may be longer, but should start on a new line. For example:
@@ -732,7 +714,7 @@ Note: Where possible, use Markdown instead of HTML in your files. Follow the
 [GitHub Markdown Syntax Guide](https://guides.github.com/features/mastering-markdown/#syntax){: .external}
 for recommended Markdown style.
 
-### Links {:#links}
+### Links
 
 -  Use descriptive link text instead of "here" or "below". This practice
    makes it easier to scan a doc and is better for screen readers.
@@ -743,7 +725,7 @@ for recommended Markdown style.
    -  <span class="compare-better">Yes</span>: For more details, see [link].
    -  <span class="compare-worse">No</span>: See [link] for more information.
 
-### Lists {:#lists}
+### Lists
 
 -  Use an ordered list to describe how to accomplish a task with steps
 -  Use an unordered list to list things that aren't task based. (There should
@@ -753,7 +735,7 @@ for recommended Markdown style.
    1. Start with verbs that are the same tense.
    1. Use an ordered list if there are steps to follow.
 
-### Placeholders {:#placeholders}
+### Placeholders
 
 -  Use angle brackets to denote a variable that users should change.
    In Markdown, escape the angle brackets with a back slash: `\<example\>`.
@@ -765,11 +747,11 @@ for recommended Markdown style.
 -  Especially for complicated code samples, use placeholders that make sense
    in context.
 
-### Table of contents {:#toc}
+### Table of contents
 
 Use the auto-generated TOC supported by the site. Don't add a manual TOC.
 
-## Code {:#code}
+## Code
 
 Code samples are developers' best friends. You probably know how to write these
 already, but here are a few tips.
@@ -778,7 +760,7 @@ If you're referencing a small snippet of code, you can embed it in a sentence.
 If you want the reader to use the code, such as copying a command, use a code
 block.
 
-### Code blocks {:#code-blocks}
+### Code blocks
 
 -  Keep it short. Eliminate all redundant or unnecessary text from a code
    sample.
@@ -791,7 +773,7 @@ block.
 
 -  Separate commands and output into different code blocks.
 
-### Inline code formatting {:#code-format}
+### Inline code formatting
 
 -  Use code style for filenames, directories, paths, and small bits of code.
 -  Use inline code styling instead of _italics_, "quotes," or **bolding**.
@@ -801,12 +783,8 @@ block.
       and options for "command"
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Writing release notes
-
-{% include "_buttons.html" %}
 
 This document is targeted at Bazel contributors.
 
@@ -814,7 +792,7 @@ Commit descriptions in Bazel include a `RELNOTES:` tag followed by a release
 note. This is used by the Bazel team to track changes in each release and write
 the release announcement.
 
-## Overview {:#overview}
+## Overview
 
 * Is your change a bugfix? In that case, you don't need a release note. Please
   include a reference to the GitHub issue.
@@ -825,7 +803,7 @@ the release announcement.
 If the change is significant, follow the [design document
 policy](/contribute/design-documents) first.
 
-## Guidelines {:#guidelines}
+## Guidelines
 
 The release notes will be read by our users, so it should be short (ideally one
 sentence), avoid jargon (Bazel-internal terminology), should focus on what the
@@ -864,7 +842,7 @@ change is about.
   the user will wonder is "when?" and we don't want them to start worrying about
   their current builds breaking at some unknown time.
 
-## Process {:#process}
+## Process
 
 As part of the [release
 process](https://github.com/bazelbuild/continuous-integration/blob/master/docs/release-playbook.md){: .external},
@@ -882,12 +860,8 @@ blog](https://blog.bazel.build/), using the [bazel-blog
 repository](https://github.com/bazelbuild/bazel-blog/tree/master/_posts){: .external}.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Guide for rolling out breaking changes
-
-{% include "_buttons.html" %}
 
 It is inevitable that we will make breaking changes to Bazel. We will have to
 change our designs and fix the things that do not quite work. However, we need
@@ -909,7 +883,7 @@ change in Bazel to adhere to this policy.
 
 1. [Flip the incompatible flag.](#flip-flag)
 
-## GitHub issue {:#github-issue}
+## GitHub issue
 
 [File a GitHub issue](https://github.com/bazelbuild/bazel/issues){: .external}
 in the Bazel repository.
@@ -941,7 +915,7 @@ For the migration tool, consider contributing to
 It is able to apply automated fixes to `BUILD`, `WORKSPACE`, and `.bzl` files.
 It may also report warnings.
 
-## Implementation {:#implementation}
+## Implementation
 
 Create a new flag in Bazel. The default value must be false. The help text
 should contain the URL of the GitHub issue. As the flag name starts with
@@ -962,7 +936,7 @@ window of commits in which the code is inconsistent with the docs. Since our
 documentation is versioned, changes to the docs will not be inadvertently
 released prematurely.
 
-## Labels {:#labels}
+## Labels
 
 Once the commit is merged and the incompatible change is ready to be adopted, add the label
 [`migration-ready`](https://github.com/bazelbuild/bazel/labels/migration-ready){: .external}
@@ -973,7 +947,7 @@ remove the flags `migration-ready`.
 
 If you plan to flip the flag in the next major release, add label `breaking-change-X.0" to the issue.
 
-## Updating repositories {:#update-repos}
+## Updating repositories
 
 Bazel CI tests a list of important projects at
 [Bazel@HEAD + Downstream](https://buildkite.com/bazel/bazel-at-head-plus-downstream){: .external}. Most of them are often
@@ -994,7 +968,7 @@ Migrating projects in the downstream pipeline is NOT entirely the responsibility
 
 1. Reach out to the Bazel community for help on migration (e.g. [Bazel Rules Authors SIG](https://bazel-contrib.github.io/SIG-rules-authors/)).
 
-## Flipping the flag {:#flip-flag}
+## Flipping the flag
 
 Before flipping the default value of the flag to true, please make sure that:
 
@@ -1021,7 +995,7 @@ When changing the flag default to true, please:
 * Review and update documentation if needed.
 * File a new issue `#abc` to track the removal of the flag.
 
-## Removing the flag {:#remove-flag}
+## Removing the flag
 
 After the flag is flipped at HEAD, it should be removed from Bazel eventually.
 When you plan to remove the incompatible flag:
@@ -1032,12 +1006,8 @@ When you plan to remove the incompatible flag:
   so that the GitHub issue gets closed when the commit is merged.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Patch Acceptance Process
-
-{% include "_buttons.html" %}
 
 This page outlines how contributors can propose and make changes to the Bazel
 code base.
@@ -1087,12 +1057,8 @@ code base.
    are attributed to you.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Design Documents
-
-{% include "_buttons.html" %}
 
 If you're planning to add, change, or remove a user-facing feature, or make a
 *significant architectural change* to Bazel, you **must** write a design
@@ -1112,7 +1078,7 @@ Here are some examples of significant changes:
 *   Changes to widely used internal APIs
 *   Changes to flags and command-line interface.
 
-## Reasons for design reviews {:#design-reviews}
+## Reasons for design reviews
 
 When you write a design document, you can coordinate with other Bazel developers
 and seek guidance from Bazel's core team. For example, when a proposal adds,
@@ -1145,12 +1111,12 @@ and with feedback. The published design documents capture the initial design,
 and *not* the ongoing changes as designs are implemented. Always go to the
 documentation for descriptions of current Bazel functionality.
 
-## Contributor Workflow {:#contributor-workflow}
+## Contributor Workflow
 
 As a contributor, you can write a design document, send pull requests and
 request reviewers for your proposal.
 
-### Write the design document {:#write-design-doc}
+### Write the design document
 
 All design documents must have a header that includes:
 
@@ -1169,7 +1135,7 @@ or [using Markdown](#markdown). Read below about for a
 Proposals that have a user-visible impact must have a section documenting the
 impact on backward compatibility (and a rollout plan if needed).
 
-### Create a Pull Request {:#pull-request}
+### Create a Pull Request
 
 Share your design doc by creating a pull request (PR) to add the document to
 [the design index](https://github.com/bazelbuild/proposals){: .external}. Add
@@ -1186,7 +1152,7 @@ believe the review process can start. This doesn't mean the proposal is perfect
 or will be approved; it means that the proposal contains enough information to
 start the discussion.
 
-### Announce the new proposal {:#new-proposal}
+### Announce the new proposal
 
 Send an announcement to
 [bazel-dev](https://groups.google.com/forum/#!forum/bazel-dev){: .external} when
@@ -1196,7 +1162,7 @@ You may copy other groups (for example,
 [bazel-discuss](https://groups.google.com/forum/#!forum/bazel-discuss){: .external},
 to get feedback from Bazel end-users).
 
-### Iterate with reviewers {:#reviewers}
+### Iterate with reviewers
 
 Anyone interested can comment on your proposal. Try to answer questions,
 clarify the proposal, and address concerns.
@@ -1205,7 +1171,7 @@ Discussion should happen on the announcement thread. If the proposal is in a
 Google Doc, comments may be used instead (Note that anonymous comments are
 allowed).
 
-### Update the status {:#update-status}
+### Update the status
 
 Create a new PR to update the status of the proposal, when iteration is
 complete. Send the PR to the same lead reviewer and cc the other reviewers.
@@ -1221,7 +1187,7 @@ Implementation can begin before the proposal is accepted, for example as a
 proof-of-concept or an experimentation. However, you cannot submit the change
 before the review is complete.
 
-### Choosing a lead reviewer {:#lead-reviewer}
+### Choosing a lead reviewer
 
 A lead reviewer should be a domain expert who is:
 
@@ -1232,7 +1198,7 @@ A lead reviewer should be a domain expert who is:
 Consider checking the contacts for various [team
 labels](/contribute/maintainers-guide#team-labels).
 
-## Markdown vs Google Docs {:#markdown-versus-gdocs}
+## Markdown vs Google Docs
 
 Decide what works best for you, since both are accepted.
 
@@ -1258,7 +1224,7 @@ Benefits of using Markdown files:
 You can choose to first iterate on a Google Doc, and then convert it to
 Markdown for posterity.
 
-### Using Google Docs {:#gdocs}
+### Using Google Docs
 
 For consistency, use the [Bazel design doc template](
 https://docs.google.com/document/d/1cE5zrjrR40RXNg64XtRFewSv6FrLV6slGkkqxBumS1w/edit){: .external}.
@@ -1272,7 +1238,7 @@ To make your document readable to the world, click on
 choose "On - Anyone with the link".  If you allow comments on the document,
 anyone can comment anonymously, even without a Google account.
 
-### Using Markdown {:#markdown}
+### Using Markdown
 
 Documents are stored on GitHub and use the
 [GitHub flavor of Markdown](https://guides.github.com/features/mastering-markdown/){: .external}
@@ -1282,16 +1248,16 @@ Create a PR to update an existing document. Significant changes should be
 reviewed by the document reviewers. Trivial changes (such as typos, formatting)
 can be approved by anyone.
 
-## Reviewer workflow {:#reviewer-workflow}
+## Reviewer workflow
 
 A reviewer comments, reviews and approves design documents.
 
-### General reviewer responsibilities {:#reviewer-responsibilities}
+### General reviewer responsibilities
 
 You're responsible for reviewing design documents, asking for additional
 information if needed, and approving a design that passes the review process.
 
-#### When you receive a new proposal {:#new-proposal}
+#### When you receive a new proposal
 
 1.  Take a quick look at the document.
 1.  Comment if critical information is missing, or if the design doesn't fit
@@ -1299,7 +1265,7 @@ information if needed, and approving a design that passes the review process.
 1.  Suggest additional reviewers.
 1.  Approve the PR when it is ready for review.
 
-#### During the review process {:#during-review-process}
+#### During the review process
 
 1. Engage in a dialogue with the design author about issues that are problematic
    or require clarification.
@@ -1314,28 +1280,28 @@ Follow this process for all design review requests. Do not approve designs
 affecting Bazel if they are not in the
 [design index](https://github.com/bazelbuild/proposals){: .external}.
 
-### Lead reviewer responsibilities {:#lead-reviewer-responsibilities}
+### Lead reviewer responsibilities
 
 You're responsible for making the go / no-go decision on implementation
 of a pending design. If you're not able to do this, you should identify a
 suitable delegate (reassign the PR to the delegate), or reassign the bug to a
 Bazel manager for further disposition.
 
-#### During the review process {:#during-process}
+#### During the review process
 
 1.  Ensure that the comment and design iteration process moves forward
     constructively.
 1.  Prior to approval, ensure that concerns from other reviewers have been
     resolved.
 
-#### After approval by all reviewers {:#after-approval}
+#### After approval by all reviewers
 
 1.  Make sure there has been at least 1 week since the announcement on the
     mailing list.
 1.  Make sure the PR updates the status.
 1.  Approve the PR sent by the proposal author.
 
-#### Rejecting designs {:#reject-designs}
+#### Rejecting designs
 
 1.  Make sure the PR author sends a PR; or send them a PR.
 1.  The PR updates the status of the document.
@@ -1344,17 +1310,13 @@ Bazel manager for further disposition.
     assumptions and resubmit").
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Maintaining Bazel Chocolatey package on Windows
-
-{% include "_buttons.html" %}
 
 Note: The Chocolatey package is experimental; please provide feedback
 (`@petemounce` in issue tracker).
 
-## Prerequisites {:#prerequisites}
+## Prerequisites
 
 You need:
 
@@ -1366,7 +1328,7 @@ You need:
 *    (to publish) to have set up that API key for the chocolatey source locally
      via `choco apikey -k <your key here> -s https://chocolatey.org/`
 
-## Build {:#build}
+## Build
 
 Compile bazel with msys2 shell and `compile.sh`.
 
@@ -1381,7 +1343,7 @@ created.
 
 The `build.ps1` script supports `mode` values `local`, `rc` and `release`.
 
-## Test {:#test}
+## Test
 
 0. Build the package (with `-mode local`)
 
@@ -1403,7 +1365,7 @@ The `build.ps1` script supports `mode` values `local`, `rc` and `release`.
 
 Chocolatey's moderation process automates checks here as well.
 
-## Release {:#release}
+## Release
 
 Modify `tools/parameters.json` for the new release's URI and checksum once the
 release has been published to github releases.
@@ -1419,17 +1381,13 @@ Chocolatey.org will then run automated checks and respond to the push via email
 to the maintainers.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # The Bazel codebase
-
-{% include "_buttons.html" %}
 
 This document is a description of the codebase and how Bazel is structured. It
 is intended for people willing to contribute to Bazel, not for end-users.
 
-## Introduction {:#introduction}
+## Introduction
 
 The codebase of Bazel is large (~350KLOC production code and ~260 KLOC test
 code) and no one is familiar with the whole landscape: everyone knows their
@@ -1451,7 +1409,7 @@ Contributions are accepted through the regular GitHub pull request mechanism,
 and manually imported by a Googler into the internal source tree, then
 re-exported back out to GitHub.
 
-## Client/server architecture {:#client-architecture}
+## Client/server architecture
 
 The bulk of Bazel resides in a server process that stays in RAM between builds.
 This allows Bazel to maintain state between builds.
@@ -1512,7 +1470,7 @@ communicate with the server is in `src/main/protobuf/command_server.proto` .
 The main entry point of the server is `BlazeRuntime.main()` and the gRPC calls
 from the client are handled by `GrpcServerImpl.run()`.
 
-## Directory layout {:#directory-layout}
+## Directory layout
 
 Bazel creates a somewhat complicated set of directories during a build. A full
 description is available in [Output directory layout](/remote/output-directories).
@@ -1547,7 +1505,7 @@ The output directory contains, among other things:
     long term plan because it's a very incompatible change.
 *   Files built during the build.
 
-## The process of executing a command {:#command-process}
+## The process of executing a command
 
 Once the Bazel server gets control and is informed about a command it needs to
 execute, the following sequence of events happens:
@@ -1585,7 +1543,7 @@ execute, the following sequence of events happens:
 8.  The execution phase is run. This means running every action required to
     build the top-level targets that are requested are run.
 
-## Command line options {:#command-options}
+## Command line options
 
 The command line options for a Bazel invocation are described in an
 `OptionsParsingResult` object, which in turn contains a map from "option
@@ -1632,14 +1590,14 @@ options of more complicated types; in this case, the job of converting from the
 command line string to the data type falls to an implementation of
 `com.google.devtools.common.options.Converter`.
 
-## The source tree, as seen by Bazel {:#source-tree}
+## The source tree, as seen by Bazel
 
 Bazel is in the business of building software, which happens by reading and
 interpreting the source code. The totality of the source code Bazel operates on
 is called "the workspace" and it is structured into repositories, packages and
 rules.
 
-### Repositories {:#repositories}
+### Repositories
 
 A "repository" is a source tree on which a developer works; it usually
 represents a single project. Bazel's ancestor, Blaze, operated on a monorepo,
@@ -1662,7 +1620,7 @@ is done by `SymlinkForest`, which symlinks every package in the main repository
 to `$EXECROOT` and every external repository to either `$EXECROOT/external` or
 `$EXECROOT/..`.
 
-### Packages {:#packages}
+### Packages
 
 Every repository is composed of packages, a collection of related files and
 a specification of the dependencies. These are specified by a file called
@@ -1710,7 +1668,7 @@ from parsing regular packages so that `Package` does not need to cater for the
 needs of both. This is unfortunately difficult to do because the two are
 intertwined quite deeply.
 
-### Labels, Targets, and Rules {:#labels-targets-rules}
+### Labels, Targets, and Rules
 
 Packages are composed of targets, which have the following types:
 
@@ -1762,7 +1720,7 @@ is just a "target". Also note that despite `RuleClass` having "class" in its
 name, there is no Java inheritance relationship between a rule class and targets
 of that type.
 
-## Skyframe {:#skyframe}
+## Skyframe
 
 The evaluation framework underlying Bazel is called Skyframe. Its model is that
 everything that needs to be built during a build is organized into a directed
@@ -1834,7 +1792,7 @@ lightweight threads [does not outperform][virtual_threads] the
 
 [virtual_threads]: /contribute/statemachine-guide#epilogue_eventually_removing_callbacks
 
-## Starlark {:#starlark}
+## Starlark
 
 Starlark is the domain-specific language people use to configure and extend
 Bazel. It's conceived as a restricted subset of Python that has far fewer types,
@@ -1866,7 +1824,7 @@ because they express different things. A list of differences is available
 
 More information about Starlark is available [here](/rules/language).
 
-## The loading/analysis phase {:#loading-phase}
+## The loading/analysis phase
 
 The loading/analysis phase is where Bazel determines what actions are needed to
 build a particular rule. Its basic unit is a "configured target", which is,
@@ -1916,7 +1874,7 @@ Java exception or to violate invariants (such as by inadvertently modifying an
 The algorithm that determines the direct dependencies of a configured target
 lives in `DependencyResolver.dependentNodeMap()`.
 
-### Configurations {:#configurations}
+### Configurations
 
 Configurations are the "how" of building a target: for what platform, with what
 command line options, etc.
@@ -1970,7 +1928,7 @@ _split transition._
 Configuration transitions can also be implemented in Starlark (documentation
 [here](/extending/config))
 
-### Transitive info providers {:#transitive-info-providers}
+### Transitive info providers
 
 Transitive info providers are a way (and the _only _way) for configured targets
 to learn things about other configured targets that they depend on, and the only
@@ -1998,7 +1956,7 @@ New providers implemented in Java should be implemented using `BuiltinProvider`.
 `NativeProvider` is deprecated (we haven't had time to remove it yet) and
 `TransitiveInfoProvider` subclasses cannot be accessed from Starlark.
 
-### Configured targets {:#configured-targets}
+### Configured targets
 
 Configured targets are implemented as `RuleConfiguredTargetFactory`. There is a
 subclass for each rule class implemented in Java. Starlark configured targets
@@ -2015,7 +1973,7 @@ construct their return value. It consists of the following things:
     build. They can be accessed using the output\_group attribute of the
     filegroup rule in BUILD and using the `OutputGroupInfo` provider in Java.
 
-### Runfiles {:#runfiles}
+### Runfiles
 
 Some binaries need data files to run. A prominent example is tests that need
 input files. This is represented in Bazel by the concept of "runfiles". A
@@ -2064,7 +2022,7 @@ necessitates the following additional components:
 *   **Command line arguments** for running the binary whose runfiles the
     `RunfilesSupport` object represents.
 
-### Aspects {:#aspects}
+### Aspects
 
 Aspects are a way to "propagate computation down the dependency graph". They are
 described for users of Bazel
@@ -2113,7 +2071,7 @@ protocol buffers. In that case, the IDE aspect will want to attach to the
 The complexity of aspects on aspects is captured in the class
 `AspectCollection`.
 
-### Platforms and toolchains {:#platforms-toolchains}
+### Platforms and toolchains
 
 Bazel supports multi-platform builds, that is, builds where there may be
 multiple architectures where build actions run and multiple architectures for
@@ -2194,7 +2152,7 @@ to translate between the legacy flags and the new-style platform constraints.
 Their code is in `PlatformMappingFunction` and uses a non-Starlark "little
 language".
 
-### Constraints {:#constraints}
+### Constraints
 
 Sometimes one wants to designate a target as being compatible with only a few
 platforms. Bazel has (unfortunately) multiple mechanisms to achieve this end:
@@ -2208,7 +2166,7 @@ on their way out and they are not available in Bazel, but the source code may
 contain references to it. The attribute that governs this is called
 `constraints=` .
 
-#### environment_group() and environment() {:#environment-rule}
+#### environment_group() and environment()
 
 These rules are a legacy mechanism and are not widely used.
 
@@ -2250,14 +2208,14 @@ A build can be restricted to a certain environment with the
 The implementation of the constraint check is in
 `RuleContextConstraintSemantics` and `TopLevelConstraintSemantics`.
 
-#### Platform constraints {:#platform-constraints}
+#### Platform constraints
 
 The current "official" way to describe what platforms a target is compatible
 with is by using the same constraints used to describe toolchains and platforms.
 It was implemented in pull request
 [#10945](https://github.com/bazelbuild/bazel/pull/10945){: .external}.
 
-### Visibility {:#visibility}
+### Visibility
 
 If you work on a large codebase with a lot of developers (like at Google), you
 want to take care to prevent everyone else from arbitrarily depending on your
@@ -2294,7 +2252,7 @@ This is implemented in the following places:
 *   The actual check is done in
     `CommonPrerequisiteValidator.validateDirectPrerequisiteVisibility()`
 
-### Nested sets {:#nested-sets}
+### Nested sets
 
 Oftentimes, a configured target aggregates a set of files from its dependencies,
 adds its own, and wraps the aggregate set into a transitive info provider so
@@ -2320,7 +2278,7 @@ same each time".
 
 The same data structure is called `depset` in Starlark.
 
-### Artifacts and Actions {:#artifacts}
+### Artifacts and Actions
 
 The actual build consists of a set of commands that need to be run to produce
 the output the user wants. The commands are represented as instances of the
@@ -2393,7 +2351,7 @@ optimizations in order to keep the number of Skyframe edges low:
     action that generates it
 *   Nested sets have their own Skyframe key.
 
-### Shared actions {:#shared-actions}
+### Shared actions
 
 Some actions are generated by multiple configured targets; Starlark rules are
 more limited since they are only allowed to put their derived actions into a
@@ -2415,7 +2373,7 @@ This is implemented in `SkyframeActionExecutor.findAndStoreArtifactConflicts()`
 and is one of the few places in Bazel that requires a "global" view of the
 build.
 
-## The execution phase {:#execution-phase}
+## The execution phase
 
 This is when Bazel actually starts running build actions, such as commands that
 produce outputs.
@@ -2458,7 +2416,7 @@ be hit behind Skyframe:
 *   The local action cache contains data about the state of the file system
 *   Remote execution systems usually also contain their own cache
 
-### The local action cache {:#cache}
+### The local action cache
 
 This cache is another layer that sits behind Skyframe; even if an action is
 re-executed in Skyframe, it can still be a hit in the local action cache. It
@@ -2482,7 +2440,7 @@ There is also a highly experimental "top-down action cache" that is still under
 development, which uses transitive hashes to avoid going to the cache as many
 times.
 
-### Input discovery and input pruning {:#input-discovery}
+### Input discovery and input pruning
 
 Some actions are more complicated than just having a set of inputs. Changes to
 the set of inputs of an action come in two forms:
@@ -2523,7 +2481,7 @@ Starlark actions can make use of the facility to declare some inputs as unused
 using the `unused_inputs_list=` argument of
 `ctx.actions.run()`.
 
-### Various ways to run actions: Strategies/ActionContexts {:#options-run-actions}
+### Various ways to run actions: Strategies/ActionContexts
 
 Some actions can be run in different ways. For example, a command line can be
 executed locally, locally but in various kinds of sandboxes, or remotely. The
@@ -2571,7 +2529,7 @@ More information about strategies (or action contexts!):
 *   Information about the intricacies of executing actions locally is available
     [here](https://jmmv.dev/2019/11/bazel-process-wrapper.html).
 
-### The local resource manager {:#resource-manager}
+### The local resource manager
 
 Bazel _can_ run many actions in parallel. The number of local actions that
 _should_ be run in parallel differs from action to action: the more resources an
@@ -2587,7 +2545,7 @@ and are blocked until the required resources are available.
 A more detailed description of local resource management is available
 [here](https://jmmv.dev/2019/12/bazel-local-resources.html).
 
-### The structure of the output directory {:#output-directory}
+### The structure of the output directory
 
 Each action requires a separate place in the output directory where it places
 its outputs. The location of derived artifacts is usually as follows:
@@ -2625,7 +2583,7 @@ can't cause action conflicts. It is far from perfect. This is implemented in
 `OutputDirectories.buildMnemonic()` and relies on each configuration fragment
 adding its own part to the name of the output directory.
 
-## Tests {:#tests}
+## Tests
 
 Bazel has rich support for running tests. It supports:
 
@@ -2646,7 +2604,7 @@ how the test should be run:
 *   The number of shards the test should be split into
 *   Some parameters about how the test should be run (such as the test timeout)
 
-### Determining which tests to run {:#determine-test-run}
+### Determining which tests to run
 
 Determining which tests are run is an elaborate process.
 
@@ -2675,7 +2633,7 @@ are run when a particular target is specified on the command line. It's
 unfortunately a reimplementation, so it probably deviates from the above in
 multiple subtle ways.
 
-### Running tests {:#run-tests}
+### Running tests
 
 The way the tests are run is by requesting cache status artifacts. This then
 results in the execution of a `TestRunnerAction`, which eventually calls the
@@ -2724,7 +2682,7 @@ various events (such as `TestAttempt`, `TestResult` or `TestingCompleteEvent`).
 They are dumped to the Build Event Protocol and they are emitted to the console
 by `AggregatingTestListener`.
 
-### Coverage collection {:#coverage-collection}
+### Coverage collection
 
 Coverage is reported by the tests in LCOV format in the files
 `bazel-testlogs/$PACKAGE/$TARGET/coverage.dat` .
@@ -2795,7 +2753,7 @@ every test in a Bazel invocation. This is handled by
 gets access to the tools it needs by looking at the `:coverage_report_generator`
 attribute of the first test that is executed.
 
-## The query engine {:#query-engine}
+## The query engine
 
 Bazel has a
 [little language](/query/guide)
@@ -2825,7 +2783,7 @@ values. The usual workaround is to use a label, and attach the complex
 information to the rule with that label. It's not a very satisfying workaround
 and it would be very nice to lift this requirement.
 
-## The module system {:#module-system}
+## The module system
 
 Bazel can be extended by adding modules to it. Each module must subclass
 `BlazeModule` (the name is a relic of the history of Bazel when it used to be
@@ -2841,7 +2799,7 @@ that only some versions of Bazel (such as the one we use at Google) need:
 The set of extension points `BlazeModule` offers is somewhat haphazard. Don't
 use it as an example of good design principles.
 
-## The event bus {:#event-bus}
+## The event bus
 
 The main way BlazeModules communicate with the rest of Bazel is by an event bus
 (`EventBus`): a new instance is created for every build, various parts of Bazel
@@ -2865,7 +2823,7 @@ the Build Event Service) to stream events.
 This is implemented in the `build.lib.buildeventservice` and
 `build.lib.buildeventstream` Java packages.
 
-## External repositories {:#external-repos}
+## External repositories
 
 Note: The information in this section is out of date, as code in this area has
 undergone extensive change in the past couple of years. Please refer to
@@ -2878,7 +2836,7 @@ this is not necessarily true. "External repositories" are an abstraction used to
 bridge these two worlds: they represent code that is necessary for the build but
 is not in the main source tree.
 
-### The WORKSPACE file {:#workspace-file}
+### The WORKSPACE file
 
 The set of external repositories is determined by parsing the WORKSPACE file.
 For example, a declaration like this:
@@ -2898,7 +2856,7 @@ statements. The chunk index is indicated by `WorkspaceFileKey.getIndex()` and
 computing `WorkspaceFileFunction` until index X means evaluating it until the
 Xth `load()` statement.
 
-### Fetching repositories {:#fetch-repos}
+### Fetching repositories
 
 Before the code of the repository is available to Bazel, it needs to be
 _fetched_. This results in Bazel creating a directory under
@@ -2943,7 +2901,7 @@ invalidated when the definition of the repository they are in changes. Thus,
 `FileStateValue`s for an artifact in an external repository need to depend on
 their external repository. This is handled by `ExternalFilesHelper`.
 
-### Repository mappings {:#repo-mappings}
+### Repository mappings
 
 It can happen that multiple repositories want to depend on the same repository,
 but in different versions (this is an instance of the "diamond dependency
@@ -2972,7 +2930,7 @@ of individual repository definitions. It then appears in Skyframe as a member of
     phase)
 *   `BzlLoadFunction` for resolving labels in load() statements
 
-## JNI bits {:#jni-bits}
+## JNI bits
 
 The server of Bazel is _mostly_ written in Java. The exception is the parts that
 Java cannot do by itself or couldn't do by itself when we implemented it. This
@@ -2987,7 +2945,7 @@ methods are:
 *   `WindowsFileOperations` and `WindowsFileProcesses`
 *   `com.google.devtools.build.lib.platform`
 
-## Console output {:#console-output}
+## Console output
 
 Emitting console output seems like a simple thing, but the confluence of running
 multiple processes (sometimes remotely), fine-grained caching, the desire to
@@ -3040,7 +2998,7 @@ Bazel) has to the RPC stream to the client is through `Reporter.getOutErr()`,
 which allows direct access to these streams. It's only used when a command needs
 to dump large amounts of possible binary data (such as `bazel query`).
 
-## Profiling Bazel {:#profile-bazel}
+## Profiling Bazel
 
 Bazel is fast. Bazel is also slow, because builds tend to grow until just the
 edge of what's bearable. For this reason, Bazel includes a profiler which can be
@@ -3065,7 +3023,7 @@ statements.
 We also do rudimentary memory profiling in `MemoryProfiler`. It's also always on
 and it mostly records maximum heap sizes and GC behavior.
 
-## Testing Bazel {:#bazel-tests}
+## Testing Bazel
 
 Bazel has two main kinds of tests: ones that observe Bazel as a "black box" and
 ones that only run the analysis phase. We call the former "integration tests"
@@ -3092,12 +3050,8 @@ methods can request configured targets, change the configuration and assert
 various things about the result of the analysis.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Contribute to Bazel documentation
-
-{% include "_buttons.html" %}
 
 Thank you for contributing to Bazel's documentation! There are a few ways to
 help create better docs for our community.
@@ -3120,7 +3074,6 @@ Bazel's GitHub repository. You can make changes to the source files in GitHub.
 If approved, you can merge the changes and a Bazel maintainer will update the
 website source to publish your updates.
 
-
 ## Small changes
 
 You can approach small changes, such as fixing errors or typos, in a couple of
@@ -3138,14 +3091,11 @@ new documentation, you can either create a pull request or start with a Google
 doc and contact the Bazel Owners to collaborate.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
+
 translation: human
 page_type: lcat
 
 # Contribution policy
-
-{% include "_buttons.html" %}
 
 This page covers Bazel's governance model and contribution policy.
 
@@ -3189,7 +3139,7 @@ rule sets. Contributors with a record of consistent, responsible past
 contributions who are planning major contributions in the future could be
 considered to become qualified Maintainers.
 
-## Contribution policy {:#contribution-policy}
+## Contribution policy
 
 The Bazel project accepts contributions from external contributors. Here are the
 contribution policies for Google-managed and Community-managed areas of code.
@@ -3219,12 +3169,8 @@ For more details on contributing to Bazel, see our
 [contribution guidelines](/contribute/).
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Naming a Bazel related project
-
-{% include "_buttons.html" %}
 
 First, thank you for contributing to the Bazel ecosystem! Please reach out to
 the Bazel community on the
@@ -3234,12 +3180,12 @@ the Bazel community on the
 If you are building a Bazel related tool or sharing your Skylark rules,
 we recommend following these guidelines for the name of your project:
 
-## Naming Starlark rules {:#name-starlark-rules}
+## Naming Starlark rules
 
 See [Deploying new Starlark rules](/rules/deploying)
 in the docs.
 
-## Naming other Bazel related tools {:#name-related-tools}
+## Naming other Bazel related tools
 
 This section applies if you are building a tool to enrich the Bazel ecosystem.
 For example, a new IDE plugin or a new build system migrator.
@@ -3273,7 +3219,6 @@ These guidelines also apply to the GitHub repository URL. Reading the repository
 URL should help people understand what the tool does. Of course, the repository
 name can be shorter and must use dashes instead of spaces and lower case letters.
 
-
 Examples of good names:
 
 * *Bazel for Eclipse*: Users will understand that if they want to use Bazel
@@ -3295,17 +3240,13 @@ Note that these recommendations are aligned with the
 Google uses when open sourcing a project.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # Maintaining Bazel Scoop package on Windows
-
-{% include "_buttons.html" %}
 
 Note: The Scoop package is experimental. To provide feedback, go to
 `@excitoon` in issue tracker.
 
-## Prerequisites {:#prerequisites}
+## Prerequisites
 
 You need:
 
@@ -3317,7 +3258,7 @@ You need:
        [e-mail](mailto:vladimir.chebotarev@gmail.com) or
        [Telegram](http://telegram.me/excitoon){: .external}.
 
-## Release process {:#release-process}
+## Release process
 
 Scoop packages are very easy to maintain. Once you have the URL of released
 Bazel, you need to make appropriate changes in
@@ -3353,12 +3294,8 @@ git remote add mine FORK_URL
 Push your changes to your fork and create a pull request.
 
 
-Project: /_project.yaml
-Book: /_book.yaml
 
 # A Guide to Skyframe `StateMachine`s
-
-{% include "_buttons.html" %}
 
 ## Overview
 
@@ -3408,7 +3345,7 @@ virtually all recomputation when a SkyFunction restarts (assuming that
 `SkyKeyComputeState` does not fall out of cache) by exposing suspend and resume
 execution hooks.
 
-### Stateful computations inside `SkyKeyComputeState` {:#stateful-computations}
+### Stateful computations inside `SkyKeyComputeState`
 
 From an object-oriented design standpoint, it makes sense to consider storing
 computational objects inside `SkyKeyComputeState` instead of pure data values.
@@ -3520,7 +3457,7 @@ subtasks, those lookups and subtasks will complete before the next state begins.
 Tip: (Corollary) If subtasks are complex `StateMachine`s or recursively create
 subtasks, they all *transitively* complete before the next state begins.
 
-### SkyValue lookups {:#skyvalue-lookups}
+### SkyValue lookups
 
 `StateMachine`s use `Tasks.lookUp` overloads to look up SkyValues. They are
 analogous to `SkyFunction.Environment.getValue` and
@@ -3617,7 +3554,7 @@ Though `Subtask1` and `Subtask2` are logically concurrent, everything runs in a
 single thread so the "concurrent" update of `i` does not need any
 synchronization.
 
-### Structured concurrency {:#structured-concurrency}
+### Structured concurrency
 
 Since every `lookUp` and `enqueue` must resolve before advancing to the next
 state, it means that concurrency is naturally limited to tree-structures. It's
@@ -3742,7 +3679,7 @@ class M2 implements StateMachine {
 }
 ```
 
-#### `runAfter` injection {:#runafter-injection}
+#### `runAfter` injection
 
 Sometimes, abusing `Tasks.enqueue` is impossible because there are other
 parallel subtasks or `Tasks.lookUp` calls that must be completed before *S*
@@ -3907,7 +3844,7 @@ There’s an example of implementing a `Tasks.lookUp` callback in [SkyValue
 lookups](#skyvalue-lookups). This section provides rationale and suggests
 approaches for handling multiple SkyValues.
 
-#### `Tasks.lookUp` callbacks {:#tasks-lookup-callbacks}
+#### `Tasks.lookUp` callbacks
 
 The `Tasks.lookUp` method takes a callback, `sink`, as a parameter.
 
@@ -4028,7 +3965,7 @@ because the value types are different. When that’s not the case, falling back 
 lambda-based implementations or full inner-class instances that implement the
 appropriate callbacks is viable.
 
-### Propagating values between `StateMachine`s {:#propagating-values}
+### Propagating values between `StateMachine`s
 
 So far, this document has only explained how to arrange work in a subtask, but
 subtasks also need to report a values back to the caller. Since subtasks are
@@ -4135,7 +4072,7 @@ the `Caller.ResultSink`, as required by [Error bubbling](#error-bubbling).
 Alternatives for top-level `StateMachine`s are described in [`Driver`s and
 bridging to SkyFunctions](#drivers-and-bridging).
 
-### Error handling {:#error-handling}
+### Error handling
 
 There's a couple of examples of error handling already in [`Tasks.lookUp`
 callbacks](#tasks-lookup-callbacks) and [Propagating values between
@@ -4147,7 +4084,7 @@ exactly one of a value or error being passed.
 The next section describes a a subtle, but important interaction with Skyframe
 error handling.
 
-#### Error bubbling (--nokeep\_going) {:#error-bubbling}
+#### Error bubbling (--nokeep\_going)
 
 Warning: Errors need to be eagerly propagated all the way back to the
 SkyFunction for error bubbling to function correctly.
@@ -4170,7 +4107,7 @@ If a `Driver` is being utilized directly, it is essential to check for
 propagated errors from the SkyFunction, even if the machine has not finished
 processing.
 
-### Event Handling {:#event-handling}
+### Event Handling
 
 For SkyFunctions that need to emit events, a `StoredEventHandler` is injected
 into SkyKeyComputeState and further injected into `StateMachine`s that require
@@ -4179,7 +4116,7 @@ certain events unless they are replayed but this was subsequently fixed.
 `StoredEventHandler` injection is preserved because it simplifies the
 implementation of events emitted from error handling callbacks.
 
-## `Driver`s and bridging to SkyFunctions {:#drivers-and-bridging}
+## `Driver`s and bridging to SkyFunctions
 
 A `Driver` is responsible for managing the execution of `StateMachine`s,
 beginning with a specified root `StateMachine`. As `StateMachine`s can
@@ -4294,7 +4231,7 @@ private Result computeResult(State state, Skyfunction.Environment env)
 }
 ```
 
-### Embedding `Driver` {:#embedding-driver}
+### Embedding `Driver`
 
 If the `StateMachine` produces a value and raises no exceptions, embedding
 `Driver` is another possible implementation, as shown in the following example.
@@ -4417,7 +4354,7 @@ performance that approaches hand-written callback code.
 
 ## Appendix
 
-### Callback Hell {:#callback-hell}
+### Callback Hell
 
 Callback hell is an infamous problem in asynchronous code that uses callbacks.
 It stems from the fact that the continuation for a subsequent step is nested
@@ -4470,7 +4407,7 @@ Callback hell may also occur if the [`runAfter` injection](#runafter-injection)
 pattern is used too densely, but this can be avoided by interspersing injections
 with sequential steps.
 
-#### Example: Chained SkyValue lookups {:#chained-skyvalue-lookups}
+#### Example: Chained SkyValue lookups
 
 It is often the case that the application logic requires dependent chains of
 SkyValue lookups, for example, if a second SkyKey depends on the first SkyValue.
@@ -4563,7 +4500,7 @@ state sequence `foo`, followed by `bar`. `foo` no longer includes the behavior
 `bar`. As a result, method names for states tend to be narrower in scope,
 potentially reflecting local behavior.
 
-### Concurrency tree diagram {:#concurrency-tree-diagram}
+### Concurrency tree diagram
 
 The following is an alternative view of the diagram in [Structured
 concurrency](#structured-concurrency) that better depicts the tree structure.

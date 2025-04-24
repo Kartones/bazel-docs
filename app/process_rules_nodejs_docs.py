@@ -1,6 +1,9 @@
 from pathlib import Path
 from typing import List
 
+from app.helpers.process_helpers import cleanup_content
+
+
 SKIP_FILES = ["BUILD.bazel", "README.md"]
 
 
@@ -21,8 +24,11 @@ def get_markdown_files(directory: Path) -> List[Path]:
 
 def process_markdown_file(file_path: Path) -> str:
     """Process a single markdown file and return its content."""
+    content = ""
     with open(file_path, "r", encoding="utf-8") as f:
-        return f.read()
+        content = f.read()
+    content = cleanup_content(content)
+    return content
 
 
 def write_output_file(output_file: Path, content: str) -> None:
@@ -44,24 +50,21 @@ def process_rules_nodejs_docs(input_dir: Path, output_file: Path) -> None:
     if not markdown_files:
         raise FileNotFoundError(f"No markdown files found in {docs_dir}")
 
-    # Sort files to ensure index.md is first
     markdown_files.sort(key=lambda x: x.name != "index.md")
 
-    # Process all markdown files
     combined_content = []
     for file_path in markdown_files:
         print(f"Processing {file_path.name}...")
         content = process_markdown_file(file_path)
         combined_content.append(content)
 
-    # Write the combined content
     final_content = "\n\n".join(combined_content)
     write_output_file(output_file, final_content)
     print(f"Documentation processed successfully. Output written to {output_file}")
 
 
 def main() -> None:
-    """Main entry point for the script."""
+    """Main entry point for the command."""
     input_dir = Path("input/rules-nodejs")
     output_file = Path("docs/rules_nodejs.md")
 

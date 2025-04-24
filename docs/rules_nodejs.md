@@ -1,8 +1,3 @@
----
-title: Home
-layout: default
-toc: true
----
 
 # Bazel JavaScript toolchain
 
@@ -137,11 +132,6 @@ See https://www.kchodorow.com/blog/2017/03/27/stamping-your-builds/ for more bac
 Make sure you use a "STABLE_" status key, or else Bazel may use a cached npm artifact rather than
 building a new one with your current version info.
 
----
-title: Patching changes to rules_nodejs
-layout: default
-toc: true
----
 
 # Patching changes
 
@@ -192,11 +182,6 @@ http_archive(
 ```
 
 
----
-title: Installation
-layout: default
-toc: true
----
 
 # Installation
 
@@ -263,14 +248,11 @@ Features:
 UserBuildSettingInfo(<a href="#UserBuildSettingInfo-value">value</a>)
 </pre>
 
-
-
 **FIELDS**
 
 <h4 id="UserBuildSettingInfo-value">value</h4>
 
  - 
-
 
 ## nodejs_repositories
 
@@ -333,15 +315,11 @@ See the [the repositories documentation](repositories.html) for how to use the r
 To avoid downloads, you can check in a vendored node.js binary or can build one from source.
 See [toolchains](./toolchains.md).
 
-
 **PARAMETERS**
-
 
 <h4 id="nodejs_repositories-name">name</h4>
 
 Unique name for the repository rule
-
-
 
 <h4 id="nodejs_repositories-node_download_auth">node_download_auth</h4>
 
@@ -399,9 +377,6 @@ Defaults to `False`
 
 Additional parameters
 
-
-
-
 ## nodejs_toolchain
 
 **USAGE**
@@ -449,15 +424,11 @@ Finally in your `WORKSPACE`, register it with `register_toolchains("//:my_nodejs
 For usage see https://docs.bazel.build/versions/main/toolchains.html#defining-toolchains.
 You can use the `--toolchain_resolution_debug` flag to `bazel` to help diagnose which toolchain is selected.
 
-
 **PARAMETERS**
-
 
 <h4 id="nodejs_toolchain-name">name</h4>
 
 Unique name for this target
-
-
 
 <h4 id="nodejs_toolchain-node">node</h4>
 
@@ -508,9 +479,6 @@ Defaults to `None`
 <h4 id="nodejs_toolchain-kwargs">kwargs</h4>
 
 Additional parameters
-
-
-
 
 
 
