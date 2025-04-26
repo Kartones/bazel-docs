@@ -121,7 +121,7 @@ def process_standard_docs(
 
     combined_content = []
     for file_path in markdown_files:
-        print(f"Processing {file_path.name}...")
+        print(f"Processing: {file_path.name}")
         content = process_markdown_file(file_path, include_filename_as_title)
         combined_content.append(content)
 
@@ -135,6 +135,7 @@ def process_subfolder_docs(
     output_dir: Path,
     skip_folders: Optional[Set[str]] = None,
     include_filename_as_title: bool = False,
+    combined_filename: Optional[str] = None,
 ) -> None:
     """Process a directory with subfolders, creating one file per subfolder.
 
@@ -143,6 +144,7 @@ def process_subfolder_docs(
         output_dir: Directory to write output files to
         skip_folders: Set of folder names to skip
         include_filename_as_title: If True, prepends each filename as a markdown title
+        combined_filename: If provided, combines all output into a single file with this name
     """
     skip_folders = skip_folders or set()
 
@@ -152,33 +154,44 @@ def process_subfolder_docs(
 
     ensure_directory_exists(output_dir)
 
+    combined_content = []
+
     for subfolder in input_dir.iterdir():
         if subfolder.is_dir():
             if subfolder.name in skip_folders:
-                print(f"Skipping {subfolder.name}...")
+                print(f"Skipping: {subfolder.name}.")
                 continue
 
-            print(f"Processing {subfolder.name}...")
-            output_file = output_dir / f"{subfolder.name}.md"
+            print(f"Processing: {subfolder.name}.")
+            folder_content = []
+
+            if include_filename_as_title:
+                folder_content.append(f"# {subfolder.name}")
 
             markdown_files = get_markdown_files(subfolder)
 
-            # Process index.md first if it exists
             index_file = next((f for f in markdown_files if f.name == "index.md"), None)
-            if output_file.exists():
-                output_file.unlink()
-
-            if include_filename_as_title:
-                write_output_file(output_file, f"# {subfolder.name}\n")
-
             if index_file:
                 content = process_markdown_file(index_file, False)
-                append_to_output_file(output_file, content)
+                folder_content.append(content)
 
-            # Process other files
             other_files = [f for f in markdown_files if f.name != "index.md"]
             for file in other_files:
                 content = process_markdown_file(file, False)
-                append_to_output_file(output_file, content)
+                folder_content.append(content)
+
+            folder_text = "\n".join(folder_content)
+
+            if combined_filename:
+                combined_content.append(folder_text)
+            else:
+                output_file = output_dir / f"{subfolder.name}.md"
+                if output_file.exists():
+                    output_file.unlink()
+                write_output_file(output_file, folder_text)
+
+    if combined_filename and combined_content:
+        combined_output_file = output_dir / combined_filename
+        write_output_file(combined_output_file, "\n\n".join(combined_content))
 
     print("Documentation processing complete.")

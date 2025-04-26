@@ -49,15 +49,16 @@ def _download_all() -> None:
 
 def _process_all() -> None:
     """Process all documentation repositories."""
-    print("Processing bazel-site...")
+    print("Processing: bazel-site")
     process_subfolder_docs(
         input_dir=Path("input/bazel-site/site/en"),
-        output_dir=Path("docs/bazel"),
+        output_dir=Path("docs"),
         skip_folders={"about", "brand", "community", "contribute", "migrate", "release", "tutorials", "versions"},
         include_filename_as_title=True,
+        combined_filename="bazel.md",
     )
 
-    print("Processing rules-nodejs...")
+    print("Processing: rules-nodejs")
     process_standard_docs(
         input_dir=Path("input/rules-nodejs/docs"),
         output_file=Path("docs/rules_nodejs.md"),
@@ -65,7 +66,7 @@ def _process_all() -> None:
         sort_key=lambda x: x.name != "index.md",
     )
 
-    print("Processing rules-js...")
+    print("Processing: rules-js")
     process_standard_docs(
         input_dir=Path("input/rules-js/docs"),
         output_file=Path("docs/rules_js.md"),
@@ -74,7 +75,7 @@ def _process_all() -> None:
         include_filename_as_title=True,
     )
 
-    print("Processing rules-ts...")
+    print("Processing: rules-ts")
     process_standard_docs(
         input_dir=Path("input/rules-ts/docs"),
         output_file=Path("docs/rules_ts.md"),
@@ -83,7 +84,7 @@ def _process_all() -> None:
         include_filename_as_title=True,
     )
 
-    print("Processing bazel-lib...")
+    print("Processing: bazel-lib")
     process_standard_docs(
         input_dir=Path("input/bazel-lib/docs"),
         output_file=Path("docs/bazel_lib.md"),
