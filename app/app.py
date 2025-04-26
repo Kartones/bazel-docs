@@ -37,13 +37,19 @@ REPOSITORIES = {
         "branch": "main",
         "sparse_pattern": "docs/*",
     },
+    "starlark": {
+        "path": "input/starlark",
+        "url": "git@github.com:bazelbuild/starlark.git",
+        "branch": "master",
+        "sparse_pattern": "*",
+    },
 }
 
 
 def _download_all() -> None:
     """Download all documentation repositories."""
     for repo_name, config in REPOSITORIES.items():
-        print(f"Downloading {repo_name}...")
+        print(f"Downloading: {repo_name}")
         download_repository(Path(config["path"]), config["url"], config["branch"], config["sparse_pattern"])
 
 
@@ -89,6 +95,15 @@ def _process_all() -> None:
         input_dir=Path("input/bazel-lib/docs"),
         output_file=Path("docs/bazel_lib.md"),
         skip_files=[],
+        sort_key=lambda x: x.name != "index.md",
+        include_filename_as_title=True,
+    )
+
+    print("Processing: Starlark")
+    process_standard_docs(
+        input_dir=Path("input/starlark"),
+        output_file=Path("docs/starlark.md"),
+        skip_files=["CONTRIBUTING.md", "README.md", "users.md"],
         sort_key=lambda x: x.name != "index.md",
         include_filename_as_title=True,
     )

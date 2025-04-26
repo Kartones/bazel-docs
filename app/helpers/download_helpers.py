@@ -26,7 +26,7 @@ def _setup_sparse_checkout(repo_path: Path, pattern: str = "docs/*") -> None:
 
 def _clone_repository(repo_path: Path, repo_url: str, branch: str = "main", sparse_pattern: str = "docs/*") -> None:
     """Clone the repository with sparse checkout."""
-    print("Cloning repository...")
+    print("Cloning repository")
     _run_git_command(["git", "init"], cwd=repo_path)
     _setup_sparse_checkout(repo_path, sparse_pattern)
     _run_git_command(
@@ -40,7 +40,7 @@ def _clone_repository(repo_path: Path, repo_url: str, branch: str = "main", spar
 
 def _update_repository(repo_path: Path, branch: str = "main") -> None:
     """Update the existing repository."""
-    print("Updating repository...")
+    print("Updating repository")
     _run_git_command(["git", "fetch", "--depth", "1", "origin", branch], cwd=repo_path)
     _run_git_command(["git", "reset", "--hard", f"origin/{branch}"], cwd=repo_path)
     print("Repository updated successfully.")
