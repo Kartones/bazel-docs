@@ -6,7 +6,6 @@ from app.helpers.download_helpers import download_repository
 from app.helpers.process_helpers import process_standard_docs, process_subfolder_docs
 
 
-# Dictionary of repositories to download with their configuration
 REPOSITORIES = {
     "bazel-site": {
         "path": "input/bazel-site",
@@ -32,6 +31,12 @@ REPOSITORIES = {
         "branch": "main",
         "sparse_pattern": "docs/*",
     },
+    "bazel-lib": {
+        "path": "input/bazel-lib",
+        "url": "git@github.com:bazel-contrib/bazel-lib.git",
+        "branch": "main",
+        "sparse_pattern": "docs/*",
+    },
 }
 
 
@@ -44,15 +49,14 @@ def _download_all() -> None:
 
 def _process_all() -> None:
     """Process all documentation repositories."""
-    # Process Bazel site
     print("Processing bazel-site...")
     process_subfolder_docs(
         input_dir=Path("input/bazel-site/site/en"),
         output_dir=Path("docs/bazel"),
-        skip_folders={"brand", "community", "release", "tutorials", "versions"},
+        skip_folders={"about", "brand", "community", "contribute", "migrate", "release", "tutorials", "versions"},
+        include_filename_as_title=True,
     )
 
-    # Process rules_nodejs
     print("Processing rules-nodejs...")
     process_standard_docs(
         input_dir=Path("input/rules-nodejs/docs"),
@@ -61,7 +65,6 @@ def _process_all() -> None:
         sort_key=lambda x: x.name != "index.md",
     )
 
-    # Process rules_js
     print("Processing rules-js...")
     process_standard_docs(
         input_dir=Path("input/rules-js/docs"),
@@ -71,11 +74,19 @@ def _process_all() -> None:
         include_filename_as_title=True,
     )
 
-    # Process rules_ts
     print("Processing rules-ts...")
     process_standard_docs(
         input_dir=Path("input/rules-ts/docs"),
         output_file=Path("docs/rules_ts.md"),
+        skip_files=[],
+        sort_key=lambda x: x.name != "index.md",
+        include_filename_as_title=True,
+    )
+
+    print("Processing bazel-lib...")
+    process_standard_docs(
+        input_dir=Path("input/bazel-lib/docs"),
+        output_file=Path("docs/bazel_lib.md"),
         skip_files=[],
         sort_key=lambda x: x.name != "index.md",
         include_filename_as_title=True,

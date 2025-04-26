@@ -168,14 +168,17 @@ def process_subfolder_docs(
             if output_file.exists():
                 output_file.unlink()
 
+            if include_filename_as_title:
+                write_output_file(output_file, f"# {subfolder.name}\n")
+
             if index_file:
-                content = process_markdown_file(index_file, include_filename_as_title)
-                write_output_file(output_file, content)
+                content = process_markdown_file(index_file, False)
+                append_to_output_file(output_file, content)
 
             # Process other files
             other_files = [f for f in markdown_files if f.name != "index.md"]
             for file in other_files:
-                content = process_markdown_file(file, include_filename_as_title)
+                content = process_markdown_file(file, False)
                 append_to_output_file(output_file, content)
 
     print("Documentation processing complete.")
